@@ -1,0 +1,3 @@
+Game 2d mô phỏng nhân viên tại 1 phòng LAB thí nghiệm với các nhiệm vụ và yêu cầu cơ bản :
+thực hiện các nhiệm vụ mà npc giao, điều chế hóa chất từ các chất đang có ( chưa có nhưng có thể mở khóa)thông qua đó biết thêm các ứng dụng thực tế của các hợp chất
+được tự do xem các chất phản ứng 1 cách thật nhất khi không thể thực hiện trong thực tế được thực hiện qua game. xem từng bước khi các chất phản ứng, viết phương trình hóa học của các chất
