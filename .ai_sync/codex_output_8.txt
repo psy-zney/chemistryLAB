@@ -1,0 +1,8 @@
+Đã hoàn tất.
+
+- Thêm [DomainUnitTests.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/DomainUnitTests.cs): test các trạng thái reaction, currency/EXP/level-up, incident cap và dead-end fixture.
+- Thêm [GameplayIntegrationTests.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/GameplayIntegrationTests.cs): success path và failure/recovery, gồm save/reload.
+- Thêm [DeadEndEconomyValidator.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/DeadEndEconomyValidator.cs): kiểm tra nguồn shop/craft theo unlock/quest level.
+- Cập nhật [PlayerProfile.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Domain/PlayerProfile.cs) với level-up tự động mỗi 100 EXP.
+
+Đã compile toàn bộ `Assets/_Game/Scripts` bằng compiler Unity và chạy pass Domain, Gameplay Integration, cùng persistence regression. Binary `ChemistryLab.Verify.dll` đi kèm không xuất kết quả và treo khi chạy, nên đã dừng; các suite framework-free mới đều pass.

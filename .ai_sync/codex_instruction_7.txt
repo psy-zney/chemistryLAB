@@ -1,0 +1,26 @@
+Hãy đọc kỹ yêu cầu từ các tài liệu:
+- Plan/06_Chat_luong_mobile/500_Tao_audio_haptic_settings.md
+- Plan/06_Chat_luong_mobile/501_Them_localisation_VI_EN.md
+- Plan/04_Lab_gameplay/303_Tao_chia_luong_gram_game.md
+- Plan/05_Tien_trinh_va_kinh_te/403_Tao_Shop_co_ban.md
+- Plan/05_Tien_trinh_va_kinh_te/401_Xay_dung_QuestService.md
+- Plan/05_Tien_trinh_va_kinh_te/409_Tao_cosmetic_nhan_vat.md
+
+Yêu cầu lập trình:
+1. Viết AudioHapticController.cs trong Assets/_Game/Scripts/Presentation:
+   - Quản lý các kênh âm thanh (`Music`, `SFX`, `UI`, `Incident`) và Haptic (`Pour`, `ReactionComplete`, `Warning`).
+   - Có các phương thức `SetMute(bool isMuted)`, `SetVolume(string channel, float volume)`, `TriggerHaptic(HapticType type)` và tự động lưu/trả trạng thái cấu hình.
+2. Viết LocalisationController.cs trong Assets/_Game/Scripts/Presentation:
+   - Quản lý từ điển chuỗi hỗ trợ 2 ngôn ngữ (`Vietnamese` và `English`). Mặc định là `Vietnamese`.
+   - Có phương thức `GetString(string key, params object[] args)` để lấy chuỗi định dạng (nếu key không tồn tại hoặc lỗi, fallback sang English hoặc trả về key). Phương thức `SetLanguage(Language lang)` thay đổi ngôn ngữ và phát sự kiện `LanguageChanged`.
+3. Viết InventoryGramSplitter.cs trong Assets/_Game/Scripts/Presentation:
+   - Quản lý việc chia nhỏ lượng hóa chất từ kho (`Inventory`) ra bàn thí nghiệm (`Bench Reservation`).
+   - Có các phương thức `Reserve(string itemId, decimal amountGram)` (chỉ cho phép `0 < amountGram <= available`), `CancelReservation(string reservationId)` (trả lại đủ lượng về kho), và `CommitReservations(IEnumerable<string> reservationIds)` (chốt trừ vĩnh viễn khi chạy thí nghiệm).
+4. Viết ShopPresenter.cs trong Assets/_Game/Scripts/Presentation:
+   - Điều phối logic mua sắm hóa chất (`ChemicalItem`) và dụng cụ (`LabTool`).
+   - Có các phương thức `CanBuyItem(string itemId, int quantity)`, `BuyItem(string itemId, int quantity)` và `BuyTool(string toolId)`. Thực hiện kiểm tra đủ tiền (`Dollar` / `Diamond`), kiểm tra cấp độ mở khóa (`UnlockLevel`), trừ tiền và cộng vào `Inventory`/`ToolState` thông qua transaction nguyên tử hoặc cập nhật profile hợp lệ. Chống double purchase khi đang xử lý.
+5. Viết QuestAndCharacterPresenter.cs trong Assets/_Game/Scripts/Presentation:
+   - Quản lý giao diện Nhiệm vụ (`Quest`) và Hồ sơ nhân vật (`Character Profile`).
+   - Có phương thức `GetActiveQuests()`, `ClaimQuestReward(string questId)` (gọi sang `QuestService` hoặc cộng tiền/EXP vào `PlayerProfile`), và `GetCharacterSummary()` (trả về cấp độ, EXP, số Dollar/Diamond và danh hiệu).
+
+Đảm bảo code C# chuẩn, biên dịch độc lập tốt cùng với toàn bộ project `Assets/_Game/Scripts` hiện tại. Hãy tạo và kiểm tra ngay trong workspace.

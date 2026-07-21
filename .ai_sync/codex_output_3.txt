@@ -1,0 +1,8 @@
+Đã tạo và biên dịch thành công toàn bộ C# scripts.
+
+- [PlayerProfile.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Domain/PlayerProfile.cs): Dollar/Diamond, level/EXP/lab upgrade, timestamps, thêm/trừ tiền an toàn.
+- [Inventory.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Domain/Inventory.cs) và [ToolState.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Domain/ToolState.cs): quản lý gram không âm, chia lượng nguyên tử, ownership/độ sạch/trạng thái lưu dụng cụ.
+- [ReactionTransaction.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/ReactionTransaction.cs): giao dịch bất biến, có idempotency key.
+- [ReactionResolver.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/ReactionResolver.cs): kiểm tra catalogue, unlock của player/lab, tool/capability, reactant/khối lượng/tạp chất; trả về status + localisation key + transaction đề xuất khi thành công.
+
+Resolver không tự mutate inventory/profile; transaction đề xuất cần được persistence service commit atomically.

@@ -1,0 +1,22 @@
+Hãy đọc kỹ yêu cầu từ các tài liệu:
+- Plan/01_Nen_tang/016_Thiet_lap_bootstrap_app_state.md
+- Plan/01_Nen_tang/017_Thiet_lap_safe_area_orientation.md
+- Plan/01_Nen_tang/018_Tao_design_tokens_UI.md
+- Plan/02_Du_lieu_hoa_hoc/100_Chot_content_pipeline.md
+- Step/05_Cau_truc_du_an_va_QA.md (`TECH-02` & `UI-01`)
+
+Yêu cầu lập trình:
+1. Viết AppStateController.cs và AppBootstrap.cs trong Assets/_Game/Scripts/Presentation:
+   - Định nghĩa enum `AppState` (`Boot`, `Loading`, `MainLab`, `Modal`, `Paused`, `ErrorRecovery`).
+   - `AppBootstrap`: Lớp khởi động có nhiệm vụ load và khởi tạo `ContentCatalogue`, `ISaveRepository`, sau đó chuyển trạng thái sang `MainLab`. Có xử lý lỗi (`Retry`).
+2. Viết SafeAreaContainer.cs trong Assets/_Game/Scripts/Presentation:
+   - Lớp nhận thông số rect hoặc mô phỏng tính toán safe area (top/bottom/left/right margins) đảm bảo CTA và HUD không bị che bởi notch hay home bar trên các độ phân giải (`16:9`, `19.5:9`, `Tablet`).
+3. Viết DesignThemeToken.cs trong Assets/_Game/Scripts/Presentation:
+   - Quản lý các cấu hình màu sắc, typography tokens, màu cảnh báo (`Warning`, `Error`), màu độ hiếm (`Common`, `Rare`, `Legendary`) và kích thước nút chuẩn.
+4. Viết ContentImporter.cs trong Assets/_Game/Scripts/Infrastructure:
+   - Chứa hàm `ImportFromJson(string jsonContent)` để phân tích dữ liệu JSON (hoặc cấu trúc chuỗi thô) thành đối tượng `ContentCatalogue` với đầy đủ `ChemicalItems`, `Reactions`, `LabTools`, `Quests`, và `Observations`.
+5. Viết MainLabPresenter.cs trong Assets/_Game/Scripts/Presentation:
+   - Là bộ điều khiển chính của màn hình Lab (`Presenter` theo MVP/MVC), giao tiếp một chiều: `Presentation -> Application -> Domain`.
+   - Có các phương thức: `OnSelectChemical(string itemId, decimal massGram)`, `OnSelectTool(string toolId)`, `OnExecuteExperiment()`, `OnCollectProduct()`, và `OnWashTool(string toolId)`. Khi thực thi thí nghiệm, gọi `ReactionResolver.Resolve()`, xử lý kết quả `Success` (thực hiện transaction) hoặc hiển thị lỗi qua localisationKey.
+
+Đảm bảo code C# chuẩn, biên dịch tốt, không phụ thuộc UnityEngine.UI trực tiếp nếu cần chạy unit test độc lập (có thể dùng interface hoặc abstraction phù hợp). Hãy tạo các file ngay trong workspace.

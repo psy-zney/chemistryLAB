@@ -1,0 +1,10 @@
+Đã hoàn tất cấu trúc Domain và các thư mục kiến trúc:
+
+- [ChemicalItem.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Domain\ChemicalItem.cs)
+- [ElementGroup.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Domain\ElementGroup.cs)
+- [Reaction.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Domain\Reaction.cs)
+- [ReactionParticipant.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Domain\ReactionParticipant.cs)
+
+Đã tạo `Domain`, `Application`, `Infrastructure`, `Presentation` trong `Assets/_Game/Scripts`.
+
+Các model là C# thuần trong namespace `ChemistryLab.Domain`, có kiểm tra dữ liệu đầu vào, metadata review đầy đủ, và không chứa tham chiếu `UnityEngine` hoặc SQLite.

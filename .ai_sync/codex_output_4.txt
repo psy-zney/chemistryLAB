@@ -1,0 +1,10 @@
+Đã tạo và biên dịch thành công:
+
+- [ProductRecoveryService.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/ProductRecoveryService.cs)
+- [WashingService.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/WashingService.cs)
+- [QuestService.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/QuestService.cs)
+- [IncidentService.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/IncidentService.cs)
+
+Cũng đã bổ sung `ReactionTransactionKind.CollectProduct` trong [ReactionTransaction.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/ReactionTransaction.cs).
+
+Các service có result/status rõ ràng, kiểm soát collect/claim lặp, làm bẩn dụng cụ sau collect, rửa dụng cụ, cảnh báo exit, và penalty incident có cap theo level. Không có phụ thuộc UI hoặc SQLite.

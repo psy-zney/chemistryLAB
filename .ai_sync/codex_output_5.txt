@@ -1,0 +1,10 @@
+Đã hoàn tất persistence layer và test standalone.
+
+- Thêm [ISaveRepository.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Infrastructure/ISaveRepository.cs), [SaveRepository.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Infrastructure/SaveRepository.cs): lưu file nhị phân có checksum, commit nguyên tử, idempotency transaction, backup primitives.
+- Thêm [MigrationService.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Infrastructure/MigrationService.cs) và [BackupRecoveryService.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Infrastructure/BackupRecoveryService.cs).
+- Thêm [PersistenceIntegrationTests.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Infrastructure/PersistenceIntegrationTests.cs), bao phủ commit/reload, corruption recovery và migration rollback.
+- Bổ sung `PlayerProfile.SetSchemaVersion()` phục vụ migration.
+
+Đã biên dịch và chạy test standalone thành công: `Persistence integration tests passed.`
+
+Lưu ý: file nhị phân test `Dev/PersistenceTests.exe` được tạo khi xác minh; môi trường đã chặn thao tác xóa file đó.

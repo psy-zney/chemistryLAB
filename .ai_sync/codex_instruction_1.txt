@@ -1,0 +1,14 @@
+Hãy đọc kỹ các tài liệu sau để nắm chính xác yêu cầu:
+1. Plan/02_Du_lieu_hoa_hoc/101_Dinh_nghia_schema_ChemicalItem.md
+2. Plan/02_Du_lieu_hoa_hoc/102_Dinh_nghia_schema_Reaction.md
+3. Step/05_Cau_truc_du_an_va_QA.md
+
+Yêu cầu thực hiện:
+- Tạo các thư mục kiến trúc nếu chưa có: Assets/_Game/Scripts/Domain, Assets/_Game/Scripts/Application, Assets/_Game/Scripts/Infrastructure, Assets/_Game/Scripts/Presentation
+- Viết 4 file C# chuẩn cho tầng Domain đặt trong Assets/_Game/Scripts/Domain:
+  + ChemicalItem.cs (chứa id, name key, formula, group, state, color, odor, solubility, hazard tier, rarity, price, icon và metadata review như source_ref, reviewer, reviewed_at, content_version)
+  + ElementGroup.cs (enum hoặc lớp cho các nhóm: kim loại, phi kim, halogen, khí hiếm, kiềm/kiềm thổ, khác...)
+  + Reaction.cs (chứa id, equation display, condition key, tool, unlock level, output, thời lượng animation, metadata version/source/reviewer)
+  + ReactionParticipant.cs (chứa reaction id, item id, role reactant/product, coefficient, mass gram game, thứ tự rót)
+
+Đảm bảo code C# sạch, không phụ thuộc UnityEngine.UI hay SQLite (theo chuẩn Domain Assembly). Viết code hoàn chỉnh và tạo các file này trong workspace ngay.

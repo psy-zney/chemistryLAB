@@ -1,0 +1,20 @@
+Hãy đọc kỹ yêu cầu từ các tài liệu:
+- Plan/04_Lab_gameplay/309_Thu_hoi_san_pham_va_cat_kho.md
+- Plan/04_Lab_gameplay/310_Tao_bon_rua_va_cleanliness.md
+- Plan/05_Tien_trinh_va_kinh_te/401_Xay_dung_QuestService.md
+- Plan/05_Tien_trinh_va_kinh_te/407_Tao_EasterEgg_va_penalty.md và PlanCoreGame/easterEgg.md
+
+Yêu cầu lập trình:
+1. Viết ProductRecoveryService.cs trong Assets/_Game/Scripts/Application:
+   - Dịch vụ thu hồi sản phẩm sau phản ứng: hàm `CollectProduct(ReactionResolveResult resolveResult, Inventory inventory, ToolState containerTool)`. Kiểm tra `containerTool` có phải bình chứa hợp lệ và sạch hay không, thêm số lượng sản phẩm (`AddGram`) vào `inventory`, đánh dấu `containerTool` thành `Dirty` sau khi chứa/đổ chất, tạo và hoàn tất `ReactionTransaction`.
+2. Viết WashingService.cs trong Assets/_Game/Scripts/Application:
+   - Dịch vụ bồn rửa (`Sink`): hàm `WashTool(ToolState tool, PlayerProfile profile)` phục hồi trạng thái `Clean` cho dụng cụ. Hàm `CheckUnwashedExitWarning(IEnumerable<ToolState> allTools)` trả về danh sách các dụng cụ còn bẩn/chưa dọn dẹp trước khi rời phòng lab để cảnh báo hoặc tính phạt.
+3. Viết QuestService.cs trong Assets/_Game/Scripts/Application:
+   - Dịch vụ quản lý nhiệm vụ: hàm `GenerateQuestInstance(QuestTemplate template, int seed)`, hàm `ValidateAndDeliver(QuestInstance instance, QuestTemplate template, Inventory inventory, PlayerProfile profile)` kiểm tra kho có đủ chất theo yêu cầu của quest không, trừ chất, cộng thưởng `Dollars` và `Exp` cho profile, đánh dấu quest completed/claimed bằng giao dịch atomic.
+4. Viết IncidentService.cs trong Assets/_Game/Scripts/Application:
+   - Xử lý Easter Egg và phạt theo `easterEgg.md`: Định nghĩa enum `IncidentSeverity` (`None`, `Low`, `Medium`, `High`, `CriticalExplosion`).
+   - Lớp `IncidentResult` chứa `Severity`, `PenaltyDollars`, `PenaltyMessage`, `LocalisationKey`.
+   - Hàm `EvaluateRushedPour(Reaction reaction, decimal pourSpeedFactor)`: Nếu đổ quá gấp/nhanh gây phản ứng mạnh/cháy nổ/kích thích, xác định `Severity` và tính mức phạt Dollars.
+   - Hàm `EvaluateUncleanedExit(IEnumerable<ToolState> tools, PlayerProfile profile)`: Nếu rời game khi chưa rửa dụng cụ hoặc để lại đồ lung tung, tính mức bồi thường/phạt dọn dẹp. Nặng nhất (nhiều bình hóa chất độc/nguy hiểm không rửa) sẽ gây nguy cơ cháy nổ, phạt tới giới hạn an toàn theo cấp độ (`Cap penalty theo level` để tránh soft-lock).
+
+Đảm bảo code C# chuẩn, biên dịch tốt, không phụ thuộc UnityEngine.UI hay SQLite. Hãy tạo các file ngay trong workspace.

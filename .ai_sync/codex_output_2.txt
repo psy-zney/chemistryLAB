@@ -1,0 +1,11 @@
+Đã tạo các model và validator yêu cầu:
+
+- [ReactionObservation.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Domain/ReactionObservation.cs)
+- [LabTool.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Domain/LabTool.cs)
+- [QuestTemplate.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Domain/QuestTemplate.cs)
+- [QuestInstance.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Domain/QuestInstance.cs)
+- [ContentValidator.cs](C:/Users/admin/MyProject/chemistryLAB/Assets/_Game/Scripts/Application/ContentValidator.cs)
+
+Validator trả về `ContentValidationIssue` gồm `Severity`, `Row`, `Field`, `Message`; kiểm tra ID, giá/lượng âm, reactant/product, metadata review, và các foreign key item/reaction/tool/quest. `QuestInstance` có claim idempotency qua `TryClaim`.
+
+Đã biên dịch trực tiếp bằng C# compiler của SDK: thành công, không phụ thuộc Unity UI hay SQLite.

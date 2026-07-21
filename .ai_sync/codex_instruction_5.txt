@@ -1,0 +1,20 @@
+Hãy đọc kỹ yêu cầu từ các tài liệu:
+- Plan/03_Save_va_tien_trinh/200_Danh_gia_SQLite_wrapper.md
+- Plan/03_Save_va_tien_trinh/206_Xay_dung_migration_framework.md
+- Plan/03_Save_va_tien_trinh/207_Tao_backup_recovery.md
+- Plan/03_Save_va_tien_trinh/208_Tao_save_load_integration_tests.md
+- Step/05_Cau_truc_du_an_va_QA.md (`SAVE-01` & `QA-01`)
+
+Yêu cầu lập trình:
+1. Viết ISaveRepository.cs và SaveRepository.cs trong Assets/_Game/Scripts/Infrastructure:
+   - Cung cấp interface `ISaveRepository` và lớp triển khai `SaveRepository` (có thể dùng in-memory dictionary/file simulation/abstracted SQLite) để lưu và tải: `PlayerProfile`, `Inventory` (`Dictionary<string, decimal>`), `IEnumerable<ToolState>`, và danh sách `ReactionTransaction`.
+   - Có cơ chế `CommitTransaction(ReactionTransaction transaction, Action applyMutations)` đảm bảo nguyên tử (`Atomic`): cập nhật profile/inventory/tools và ghi log giao dịch đồng thời.
+2. Viết MigrationService.cs trong Assets/_Game/Scripts/Infrastructure:
+   - Hàm `Migrate(ISaveRepository repository, int targetSchemaVersion)` tuần tự nâng cấp `PlayerProfile.SchemaVersion`. Trước khi migrate phải tạo bản sao lưu (`Backup`), nếu migration lỗi (throw exception hoặc sai lệch), tự động khôi phục từ backup và không được tự ý reset/xoá dữ liệu người chơi.
+3. Viết BackupRecoveryService.cs trong Assets/_Game/Scripts/Infrastructure:
+   - Quản lý xoay vòng bản sao lưu (`CreateBackup`, `RestoreFromBackup`).
+   - Hàm `InspectSaveHealth()` trả về `SaveHealthStatus` (`Healthy`, `CorruptedNeedsRecovery`, `NoData`).
+4. Viết PersistenceIntegrationTests.cs trong Assets/_Game/Scripts/Infrastructure:
+   - Viết lớp kiểm thử tự động (chạy standalone C# compiler) cho toàn bộ chu trình: Tạo Profile với Dollars=1000, Inventory NaCl=50.5g, Tool rửa sạch -> Commit save -> Giả lập tắt app & tải lại qua `SaveRepository` mới -> Kiểm tra chính xác Dollars, lượng gram, trạng thái tool -> Kiểm tra cơ chế khôi phục từ bản backup khi file save bị hỏng (`Corrupted`).
+
+Đảm bảo code C# chuẩn, biên dịch tốt, không phụ thuộc UnityEngine.UI hay SQLite native lib trực tiếp. Hãy tạo các file ngay trong workspace.

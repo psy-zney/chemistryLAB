@@ -1,0 +1,21 @@
+Hãy đọc kỹ yêu cầu từ các tài liệu:
+- Plan/03_Save_va_tien_trinh/201_Tao_schema_PlayerProfile.md
+- Plan/03_Save_va_tien_trinh/202_Tao_schema_Inventory_va_ToolState.md
+- Plan/03_Save_va_tien_trinh/203_Tao_TransactionLog_atomic.md
+- Plan/04_Lab_gameplay/307_Xay_dung_ReactionResolver.md
+- PlanCoreGame/CoreLogic.md và GamePlay.md
+
+Yêu cầu lập trình:
+1. Viết PlayerProfile.cs trong Assets/_Game/Scripts/Domain:
+   - Quản lý Dollars (chính), Diamonds (chỉ mua qua cổng nạp hoặc đặc biệt), Level, Exp, LabUpgradeLevel. Có các phương thức thêm/trừ tiền an toàn (throw exception hoặc return false nếu không đủ tiền/tiền âm).
+2. Viết Inventory.cs và ToolState.cs trong Assets/_Game/Scripts/Domain:
+   - Inventory: Quản lý danh sách lượng chất theo gram game (`Dictionary<string, decimal>`). Có các hàm AddGram, RemoveGram, SplitGram (chia nhỏ lượng chất cho phản ứng), đảm bảo không bao giờ âm.
+   - ToolState: Quản lý ToolId, IsOwned, Cleanliness (`Clean`, `Dirty`, `NeedsWashing`), StorageState.
+3. Viết ReactionTransaction.cs trong Assets/_Game/Scripts/Application:
+   - Đại diện cho 1 giao dịch atomic khi thực hiện thí nghiệm hoặc mua/bán: TransactionId, Kind (Craft, Buy, QuestReward, Penalty), Inputs (`IReadOnlyDictionary<string, decimal>`), Outputs (`IReadOnlyDictionary<string, decimal>`), DollarDelta, DiamondDelta, IdempotencyKey, Timestamp.
+4. Viết ReactionResolver.cs trong Assets/_Game/Scripts/Application:
+   - Định nghĩa enum ReactionResolveStatus (`Success`, `MissingInput`, `WrongAmount`, `WrongTool`, `Locked`, `InvalidState`) và lớp `ReactionResolveResult` chứa Status, Message, LocalisationKey, OutputId, OutputMassGram, ReactionId đã giải quyết.
+   - Lớp ReactionResolver chứa hàm `Resolve(Reaction targetReaction, IReadOnlyDictionary<string, decimal> benchItems, LabTool usedTool, PlayerProfile profile, ContentCatalogue catalogue)`.
+   - Logic: Kiểm tra unlock level (với profile.Level và LabUpgradeLevel), kiểm tra ToolId/capabilities, kiểm tra đúng và đủ số lượng reactant theo coefficient/mass, kiểm tra không có tạp chất sai lệch, nếu thành công trả về `Success` kèm thông tin để tạo `ReactionTransaction`.
+
+Đảm bảo code C# sạch, biên dịch tốt, không phụ thuộc UnityEngine.UI hay SQLite. Hãy tạo các file ngay trong workspace.

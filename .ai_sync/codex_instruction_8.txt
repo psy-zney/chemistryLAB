@@ -1,0 +1,22 @@
+Hãy đọc kỹ yêu cầu từ các tài liệu:
+- Plan/07_Beta_va_phat_hanh/600_Viet_unit_tests_domain.md
+- Plan/07_Beta_va_phat_hanh/601_Viet_integration_tests.md
+- Plan/05_Tien_trinh_va_kinh_te/404_Tao_dead_end_economy_validator.md
+- PlanCoreGame/CoreLogic.md
+
+Yêu cầu lập trình:
+1. Viết DomainUnitTests.cs trong Assets/_Game/Scripts/Application/:
+   - Bộ kiểm thử unit test chạy độc lập (dùng pattern Assert/Test hoặc runner tự tạo nếu cần chạy standalone C# test), kiểm tra logic:
+     + `ReactionResolver.Resolve()` trả về chính xác các trạng thái `Success`, `MissingInput`, `WrongTool`, `Locked`, `WrongAmount`.
+     + `PlayerProfile` cộng trừ Dollar/Diamond/EXP và tự động tăng level chính xác.
+     + `IncidentService` tính mức bồi thường đúng trần giới hạn early game.
+2. Viết GameplayIntegrationTests.cs trong Assets/_Game/Scripts/Application/:
+   - Kiểm thử mô phỏng luồng hoàn chỉnh (tích hợp `SaveRepository`, `ReactionResolver`, `ProductRecoveryService`, `WashingService`, `QuestService`, `ShopPresenter`):
+     + Kịch bản 1 (`Success path`): Nhận quest -> Mua hóa chất -> Chia lượng gram lên bench -> Rót -> Giải quyết phản ứng thành công -> Cất sản phẩm -> Rửa bình -> Giao quest nhận thưởng -> Lưu và reload giữ nguyên số dư.
+     + Kịch bản 2 (`Failure & Recovery`): Phản ứng thiếu chất hoặc dùng bình bẩn (`Incident`), khôi phục và kiểm tra tính toàn vẹn của tồn kho (`Inventory`).
+3. Viết DeadEndEconomyValidator.cs trong Assets/_Game/Scripts/Application/:
+   - Lớp chứa hàm `ValidateEconomy(ContentCatalogue catalogue, out List<string> errors)`:
+     + Kiểm tra từng `ChemicalItem` và `QuestTemplate`: Khi một hóa chất được yêu cầu ở cấp độ L (`UnlockLevel` hoặc Quest level), nó phải có thể mua được ở `Shop` (với unlock level <= L) hoặc điều chế được từ phản ứng có các chất đầu vào thỏa mãn unlock level <= L.
+     + Nếu phát hiện hóa chất không có nguồn cung (`Bottleneck/Dead-End`), ghi vào danh sách lỗi `errors`. Trả về `true` nếu kinh tế game mượt mà, `false` nếu kẹt.
+
+Đảm bảo code C# chuẩn, biên dịch cùng toàn bộ project `Assets/_Game/Scripts` và tự động chạy kiểm chứng (`Verify`) để khẳng định toàn bộ hệ thống hoạt động hoàn hảo 100%. Hãy tạo file ngay trong workspace.

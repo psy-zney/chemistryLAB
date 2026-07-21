@@ -1,0 +1,19 @@
+Hãy đọc kỹ yêu cầu từ các tài liệu:
+- Plan/02_Du_lieu_hoa_hoc/103_Dinh_nghia_hien_tuong_phan_ung.md
+- Plan/02_Du_lieu_hoa_hoc/104_Dinh_nghia_dung_cu_va_may.md
+- Plan/02_Du_lieu_hoa_hoc/105_Dinh_nghia_nhiem_vu_NPC.md
+- Plan/02_Du_lieu_hoa_hoc/108_Xay_dung_content_validator.md
+
+Yêu cầu lập trình (tiếp nối các file Domain trước):
+1. Viết ReactionObservation.cs trong Assets/_Game/Scripts/Domain:
+   - Định nghĩa observation type (đổi màu, tạo khí, kết tủa, tỏa nhiệt/nóng, thu nhiệt/lạnh...), timing phase, intensity, before/after color, particle/audio/haptic asset key, localisation key.
+2. Viết LabTool.cs trong Assets/_Game/Scripts/Domain:
+   - Định nghĩa tool type (bình chứa, dụng cụ rửa/lọc, máy điều chế...), capacity gram, owned state, clean state (sạch/bẩn/cần rửa), unlock level, price, visual address key, capability list.
+3. Viết QuestTemplate.cs và QuestInstance.cs trong Assets/_Game/Scripts/Domain:
+   - QuestTemplate: id, tier, target reaction id, dialogue key, application key, reward rule (dollar, exp, item unlocks), prerequisites.
+   - QuestInstance: quest id, deterministic seed, status (Active, Completed, Claimed, Expired), creation time, claim idempotency check.
+4. Viết ContentValidator.cs trong Assets/_Game/Scripts/Application:
+   - Lớp kiểm tra hợp lệ cho toàn bộ catalogue: kiểm tra id rỗng/trùng lặp, giá/số lượng âm, Reaction phải có ít nhất 1 reactant & 1 product, kiểm tra các foreign key (OutputId, ItemId) có tồn tại trong danh sách ChemicalItem hay không, kiểm tra metadata review (SourceRef, Reviewer, ContentVersion).
+   - Trả về danh sách lỗi/cảnh báo rõ ràng (Row/Field/Message) để CI hoặc Editor có thể catch được ngay.
+
+Đảm bảo code C# chuẩn, không phụ thuộc UnityEngine.UI hay SQLite. Hãy tạo các file ngay trong workspace.

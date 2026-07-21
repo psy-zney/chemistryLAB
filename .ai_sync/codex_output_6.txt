@@ -1,0 +1,9 @@
+Đã tạo đủ 6 file theo yêu cầu:
+
+- [AppStateController.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\AppStateController.cs) và [AppBootstrap.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\AppBootstrap.cs): state machine, bootstrap async, xử lý lỗi và `RetryAsync`.
+- [SafeAreaContainer.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\SafeAreaContainer.cs): tính safe area từ rect hoặc margin mô phỏng cho 16:9, 19.5:9, tablet.
+- [DesignThemeToken.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\DesignThemeToken.cs): màu, typography, warning/error, rarity và kích thước nút.
+- [ContentImporter.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Infrastructure\ContentImporter.cs): parser JSON độc lập Unity, tạo `ContentCatalogue` và validate dữ liệu.
+- [MainLabPresenter.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\MainLabPresenter.cs): luồng MVP một chiều, gọi `ReactionResolver`, commit transaction, collect product và wash tool.
+
+Code đã được kiểm tra biên dịch độc lập cho toàn bộ `Assets/_Game/Scripts` thành công.

@@ -1,0 +1,14 @@
+Đã hoàn tất và kiểm tra biên dịch toàn bộ `Assets/_Game/Scripts`.
+
+Các file mới:
+
+- [AudioHapticController.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\AudioHapticController.cs)
+- [LocalisationController.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\LocalisationController.cs)
+- [InventoryGramSplitter.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\InventoryGramSplitter.cs)
+- [ShopPresenter.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\ShopPresenter.cs)
+- [QuestAndCharacterPresenter.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\QuestAndCharacterPresenter.cs)
+- [PresentationSettingsStore.cs](C:\Users\admin\MyProject\chemistryLAB\Assets\_Game\Scripts\Presentation\PresentationSettingsStore.cs) — lưu bền vững audio/haptic/ngôn ngữ.
+
+Cũng đã bổ sung `ChemicalItem.UnlockLevel` (tương thích content cũ với mặc định `0`) và importer/validator để shop kiểm tra khóa mở hóa chất.
+
+Đã biên dịch thành công toàn bộ mã C# bằng compiler SDK. Có một file DLL kiểm tra tạm ở thư mục gốc (`ChemistryLab.Verify.dll`) do sandbox không cho xóa artifact nhị phân.
