@@ -1,5 +1,5 @@
 {
-  "contentVersion": "1.0.0",
+  "contentVersion": "1.1.0",
   "chemicalItems": [
     {
       "id": "water",
@@ -53,7 +53,7 @@
       "sourceRef": "IUPAC Gold Book",
       "reviewer": "Dr. Chemist",
       "reviewedAt": "2026-07-21T00:00:00Z",
-      "unlockLevel": 1
+      "unlockLevel": 0
     },
     {
       "id": "naoh",
@@ -61,7 +61,7 @@
       "formula": "NaOH",
       "group": "AlkaliMetal",
       "state": "Aqueous",
-      "color": "#F0F0F0",
+      "color": "#F5F5F5",
       "odorKey": "chem.naoh.odor",
       "solubility": "Miscible",
       "hazardTier": "Medium",
@@ -71,169 +71,295 @@
       "sourceRef": "IUPAC Gold Book",
       "reviewer": "Dr. Chemist",
       "reviewedAt": "2026-07-21T00:00:00Z",
-      "unlockLevel": 1
+      "unlockLevel": 0
+    },
+    {
+      "id": "h2so4",
+      "nameKey": "Axit Sulfuric",
+      "formula": "H2SO4",
+      "group": "Nonmetal",
+      "state": "Aqueous",
+      "color": "#FFFDD0",
+      "odorKey": "chem.odourless",
+      "solubility": "Miscible",
+      "hazardTier": "High",
+      "rarity": "Uncommon",
+      "price": 30,
+      "iconAddress": "Icons/Chemicals/hcl",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
+    },
+    {
+      "id": "hno3",
+      "nameKey": "Axit Nitric",
+      "formula": "HNO3",
+      "group": "Nonmetal",
+      "state": "Aqueous",
+      "color": "#FFF8DC",
+      "odorKey": "chem.pungent",
+      "solubility": "Miscible",
+      "hazardTier": "High",
+      "rarity": "Rare",
+      "price": 50,
+      "iconAddress": "Icons/Chemicals/hcl",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
+    },
+    {
+      "id": "nh3",
+      "nameKey": "Amoniak",
+      "formula": "NH3",
+      "group": "Nonmetal",
+      "state": "Aqueous",
+      "color": "#E6F2FF",
+      "odorKey": "chem.pungent",
+      "solubility": "Miscible",
+      "hazardTier": "Medium",
+      "rarity": "Common",
+      "price": 20,
+      "iconAddress": "Icons/Chemicals/water",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
+    },
+    {
+      "id": "cuso4",
+      "nameKey": "Dong Sulfate",
+      "formula": "CuSO4",
+      "group": "TransitionMetal",
+      "state": "Aqueous",
+      "color": "#1E90FF",
+      "odorKey": "chem.odourless",
+      "solubility": "Soluble",
+      "hazardTier": "Low",
+      "rarity": "Common",
+      "price": 30,
+      "iconAddress": "Icons/Chemicals/water",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
+    },
+    {
+      "id": "bacl2",
+      "nameKey": "Bari Clorua",
+      "formula": "BaCl2",
+      "group": "AlkalineEarth",
+      "state": "Aqueous",
+      "color": "#F8F8FF",
+      "odorKey": "chem.odourless",
+      "solubility": "Soluble",
+      "hazardTier": "Medium",
+      "rarity": "Uncommon",
+      "price": 35,
+      "iconAddress": "Icons/Chemicals/salt",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
+    },
+    {
+      "id": "baso4",
+      "nameKey": "Bari Sulfate (Ket tua)",
+      "formula": "BaSO4",
+      "group": "AlkalineEarth",
+      "state": "Solid",
+      "color": "#FFFFFF",
+      "odorKey": "chem.odourless",
+      "solubility": "Insoluble",
+      "hazardTier": "None",
+      "rarity": "Common",
+      "price": 40,
+      "iconAddress": "Icons/Chemicals/salt",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
+    },
+    {
+      "id": "cu_oh_2",
+      "nameKey": "Dong Hydroxyt (Ket tua)",
+      "formula": "Cu(OH)2",
+      "group": "TransitionMetal",
+      "state": "Solid",
+      "color": "#87CEEB",
+      "odorKey": "chem.odourless",
+      "solubility": "Insoluble",
+      "hazardTier": "None",
+      "rarity": "Common",
+      "price": 45,
+      "iconAddress": "Icons/Chemicals/salt",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
+    },
+    {
+      "id": "cu_nh3_4_complex",
+      "nameKey": "Phuc Chat Tetraamminecopper(II)",
+      "formula": "[Cu(NH3)4]2+",
+      "group": "TransitionMetal",
+      "state": "Aqueous",
+      "color": "#00008B",
+      "odorKey": "chem.pungent",
+      "solubility": "Soluble",
+      "hazardTier": "Low",
+      "rarity": "Rare",
+      "price": 100,
+      "iconAddress": "Icons/Chemicals/water",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
+    },
+    {
+      "id": "nacl_solution",
+      "nameKey": "Dung dich Muoi NaCl",
+      "formula": "NaCl (aq)",
+      "group": "AlkaliMetal",
+      "state": "Aqueous",
+      "color": "#E0F7FA",
+      "odorKey": "chem.salt.odor",
+      "solubility": "Miscible",
+      "hazardTier": "None",
+      "rarity": "Common",
+      "price": 15,
+      "iconAddress": "Icons/Chemicals/water",
+      "sourceRef": "IUPAC Gold Book",
+      "reviewer": "Dr. Chemist",
+      "reviewedAt": "2026-07-21T00:00:00Z",
+      "unlockLevel": 0
     }
   ],
   "reactions": [
     {
       "id": "rxn_salt_dissolve",
-      "equationDisplay": "H2O + NaCl -> Aqueous Salt Solution",
-      "conditionKey": "normal_temperature",
-      "toolId": "beaker_100ml",
-      "unlockLevel": 0,
-      "outputId": "salt",
-      "outputMassGram": 15.0,
-      "animationDurationSeconds": 2.0,
-      "sourceRef": "Basic Solution Chemistry",
-      "reviewer": "Dr. Chemist",
-      "reviewedAt": "2026-07-21T00:00:00Z"
+      "nameKey": "rxn.salt_dissolve.name",
+      "formulaEquation": "NaCl(s) + H2O(l) -> NaCl(aq)",
+      "participants": [
+        { "itemId": "salt", "coefficient": 1, "role": 0 },
+        { "itemId": "water", "coefficient": 10, "role": 0 },
+        { "itemId": "nacl_solution", "coefficient": 1, "role": 1 }
+      ],
+      "requiredToolId": "beaker_100ml",
+      "requiredCleanliness": "Clean",
+      "minTemperatureC": 20.0,
+      "maxTemperatureC": 100.0,
+      "observations": [
+        { "type": 0, "descriptionKey": "obs.salt_dissolve.color", "beforeColor": "#FFFFFF", "afterColor": "#E0F7FA" }
+      ],
+      "incidentRules": [],
+      "unlockedByQuestId": "quest_tutorial_dissolve"
     },
     {
       "id": "rxn_neutralization",
-      "equationDisplay": "HCl + NaOH -> H2O + NaCl",
-      "conditionKey": "exothermic_mix",
-      "toolId": "beaker_100ml",
-      "unlockLevel": 1,
-      "outputId": "salt",
-      "outputMassGram": 20.0,
-      "animationDurationSeconds": 3.0,
-      "sourceRef": "Acid-Base Titration Handbook",
-      "reviewer": "Dr. Chemist",
-      "reviewedAt": "2026-07-21T00:00:00Z"
+      "nameKey": "rxn.neutralization.name",
+      "formulaEquation": "HCl(aq) + NaOH(aq) -> NaCl(aq) + H2O(l)",
+      "participants": [
+        { "itemId": "hcl", "coefficient": 1, "role": 0 },
+        { "itemId": "naoh", "coefficient": 1, "role": 0 },
+        { "itemId": "nacl_solution", "coefficient": 1, "role": 1 }
+      ],
+      "requiredToolId": "beaker_100ml",
+      "requiredCleanliness": "Clean",
+      "minTemperatureC": 20.0,
+      "maxTemperatureC": 100.0,
+      "observations": [
+        { "type": 3, "descriptionKey": "obs.neutralization.heat", "beforeColor": "#FFF8E7", "afterColor": "#E0F7FA" }
+      ],
+      "incidentRules": [],
+      "unlockedByQuestId": "quest_tutorial_dissolve"
+    },
+    {
+      "id": "rxn_barium_sulfate_precipitate",
+      "nameKey": "Phan ung tao ket tua Bari Sulfate",
+      "formulaEquation": "BaCl2(aq) + H2SO4(aq) -> BaSO4(v) + 2HCl(aq)",
+      "participants": [
+        { "itemId": "bacl2", "coefficient": 1, "role": 0 },
+        { "itemId": "h2so4", "coefficient": 1, "role": 0 },
+        { "itemId": "baso4", "coefficient": 1, "role": 1 },
+        { "itemId": "hcl", "coefficient": 2, "role": 1 }
+      ],
+      "requiredToolId": "beaker_100ml",
+      "requiredCleanliness": "Clean",
+      "minTemperatureC": 20.0,
+      "maxTemperatureC": 100.0,
+      "observations": [
+        { "type": 2, "descriptionKey": "Ket tua trang BaSO4 doc va lang xuong day coc", "beforeColor": "#F8F8FF", "afterColor": "#FFFFFF" }
+      ],
+      "incidentRules": [],
+      "unlockedByQuestId": "quest_tutorial_dissolve"
+    },
+    {
+      "id": "rxn_copper_hydroxide_precipitate",
+      "nameKey": "Phan ung tao ket tua Dong Hydroxyt",
+      "formulaEquation": "CuSO4(aq) + 2NaOH(aq) -> Cu(OH)2(v) + Na2SO4(aq)",
+      "participants": [
+        { "itemId": "cuso4", "coefficient": 1, "role": 0 },
+        { "itemId": "naoh", "coefficient": 2, "role": 0 },
+        { "itemId": "cu_oh_2", "coefficient": 1, "role": 1 }
+      ],
+      "requiredToolId": "beaker_100ml",
+      "requiredCleanliness": "Clean",
+      "minTemperatureC": 20.0,
+      "maxTemperatureC": 100.0,
+      "observations": [
+        { "type": 2, "descriptionKey": "Ket tua xanh nhat Cu(OH)2 xuat hien", "beforeColor": "#1E90FF", "afterColor": "#87CEEB" }
+      ],
+      "incidentRules": [],
+      "unlockedByQuestId": "quest_tutorial_dissolve"
+    },
+    {
+      "id": "rxn_copper_complex_formation",
+      "nameKey": "Phan ung tao Phuc Chat Tetraamminecopper(II)",
+      "formulaEquation": "Cu(OH)2(s) + 4NH3(aq) -> [Cu(NH3)4](OH)2(aq)",
+      "participants": [
+        { "itemId": "cu_oh_2", "coefficient": 1, "role": 0 },
+        { "itemId": "nh3", "coefficient": 4, "role": 0 },
+        { "itemId": "cu_nh3_4_complex", "coefficient": 1, "role": 1 }
+      ],
+      "requiredToolId": "beaker_100ml",
+      "requiredCleanliness": "Clean",
+      "minTemperatureC": 20.0,
+      "maxTemperatureC": 100.0,
+      "observations": [
+        { "type": 0, "descriptionKey": "Ket tua tan ra thanh dung dich phuc chat xanh lam tham trong suot", "beforeColor": "#87CEEB", "afterColor": "#00008B" }
+      ],
+      "incidentRules": [],
+      "unlockedByQuestId": "quest_tutorial_dissolve"
     }
   ],
-  "reactionParticipants": [
+  "questTemplates": [
     {
-      "reactionId": "rxn_salt_dissolve",
-      "itemId": "water",
-      "role": "Reactant",
-      "coefficient": 1,
-      "massGramGame": 10.0,
-      "pourOrder": 1
-    },
-    {
-      "reactionId": "rxn_salt_dissolve",
-      "itemId": "salt",
-      "role": "Reactant",
-      "coefficient": 1,
-      "massGramGame": 5.0,
-      "pourOrder": 2
-    },
-    {
-      "reactionId": "rxn_salt_dissolve",
-      "itemId": "salt",
-      "role": "Product",
-      "coefficient": 1,
-      "massGramGame": 15.0,
-      "pourOrder": 0
-    },
-    {
-      "reactionId": "rxn_neutralization",
-      "itemId": "hcl",
-      "role": "Reactant",
-      "coefficient": 1,
-      "massGramGame": 10.0,
-      "pourOrder": 1
-    },
-    {
-      "reactionId": "rxn_neutralization",
-      "itemId": "naoh",
-      "role": "Reactant",
-      "coefficient": 1,
-      "massGramGame": 10.0,
-      "pourOrder": 2
-    },
-    {
-      "reactionId": "rxn_neutralization",
-      "itemId": "salt",
-      "role": "Product",
-      "coefficient": 1,
-      "massGramGame": 20.0,
-      "pourOrder": 0
-    }
-  ],
-  "observations": [
-    {
-      "reactionId": "rxn_salt_dissolve",
-      "sequence": 1,
-      "type": "ColorChange",
-      "timingPhase": "DuringReaction",
-      "intensity": "Subtle",
-      "beforeColor": "#FFFFFF",
-      "afterColor": "#E0F7FA",
-      "particleAssetKey": "Particles/dissolve_bubbles",
-      "audioAssetKey": "Audio/stirring_water",
-      "hapticAssetKey": "Haptic/light_tap",
-      "localisationKey": "obs.salt.dissolve",
-      "sourceRef": "Basic Solution Chemistry",
-      "reviewer": "Dr. Chemist",
-      "reviewedAt": "2026-07-21T00:00:00Z"
-    },
-    {
-      "reactionId": "rxn_neutralization",
-      "sequence": 1,
-      "type": "Exothermic",
-      "timingPhase": "DuringReaction",
-      "intensity": "Medium",
-      "beforeColor": "#FFF8E7",
-      "afterColor": "#FFFFFF",
-      "particleAssetKey": "Particles/warm_steam",
-      "audioAssetKey": "Audio/sizzle_reaction",
-      "hapticAssetKey": "Haptic/medium_vibration",
-      "localisationKey": "obs.neutralization.heat",
-      "sourceRef": "Acid-Base Titration Handbook",
-      "reviewer": "Dr. Chemist",
-      "reviewedAt": "2026-07-21T00:00:00Z"
+      "id": "quest_tutorial_dissolve",
+      "titleKey": "quest.tutorial_dissolve.title",
+      "descriptionKey": "quest.tutorial_dissolve.desc",
+      "targetReactionId": "rxn_salt_dissolve",
+      "targetToolId": "beaker_100ml",
+      "targetOutputItemId": "nacl_solution",
+      "minMassGram": 1.0,
+      "rewardRule": {
+        "dollars": 150,
+        "diamonds": 10,
+        "itemUnlockIds": ["hcl", "naoh", "h2so4", "cuso4", "nh3", "bacl2"]
+      }
     }
   ],
   "labTools": [
     {
       "id": "beaker_100ml",
-      "nameKey": "tool.beaker.100ml",
-      "type": "Container",
-      "capacityGram": 100.0,
-      "isOwned": true,
-      "cleanState": "Clean",
-      "unlockLevel": 0,
-      "price": 0,
-      "visualAddressKey": "Tools/beaker_100ml",
-      "capabilities": ["Contain", "Measure", "Pour", "Stir"],
-      "sourceRef": "Standard Labware Catalog",
-      "reviewer": "Dr. Chemist",
-      "reviewedAt": "2026-07-21T00:00:00Z"
-    },
-    {
-      "id": "test_tube_20ml",
-      "nameKey": "tool.test_tube.20ml",
-      "type": "Container",
-      "capacityGram": 20.0,
-      "isOwned": false,
-      "cleanState": "Clean",
-      "unlockLevel": 1,
+      "nameKey": "tool.beaker_100ml.name",
+      "capacityMl": 100.0,
+      "durability": 100,
+      "hazardResistTier": "High",
       "price": 50,
-      "visualAddressKey": "Tools/test_tube_20ml",
-      "capabilities": ["Contain", "Pour", "Heat"],
-      "sourceRef": "Standard Labware Catalog",
-      "reviewer": "Dr. Chemist",
-      "reviewedAt": "2026-07-21T00:00:00Z"
-    }
-  ],
-  "quests": [
-    {
-      "id": "quest_tutorial_dissolve",
-      "tier": "Tutorial",
-      "targetReactionId": "rxn_salt_dissolve",
-      "dialogueKey": "quest.tutorial.dissolve.dialogue",
-      "applicationKey": "quest.tutorial.dissolve.app",
-      "rewardRule": {
-        "dollars": 100,
-        "experience": 50,
-        "itemUnlockIds": ["hcl", "naoh"]
-      },
-      "prerequisites": [],
-      "sourceRef": "Curated Tutorial Flow",
-      "reviewer": "Dr. Chemist",
-      "reviewedAt": "2026-07-21T00:00:00Z"
+      "iconAddress": "Tools/beaker_100ml",
+      "unlockLevel": 0
     }
   ]
 }

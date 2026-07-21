@@ -11,7 +11,7 @@ namespace ChemistryLab.Presentation.UnityViews
     /// - Top bar: Dollars ($), Diamonds, Settings
     /// - Left column buttons: Shop, Kho (Inventory), N.Vu (Quests), N.Vat (Character Customizer)
     /// - Center: Scientist Avatar & Lobby desk preview
-    /// - Bottom right: Big [ LAB ] button to enter the main experiment room
+    /// - Bottom right: [ LAB ] (Quest Campaign Mode) and [ SANDBOX ] (Unlimited Free Creative Mode)
     /// </summary>
     public sealed class LobbyHomeUnityView : MonoBehaviour
     {
@@ -26,8 +26,9 @@ namespace ChemistryLab.Presentation.UnityViews
         [SerializeField] private Button questButton;
         [SerializeField] private Button characterButton;
 
-        [Header("Main Entry Action (Bottom Right LAB button)")]
+        [Header("Main Entry Actions")]
         [SerializeField] private Button enterLabButton;
+        [SerializeField] private Button sandboxModeButton;
 
         [Header("Child Panels")]
         [SerializeField] private GameObject characterCreationPanel;
@@ -42,6 +43,7 @@ namespace ChemistryLab.Presentation.UnityViews
         private void HookEvents()
         {
             if (enterLabButton != null) enterLabButton.onClick.AddListener(OnEnterLabClicked);
+            if (sandboxModeButton != null) sandboxModeButton.onClick.AddListener(OnEnterSandboxClicked);
             if (characterButton != null) characterButton.onClick.AddListener(OnCharacterClicked);
             if (shopButton != null) shopButton.onClick.AddListener(OnShopClicked);
             if (inventoryButton != null) inventoryButton.onClick.AddListener(OnInventoryClicked);
@@ -50,7 +52,17 @@ namespace ChemistryLab.Presentation.UnityViews
 
         private void OnEnterLabClicked()
         {
-            Debug.Log("[LobbyHomeView] Entering Main Lab...");
+            Debug.Log("[LobbyHomeView] Entering Main Lab Campaign Mode...");
+            if (mainLabPanel != null)
+            {
+                mainLabPanel.SetActive(true);
+            }
+            gameObject.SetActive(false);
+        }
+
+        private void OnEnterSandboxClicked()
+        {
+            Debug.Log("[LobbyHomeView] Entering Free Creative Sandbox Mode (Unlimited Chemicals)...");
             if (mainLabPanel != null)
             {
                 mainLabPanel.SetActive(true);
@@ -116,13 +128,22 @@ namespace ChemistryLab.Presentation.UnityViews
             SetButton(questButton, new Vector2(-320, 0), "N. Vu", new Color(0.7f, 0.6f, 0.2f));
             SetButton(characterButton, new Vector2(-320, -70), "N. Vat", new Color(0.6f, 0.3f, 0.7f));
 
-            // Bottom Right Big LAB Button (X: +300, Y: -190)
-            SetButton(enterLabButton, new Vector2(300, -190), "L A B", new Color(0.15f, 0.75f, 0.35f), new Vector2(180, 60));
+            // Bottom Right Entry Buttons: LAB (Campaign) & SANDBOX (Creative Free Mode)
+            SetButton(enterLabButton, new Vector2(180, -190), "L A B", new Color(0.15f, 0.75f, 0.35f), new Vector2(150, 60));
+            SetButton(sandboxModeButton, new Vector2(340, -190), "SANDBOX", new Color(0.85f, 0.45f, 0.15f), new Vector2(150, 60));
+
             var labTxt = enterLabButton != null ? enterLabButton.GetComponentInChildren<TMP_Text>() : null;
             if (labTxt != null)
             {
-                labTxt.fontSize = 26;
+                labTxt.fontSize = 22;
                 labTxt.fontStyle = FontStyles.Bold;
+            }
+
+            var sandboxTxt = sandboxModeButton != null ? sandboxModeButton.GetComponentInChildren<TMP_Text>() : null;
+            if (sandboxTxt != null)
+            {
+                sandboxTxt.fontSize = 20;
+                sandboxTxt.fontStyle = FontStyles.Bold;
             }
         }
 
