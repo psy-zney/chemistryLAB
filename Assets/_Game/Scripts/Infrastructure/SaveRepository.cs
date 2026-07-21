@@ -359,13 +359,35 @@ namespace ChemistryLab.Infrastructure
             writer.Write(value.PlayerId); writer.Write(value.Dollars); writer.Write(value.Diamonds); writer.Write(value.Level); writer.Write(value.Exp);
             writer.Write(value.LabUpgradeLevel); writer.Write(value.ActiveLabId ?? string.Empty); writer.Write(value.SchemaVersion);
             WriteDate(writer, value.CreatedAt); WriteDate(writer, value.UpdatedAt);
+            WriteAvatar(writer, value.Avatar);
         }
         private static PlayerProfile ReadProfile(BinaryReader reader)
         {
             if (!reader.ReadBoolean()) return null;
             var playerId = reader.ReadString(); var dollars = reader.ReadInt64(); var diamonds = reader.ReadInt64(); var level = reader.ReadInt32(); var exp = reader.ReadInt32();
             var labLevel = reader.ReadInt32(); var labId = reader.ReadString(); var schema = reader.ReadInt32(); var created = ReadDate(reader); var updated = ReadDate(reader);
-            return new PlayerProfile(playerId, dollars, diamonds, level, exp, labLevel, string.IsNullOrEmpty(labId) ? null : labId, schema, created, updated);
+            var avatar = ReadAvatar(reader);
+            return new PlayerProfile(playerId, dollars, diamonds, level, exp, labLevel, string.IsNullOrEmpty(labId) ? null : labId, avatar, schema, created, updated);
+        }
+        private static void WriteAvatar(BinaryWriter writer, AvatarData avatar)
+        {
+            var data = avatar ?? new AvatarData();
+            writer.Write(data.PlayerName ?? "Dr. Chemist");
+            writer.Write(data.SkinColorHex ?? "#FFDBAC");
+            writer.Write(data.HairStyleId ?? "hair_short");
+            writer.Write(data.HairColorHex ?? "#4A2E10");
+            writer.Write(data.OutfitId ?? "outfit_labcoat");
+            writer.Write(data.GlassesId ?? "goggles_safety");
+        }
+        private static AvatarData ReadAvatar(BinaryReader reader)
+        {
+            var name = reader.ReadString();
+            var skin = reader.ReadString();
+            var style = reader.ReadString();
+            var color = reader.ReadString();
+            var outfit = reader.ReadString();
+            var glasses = reader.ReadString();
+            return new AvatarData(name, skin, style, color, outfit, glasses);
         }
         private static void WriteInventory(BinaryWriter writer, IDictionary<string, decimal> values)
         {
@@ -411,7 +433,7 @@ namespace ChemistryLab.Infrastructure
         private static bool HashesEqual(byte[] first, byte[] second) { if (first.Length != second.Length) return false; var difference = 0; for (var i = 0; i < first.Length; i++) difference |= first[i] ^ second[i]; return difference == 0; }
         private static PlayerProfile CloneProfile(PlayerProfile value)
         {
-            return value == null ? null : new PlayerProfile(value.PlayerId, value.Dollars, value.Diamonds, value.Level, value.Exp, value.LabUpgradeLevel, value.ActiveLabId, value.SchemaVersion, value.CreatedAt, value.UpdatedAt);
+            return value == null ? null : new PlayerProfile(value.PlayerId, value.Dollars, value.Diamonds, value.Level, value.Exp, value.LabUpgradeLevel, value.ActiveLabId, value.Avatar, value.SchemaVersion, value.CreatedAt, value.UpdatedAt);
         }
         private static Dictionary<string, decimal> CopyInventory(Inventory value) { return value == null ? new Dictionary<string, decimal>(StringComparer.Ordinal) : ToDictionary(value.Quantities); }
         private static Dictionary<string, decimal> ToDictionary(IReadOnlyDictionary<string, decimal> value) { var result = new Dictionary<string, decimal>(StringComparer.Ordinal); if (value != null) foreach (var item in value) result.Add(item.Key, item.Value); return result; }
