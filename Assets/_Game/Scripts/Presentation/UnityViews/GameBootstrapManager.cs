@@ -70,7 +70,7 @@ namespace ChemistryLab.Presentation.UnityViews
         private void InitializeNewPlayerSave()
         {
             Debug.Log("[GameBootstrapManager] Initializing new player starter profile and inventory...");
-            var profile = new PlayerProfile("player_1", dollars: 500, level: 1);
+            var profile = new PlayerProfile("player_1", dollars: 500, level: 1, avatar: new AvatarData());
             var starterInventory = new Dictionary<string, decimal>(StringComparer.Ordinal)
             {
                 { "water", 100m },
