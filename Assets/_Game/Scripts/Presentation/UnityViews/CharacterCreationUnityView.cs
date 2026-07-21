@@ -10,6 +10,7 @@ namespace ChemistryLab.Presentation.UnityViews
     /// <summary>
     /// Unity view for the Facebook-style Modular Character Customization Screen.
     /// Handles visual avatar layering (skin tone, hair, outfit, goggles) and name entry.
+    /// Loads Sprite assets automatically from Resources/Avatar/.
     /// </summary>
     public sealed class CharacterCreationUnityView : MonoBehaviour
     {
@@ -53,6 +54,7 @@ namespace ChemistryLab.Presentation.UnityViews
         {
             AutoSetupLayout();
             HookEvents();
+            LoadAvatarSprites();
             RefreshAvatarPreview();
         }
 
@@ -64,6 +66,30 @@ namespace ChemistryLab.Presentation.UnityViews
             if (cycleOutfitButton != null) cycleOutfitButton.onClick.AddListener(OnCycleOutfit);
             if (cycleGlassesButton != null) cycleGlassesButton.onClick.AddListener(OnCycleGlasses);
             if (confirmCharacterButton != null) confirmCharacterButton.onClick.AddListener(OnConfirmCharacter);
+        }
+
+        private void LoadAvatarSprites()
+        {
+            // Load character base body sprite
+            var bodySprite = Resources.Load<Sprite>("Avatar/body_base");
+            if (skinLayerImage != null && bodySprite != null)
+            {
+                skinLayerImage.sprite = bodySprite;
+            }
+
+            // Load lab coat outfit sprite
+            var outfitSprite = Resources.Load<Sprite>("Avatar/outfit_labcoat");
+            if (outfitLayerImage != null && outfitSprite != null)
+            {
+                outfitLayerImage.sprite = outfitSprite;
+            }
+
+            // Load safety goggles sprite
+            var gogglesSprite = Resources.Load<Sprite>("Avatar/goggles_safety");
+            if (glassesLayerImage != null && gogglesSprite != null)
+            {
+                glassesLayerImage.sprite = gogglesSprite;
+            }
         }
 
         private void OnCycleSkin()
@@ -122,6 +148,9 @@ namespace ChemistryLab.Presentation.UnityViews
             {
                 handler(avatar);
             }
+
+            // Close creation panel to reveal the main lab
+            gameObject.SetActive(false);
         }
 
         public void RefreshAvatarPreview()
@@ -138,28 +167,87 @@ namespace ChemistryLab.Presentation.UnityViews
                 hairLayerImage.color = hairCol;
             }
 
-            if (currentHairLabel != null) currentHairLabel.text = "Tóc: " + hairStyles[hairStyleIndex];
-            if (currentOutfitLabel != null) currentOutfitLabel.text = "Trang Phục: " + outfits[outfitIndex];
-            if (currentGlassesLabel != null) currentGlassesLabel.text = "Kính Lab: " + glasses[glassesIndex];
+            if (currentHairLabel != null) currentHairLabel.text = "Toc: " + hairStyles[hairStyleIndex];
+            if (currentOutfitLabel != null) currentOutfitLabel.text = "Trang Phuc: " + outfits[outfitIndex];
+            if (currentGlassesLabel != null) currentGlassesLabel.text = "Kinh Lab: " + glasses[glassesIndex];
         }
 
-        /// <summary>
-        /// Auto-arranges UI elements neatly on Canvas for instant testing.
-        /// </summary>
+        [ContextMenu("Auto Setup Layout")]
         public void AutoSetupLayout()
         {
             var panelImage = GetComponent<Image>();
             if (panelImage != null)
             {
-                panelImage.color = new Color(0.1f, 0.12f, 0.18f, 0.95f);
+                panelImage.color = new Color(0.08f, 0.1f, 0.16f, 0.98f);
             }
 
+            // Title
             if (titleText != null)
             {
-                titleText.text = "TẠO NHÂN VẬT NHÀ KHÓA HỌC";
-                titleText.fontSize = 28;
+                SetRect(titleText.rectTransform, new Vector2(0, 220), new Vector2(600, 45));
+                titleText.text = "TAO NHAN VAT NHA KHOA HOC";
+                titleText.fontSize = 26;
                 titleText.color = Color.cyan;
                 titleText.alignment = TextAlignmentOptions.Center;
+            }
+
+            // Name Input Field
+            if (nameInputField != null)
+            {
+                SetRect(nameInputField.GetComponent<RectTransform>(), new Vector2(0, 160), new Vector2(320, 40));
+            }
+
+            // Avatar Preview Layers on the Left (X: -180)
+            Vector2 avatarPos = new Vector2(-180, -20);
+            Vector2 avatarSize = new Vector2(220, 280);
+
+            SetLayerImage(skinLayerImage, avatarPos, avatarSize, new Color(0.95f, 0.8f, 0.65f));
+            SetLayerImage(hairLayerImage, avatarPos, avatarSize, new Color(0.2f, 0.15f, 0.1f));
+            SetLayerImage(outfitLayerImage, avatarPos, avatarSize, Color.white);
+            SetLayerImage(glassesLayerImage, avatarPos, avatarSize, Color.cyan);
+
+            // Customization Buttons Column on the Right (X: +160)
+            SetButton(cycleSkinButton, new Vector2(160, 100), "1. Doi Mau Da", new Color(0.8f, 0.5f, 0.3f));
+            SetButton(cycleHairButton, new Vector2(160, 45), "2. Doi Kieu Toc", new Color(0.3f, 0.6f, 0.8f));
+            SetButton(cycleHairColorButton, new Vector2(160, -10), "3. Nhuom Mau Toc", new Color(0.6f, 0.3f, 0.8f));
+            SetButton(cycleOutfitButton, new Vector2(160, -65), "4. Doi Trang Phuc", new Color(0.3f, 0.8f, 0.5f));
+            SetButton(cycleGlassesButton, new Vector2(160, -120), "5. Doi Kinh Lab", new Color(0.8f, 0.7f, 0.2f));
+
+            SetButton(confirmCharacterButton, new Vector2(160, -195), "XAC NHAN & VAO GAME", new Color(0.1f, 0.7f, 0.3f));
+        }
+
+        private static void SetRect(RectTransform rt, Vector2 anchoredPosition, Vector2 sizeDelta)
+        {
+            if (rt == null) return;
+            rt.anchoredPosition = anchoredPosition;
+            rt.sizeDelta = sizeDelta;
+        }
+
+        private static void SetLayerImage(Image img, Vector2 pos, Vector2 size, Color defaultColor)
+        {
+            if (img == null) return;
+            SetRect(img.rectTransform, pos, size);
+            if (img.sprite == null)
+            {
+                img.color = defaultColor;
+            }
+        }
+
+        private static void SetButton(Button btn, Vector2 position, string label, Color btnColor)
+        {
+            if (btn == null) return;
+            var rt = btn.GetComponent<RectTransform>();
+            SetRect(rt, position, new Vector2(200, 45));
+
+            var img = btn.GetComponent<Image>();
+            if (img != null) img.color = btnColor;
+
+            var txt = btn.GetComponentInChildren<TMP_Text>();
+            if (txt != null)
+            {
+                txt.text = label;
+                txt.fontSize = 15;
+                txt.color = Color.white;
             }
         }
     }
