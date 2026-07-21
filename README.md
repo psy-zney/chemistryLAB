@@ -1,35 +1,54 @@
-# 🧪 Chemistry LAB - Game Thí Nghiệm Hóa Học 2D
+# 🧪 Chemistry LAB Simulator 2D - Phòng Thí Nghiệm Hóa Học Học Thuật
 
-Mô phỏng phòng thí nghiệm hóa học 2D sinh động, chân thực và chuẩn học thuật trên **Unity 6**. Người chơi vào vai Nhà khoa học, thực hiện các nhiệm vụ điều chế hóa chất từ NPC, nâng cấp phòng lab và khám phá thế giới phản ứng hóa học độc đáo.
-
----
-
-## 🌟 Tính Năng Nổi Bật (Key Features)
-
-- 🏠 **Màn Hình Chờ Sảnh (Lobby Home Screen)**: Thiết kế chuẩn phác thảo gồm Shop, Kho hóa chất, Bảng Nhiệm vụ NPC, tùy chỉnh nhân vật và nút gia nhập Phòng Lab.
-- 👨‍🔬 **Tùy Chỉnh Nhân Vật (Modular Character Customizer)**: Tùy chọn Tóc, Màu da, Màu tóc, Trang phục Blouse/Hazmat và Kính bảo hộ phòng lab.
-- 🔬 **Bàn Thí Nghiệm 4 Khu Vực (4-Zone Lab Workbench)**:
-  - **Tủ Hóa Chất (Trái)**: Mở tủ chọn chất lỏng/chất rắn và đong đếm khối lượng <g>.
-  - **Tủ Dụng Cụ (Phải)**: Chọn cốc Beaker 100ml, ống nghiệm, bình tam giác, đèn cồn.
-  - **Bàn Phản Ứng (Giữa)**: Trộn chất, thực thi phản ứng live với đầy đủ hiện tượng (đổi màu, sủi bọt khí, kết tủa đọng đáy, tách lớp chất lỏng, tỏa/thu nhiệt).
-  - **Bồn Rửa & Thu Hồi (Dưới/Sau)**: Thu sản phẩm điều chế vào Kho và rửa sạch thiết bị.
-- 🖼️ **Hình Ảnh Chân Thực Studio**: Loại bỏ các hiệu ứng neon AI slop, sử dụng hình ảnh lọ thủy tinh nút mài kính, nhãn dán in tên hóa chất chuẩn thực tế phòng thí nghiệm.
+**Chemistry LAB** là tựa game 2D mô phỏng phòng thí nghiệm hóa học chân thực và chuyên sâu trên **Unity 6**, được thiết kế chuẩn theo kiến thức học thuật kết hợp với lối chơi nhập vai trải nghiệm sinh động. Người chơi vào vai một Nhà khoa học trẻ, tiếp nhận các hợp đồng điều chế từ NPC, mở khóa thiết bị hiện đại và tự do khám phá các phản ứng hóa học kỳ diệu.
 
 ---
 
-## 🛠️ Kiến Trúc Công Nghệ (Tech Stack & Architecture)
+## 🌟 ĐIỂM NỔI BẬT CỦA GAME (HIGHLIGHTS)
+
+### ⚗️ 1. Mô Phỏng Hiện Tượng Hóa Học Chân Thực 100%
+- **Đổi màu dung dịch (Color Change)**: Chuyển màu linh hoạt theo chỉ thị màu pH hoặc phản ứng oxy hóa - khử.
+- **Nổi bọt khí (Gas Evolution)**: Phát sinh hạt bọt khí sôi sục khi tạo thành các chất khí ($CO_2, H_2, O_2...$).
+- **Xuất hiện kết tủa (Precipitate Formation)**: Lắng cặn rắn không tan đọng dần xuống đáy cốc ($BaSO_4 \downarrow, AgCl \downarrow...$).
+- **Tạo phức chất (Complexation)**: Phản ứng nối tiếp hòa tan kết tủa thành phức dung dịch xanh thẫm trong suốt ($[Cu(NH_3)_4]^{2+}$).
+- **Tách lớp chất lỏng (Phase Separation)**: Tự động phân tách thành các tầng chất lỏng ranh giới rõ rệt khi trộn các chất không hòa tan ($Immiscible$).
+- **Tỏa nhiệt & Thu nhiệt (Exothermic / Endothermic)**.
+
+---
+
+### 🔬 2. Bố Cục Thí Nghiệm 4 Khu Vực (4-Zone Workbench)
+- 🗄️ **Tủ Hóa Chất (Left Zone)**: Mở tủ chọn dung dịch/chất rắn và đong đếm liều lượng Gram `<g>` chính xác.
+- 🧪 **Tủ Dụng Cụ (Right Zone)**: Chọn cốc Beaker Pyrex chia độ, ống nghiệm, bình tam giác, đèn cồn Bunsen.
+- 🔬 **Bàn Thí Nghiệm Chính (Center Workbench)**: Trộn chất, thực thi phản ứng live và hiển thị Phương Trình Hóa Học.
+- 🚰 **Bồn Rửa & Thu Hồi (Bottom Zone)**: Rửa sạch thiết bị sau khi làm xong và thu hồi sản phẩm điều chế vào Kho.
+
+---
+
+### 🏠 3. Sảnh Chính & Tùy Chỉnh Nhân Vật (Lobby & Avatar Customizer)
+- 👤 **Tùy chỉnh Nhân vật (Facebook-style Avatar)**: Tùy chọn Tóc, Màu da, Màu tóc, Trang phục Blouse/Hazmat và Kính bảo hộ phòng lab.
+- 📜 **Nhiệm vụ NPC & Kinh Tế**: Làm nhiệm vụ nhận Tiền ($) và Kim Cương (💎) để nâng cấp phòng lab và mở khóa công thức mới.
+- 🛍️ **Cửa Hàng & Kho Lưu Trữ**: Mua bán và quản lý hóa chất nguyên liệu.
+
+---
+
+### 🖼️ 4. Đồ Họa Studio Chân Thực (Authentic Laboratory Art)
+- Nói KHÔNG với hiệu ứng AI Neon sặc sỡ. Game sử dụng bộ Sprite lọ thủy tinh nút mài kính, nhãn dán giấy in tên hóa chất chuẩn studio thực tế.
+
+---
+
+## 🛠️ KIẾN TRÚC CÔNG NGHỆ (TECH STACK & ARCHITECTURE)
 
 - **Engine**: Unity 6 (`6000.5.3f1`)
 - **Ngôn ngữ**: C# (.NET / Standard MVP Pattern)
-- **Kiến trúc**:
-  - `Domain Layer`: Các Entity bất biến (`ChemicalItem`, `Reaction`, `PlayerProfile`, `AvatarData`) độc lập với Unity UI.
-  - `Application Layer`: Bộ giải mã phản ứng `ReactionResolver`, `ContentValidator`, `ContentImporter`.
-  - `Presentation Layer`: Architecture Presenter-View (`MainLabPresenter`, `MainLabUnityView`, `CharacterCreationUnityView`, `LobbyHomeUnityView`).
-  - `Infrastructure Layer`: Binary Save/Load Persistence qua `SaveRepository`.
+- **Kiến trúc Clean Architecture**:
+  - `Domain`: Các Entity bất biến (`ChemicalItem`, `Reaction`, `PlayerProfile`, `AvatarData`).
+  - `Application`: Bộ giải mã phản ứng `ReactionResolver`, `ContentValidator`, `ContentImporter`.
+  - `Presentation`: Architecture Presenter-View (`MainLabPresenter`, `MainLabUnityView`, `CharacterCreationUnityView`, `LobbyHomeUnityView`).
+  - `Infrastructure`: Binary Save/Load Persistence qua `SaveRepository`.
 
 ---
 
-## 🚀 Hướng Dẫn Chạy Dự Án (Getting Started)
+## 🚀 HƯỚNG DẪN CHẠY DỰ ÁN (GETTING STARTED)
 
 1. **Clone Repository**:
    ```bash
