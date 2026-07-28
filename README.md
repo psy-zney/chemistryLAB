@@ -1,59 +1,137 @@
-# 🧪 Chemistry LAB Simulator 2D - Phòng Thí Nghiệm Hóa Học Học Thuật
+# Chemistry Lab 3D
 
-**Chemistry LAB** là tựa game 2D mô phỏng phòng thí nghiệm hóa học chân thực và chuyên sâu trên **Unity 6**, được thiết kế chuẩn theo kiến thức học thuật kết hợp với lối chơi nhập vai trải nghiệm sinh động. Người chơi vào vai một Nhà khoa học trẻ, tiếp nhận các hợp đồng điều chế từ NPC, mở khóa thiết bị hiện đại và tự do khám phá các phản ứng hóa học kỳ diệu.
+Chemistry Lab 3D is a native Unity/C# desktop game. It is not a web build. The current production project is `NativeChemistryLab`, a Windows-focused first-person chemistry laboratory where the player walks around a 3D room, picks chemicals, loads vessels, observes reactions, and sees safety consequences when hazardous gases are handled incorrectly.
 
----
+The game is built as an educational simulation, not as real laboratory operating guidance.
 
-## 🌟 ĐIỂM NỔI BẬT CỦA GAME (HIGHLIGHTS)
+## Current Feature Set
 
-### ⚗️ 1. Mô Phỏng Hiện Tượng Hóa Học Chân Thực 100%
-- **Đổi màu dung dịch (Color Change)**: Chuyển màu linh hoạt theo chỉ thị màu pH hoặc phản ứng oxy hóa - khử.
-- **Nổi bọt khí (Gas Evolution)**: Phát sinh hạt bọt khí sôi sục khi tạo thành các chất khí ($CO_2, H_2, O_2...$).
-- **Xuất hiện kết tủa (Precipitate Formation)**: Lắng cặn rắn không tan đọng dần xuống đáy cốc ($BaSO_4 \downarrow, AgCl \downarrow...$).
-- **Tạo phức chất (Complexation)**: Phản ứng nối tiếp hòa tan kết tủa thành phức dung dịch xanh thẫm trong suốt ($[Cu(NH_3)_4]^{2+}$).
-- **Tách lớp chất lỏng (Phase Separation)**: Tự động phân tách thành các tầng chất lỏng ranh giới rõ rệt khi trộn các chất không hòa tan ($Immiscible$).
-- **Tỏa nhiệt & Thu nhiệt (Exothermic / Endothermic)**.
+- Native Unity 6 desktop project using C#.
+- First-person 3D laboratory with chemist hands, WASD movement, mouse look, sprint FOV, camera bob, interactable shelves, fume hood, workbench, sink, analysis bench, periodic table, and safety equipment.
+- 52 high-school-relevant periodic elements with physical and chemical descriptions.
+- 40 catalogued chemicals with phase, model type, color, molar mass, density, melting point, boiling point, appearance, solubility, hazards, handling notes, and common use.
+- 38 curated reactions with equations, stoichiometry, product colors, yield estimates, observations, disposal notes, effects, and fume hood requirements.
+- Data-driven compound-generation matrix with 27 high-school element nodes, 46 common ions, 565 accepted coordinates representing 541 unique formulas, 45 reviewed property overrides, and explicit rejection rules for unstable combinations.
+- Dynamic reaction engine that keeps curated reactions authoritative, then derives additional valid reactions from ion/species rules and asks the compound matrix for charge-balanced formulas, solubility, color, hazards, and confidence.
+- 9 dynamic reaction rule families covering acid/base, carbonate, bicarbonate, sulfide, ammonium/base, precipitation, metal displacement, metal/acid, and basic oxide/acid reactions.
+- Safety system for toxic, corrosive, flammable, oxidising, and asphyxiant gas outcomes. Unsafe reactions are allowed to happen, but the player pays health and credit consequences if they do not use the fume hood, respirator, or gas trap correctly.
+- Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, pause menu, diagnostics, audio toggles, and accessibility reduced-motion mode.
+- Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
+- JSON build, validation, and smoke-test reports under `NativeChemistryLab/BuildReports/`.
 
----
+## Main Project
 
-### 🔬 2. Bố Cục Thí Nghiệm 4 Khu Vực (4-Zone Workbench)
-- 🗄️ **Tủ Hóa Chất (Left Zone)**: Mở tủ chọn dung dịch/chất rắn và đong đếm liều lượng Gram `<g>` chính xác.
-- 🧪 **Tủ Dụng Cụ (Right Zone)**: Chọn cốc Beaker Pyrex chia độ, ống nghiệm, bình tam giác, đèn cồn Bunsen.
-- 🔬 **Bàn Thí Nghiệm Chính (Center Workbench)**: Trộn chất, thực thi phản ứng live và hiển thị Phương Trình Hóa Học.
-- 🚰 **Bồn Rửa & Thu Hồi (Bottom Zone)**: Rửa sạch thiết bị sau khi làm xong và thu hồi sản phẩm điều chế vào Kho.
+```text
+NativeChemistryLab/
+|-- Assets/
+|   `-- ChemistryLab/
+|       |-- Editor/
+|       |   `-- BuildPipeline/       Unity validation and Windows build entry points
+|       |-- Resources/               Runtime materials and chemistry JSON datasets
+|       |-- Runtime/
+|       |   |-- Audio/               Procedural audio system and signal validation
+|       |   |-- Bootstrap/           Composition root and procedural 3D lab construction
+|       |   |-- Chemistry/           Chemicals, elements, curated reactions, dynamic rules
+|       |   |-- Core/                Theme colors, fonts, and accessibility flags
+|       |   |-- Diagnostics/         Runtime F3 diagnostics panel
+|       |   |-- Player/              First-person controller and interactable objects
+|       |   |-- Safety/              Hazard classifier, gas catalog, player consequence model
+|       |   `-- UI/                  HUD, inspector, pause menu, buttons, transient messages
+|       `-- Scenes/                  DesktopChemistryLab Unity scene
+|-- BuildReports/                    Committed structured JSON reports
+|-- Builds/                          Local Windows build output, ignored by git
+|-- Packages/                        Unity package manifest and lock file
+|-- ProjectSettings/                 Unity project settings
+`-- README.md
+```
 
----
+The root repository also contains older planning/prototype material:
 
-### 🏠 3. Sảnh Chính & Tùy Chỉnh Nhân Vật (Lobby & Avatar Customizer)
-- 👤 **Tùy chỉnh Nhân vật (Facebook-style Avatar)**: Tùy chọn Tóc, Màu da, Màu tóc, Trang phục Blouse/Hazmat và Kính bảo hộ phòng lab.
-- 📜 **Nhiệm vụ NPC & Kinh Tế**: Làm nhiệm vụ nhận Tiền ($) và Kim Cương (💎) để nâng cấp phòng lab và mở khóa công thức mới.
-- 🛍️ **Cửa Hàng & Kho Lưu Trữ**: Mua bán và quản lý hóa chất nguyên liệu.
+```text
+docs/                            Project documentation and structured logs
+LAB-animated/                    Earlier web/React prototype
+Assets/_Game/                    Earlier Unity architecture prototype
+ChemistryLabGame/                Earlier mobile/Unity project
+PlanCoreGame/                    Design and gameplay planning documents
+```
 
----
+For new desktop game work, use `NativeChemistryLab` unless a task explicitly targets an older prototype.
 
-### 🖼️ 4. Đồ Họa Studio Chân Thực (Authentic Laboratory Art)
-- Nói KHÔNG với hiệu ứng AI Neon sặc sỡ. Game sử dụng bộ Sprite lọ thủy tinh nút mài kính, nhãn dán giấy in tên hóa chất chuẩn studio thực tế.
+## Architecture Notes
 
----
+The runtime uses regular Unity `MonoBehaviour` components at the scene edge, while chemistry data and algorithms are kept in plain C# classes where possible.
 
-## 🛠️ KIẾN TRÚC CÔNG NGHỆ (TECH STACK & ARCHITECTURE)
+- `DesktopLabGame` is the composition root. It validates data, creates the HUD, builds the procedural 3D room, owns selected chemical state, owns vessel state, and calls audio/VFX/safety systems.
+- `LabInteractable` is an abstract base class for world objects. `ChemicalBottleInteractable`, `VesselInteractable`, `SinkInteractable`, `AnalysisInteractable`, and `ElementTileInteractable` override the prompt and interaction behavior.
+- `ReactionSimulator` evaluates vessel contents. It checks curated reactions first, then calls `DynamicReactionEngine` only when no curated match exists.
+- `CompoundGenerationMatrix` models the enriched X/Y/Z idea: cation or metal, nonmetal or anion family, oxygen count, and explicit oxidation state. It charge-balances candidate compounds, estimates physical/safety classes, applies reviewed overrides, and rejects known unstable combinations.
+- `DynamicReactionEngine` models species, reaction families, activity series, and bounded stoichiometry balancing. It consumes compound-matrix results instead of maintaining a second formula/solubility truth source.
+- `LabSafetySystem` converts hazardous reaction outcomes into player consequences: health loss, credit loss, incident history, and emergency evacuation.
+- `DesktopLabHud` renders the in-game information layer and exposes UI buttons for pause, audio, respirator, gas trap, and inspector state.
 
-- **Engine**: Unity 6 (`6000.5.3f1`)
-- **Ngôn ngữ**: C# (.NET / Standard MVP Pattern)
-- **Kiến trúc Clean Architecture**:
-  - `Domain`: Các Entity bất biến (`ChemicalItem`, `Reaction`, `PlayerProfile`, `AvatarData`).
-  - `Application`: Bộ giải mã phản ứng `ReactionResolver`, `ContentValidator`, `ContentImporter`.
-  - `Presentation`: Architecture Presenter-View (`MainLabPresenter`, `MainLabUnityView`, `CharacterCreationUnityView`, `LobbyHomeUnityView`).
-  - `Infrastructure`: Binary Save/Load Persistence qua `SaveRepository`.
+A more visual explanation of OOP, data structures, algorithms, and runtime flow is available at:
 
----
+`docs/architecture/oop-data-algorithms.html`
 
-## 🚀 HƯỚNG DẪN CHẠY DỰ ÁN (GETTING STARTED)
+## Controls
 
-1. **Clone Repository**:
-   ```bash
-   git clone https://github.com/psy-zney/chemistryLAB.git
-   ```
-2. **Mở dự án trong Unity 6 Editor** (`6000.5.3f1` trở lên).
-3. **Mở Scene**: `Assets/_Game/Scenes/MainLab.unity`.
-4. **Bấm ▶ PLAY** để bắt đầu trải nghiệm!
+```text
+WASD          Move
+Mouse         Look around
+Shift         Sprint
+E             Interact with focused object
+F             Open or close the inspector
+[ / ]         Decrease or increase selected sample mass
+Q             Put away the selected sample
+F3            Toggle runtime diagnostics
+F6            Buy/equip/remove respirator
+F7            Connect/disconnect gas isolation trap
+F9            Toggle all audio
+F10           Toggle reduced motion
+Esc           Pause or resume
+```
+
+## Build Output
+
+The current Windows build target is:
+
+```text
+NativeChemistryLab/Builds/ChemistryLab3D/ChemistryLab3D.exe
+```
+
+Keep `ChemistryLab3D_Data` beside the executable.
+
+## Validation
+
+The latest committed validation report records:
+
+```text
+Unity:                  6000.5.3f1
+Platform:               Windows Standalone x64
+Elements:               52
+Chemicals:              40
+Curated reactions:      38
+Dynamic species:        40
+Dynamic rule families:  9
+Dynamic resolved pairs: 155 / 780
+Matrix elements:        27
+Matrix ions:            46
+Generated compounds:    565
+Unique formulas:        541
+Reviewed overrides:     45
+Fume hood rules:        11
+Effect classes:         4
+Audio signal classes:   5
+Warnings:               0
+Errors:                 0
+```
+
+Structured reports:
+
+- `NativeChemistryLab/BuildReports/desktop-validation-report.json`
+- `NativeChemistryLab/BuildReports/desktop-build-report.json`
+- `NativeChemistryLab/BuildReports/desktop-smoke-report.json`
+- `docs/chemistry/compound-generation-matrix.md`
+- `docs/chemistry/compound-generation-matrix.json`
+
+Raw Unity logs are temporary and ignored. Important logs should be converted to JSON or Markdown before being committed.

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "generated_at": "2026-07-28T23:55:46+07:00",
+  "generated_at": "2026-07-29T01:17:08+07:00",
   "timezone": "Asia/Saigon",
   "purpose": "Curated replacement for transient Unity, build, capture, smoke-test and development-server raw logs.",
   "retention_policy": {
@@ -65,7 +65,7 @@
       "build": {
         "result": "pass",
         "warnings": 0,
-        "reported_size_bytes": 94030828,
+        "reported_size_bytes": 94110464,
         "executable": "NativeChemistryLab/Builds/ChemistryLab3D/ChemistryLab3D.exe"
       },
       "reaction_matrix": {
@@ -73,16 +73,35 @@
         "reactions": 38,
         "fume_hood_rules": 11,
         "effect_classes": 4,
-        "validated_audio_signal_classes": 4,
+        "validated_audio_signal_classes": 5,
         "reactant_orders_tested": ["forward", "reverse"]
+      },
+      "compound_generation_matrix": {
+        "schema_version": "1.0",
+        "result": "pass",
+        "matrix_elements": 27,
+        "ions": 46,
+        "cations": 25,
+        "anions": 21,
+        "accepted_generated_compounds": 565,
+        "unique_generated_formulas": 541,
+        "reviewed_overrides": 45,
+        "explicit_exclusions": 9,
+        "dynamic_resolved_pairs_after_integration": 155,
+        "unity_warnings": 0,
+        "unity_errors": 0,
+        "report": "NativeChemistryLab/BuildReports/desktop-validation-report.json"
       },
       "smoke_test": {
         "result": "pass",
         "chemicals": 40,
         "reactions": 38,
         "elements": 52,
+        "generated_compounds": 565,
+        "unique_generated_formulas": 541,
+        "reviewed_generated_compounds": 45,
         "estimated_product_grams": 3.673,
-        "runtime_audio_clips": 14,
+        "runtime_audio_clips": 15,
         "pause_buttons": 3,
         "camera_fov_degrees": 66.0
       },

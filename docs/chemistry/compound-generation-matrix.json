@@ -1,0 +1,86 @@
+{
+  "schemaVersion": "1.0",
+  "engine": "CompoundGenerationMatrix",
+  "implementedFrom": "enriched-x-y-z-model",
+  "axes": {
+    "x": "metal-or-cation-with-activity-and-oxidation-state",
+    "y": "nonmetal-or-anion-family",
+    "z": "oxygen-count-and-explicit-oxidation-state"
+  },
+  "sourceData": "NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json",
+  "runtimeImplementation": "NativeChemistryLab/Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs",
+  "coverage": {
+    "matrixElements": 27,
+    "ions": 46,
+    "cations": 25,
+    "anions": 21,
+    "acceptedCompoundCoordinates": 565,
+    "uniqueGeneratedFormulas": 541,
+    "reviewedOverrides": 45,
+    "explicitExclusions": 9
+  },
+  "pipeline": [
+    "select-element-or-ion-coordinate",
+    "validate-oxidation-state",
+    "reduce-charge-ratio-with-gcd",
+    "format-polyatomic-ion",
+    "calculate-molar-mass",
+    "estimate-family-phase-solubility-colour-and-hazards",
+    "apply-reviewed-override",
+    "apply-explicit-exclusion",
+    "attach-confidence-and-validation-notes"
+  ],
+  "confidenceLevels": {
+    "Reviewed": 0.98,
+    "RuleDerived": 0.72,
+    "Rejected": 0.0
+  },
+  "physicalPropertyClasses": [
+    "phase",
+    "solubility",
+    "appearance",
+    "colour",
+    "molar-mass"
+  ],
+  "hazardFlags": [
+    "Corrosive",
+    "Toxic",
+    "Oxidizer",
+    "EnvironmentalHazard",
+    "WaterReactive",
+    "GasReleasePotential",
+    "HeavyMetal",
+    "Carcinogenic"
+  ],
+  "validationExamples": [
+    "Na2SO4",
+    "Ca3(PO4)2",
+    "Cu(OH)2",
+    "CH3COOH",
+    "Al2O3",
+    "SO3"
+  ],
+  "resolutionPriority": [
+    "curated-reaction",
+    "dynamic-reaction-family",
+    "compound-generation-matrix",
+    "property-and-safety-classification",
+    "no-reaction-at-current-condition"
+  ],
+  "latestUnityValidation": {
+    "generatedAtUtc": "2026-07-28T18:16:34.7923023Z",
+    "unityVersion": "6000.5.3f1",
+    "result": "succeeded",
+    "warnings": 0,
+    "errors": 0,
+    "dynamicResolvedPairs": 155
+  },
+  "limitations": [
+    "thermodynamics-and-kinetics-not-yet-derived",
+    "temperature-pressure-concentration-and-solvent-conditions-not-yet-generalized",
+    "coordination-complexes-and-hydrates-not-yet-generated",
+    "multi-step-redox-not-yet-generalized",
+    "organic-mechanisms-out-of-current-scope",
+    "some-generated-formulas-are-empirical-high-school-representations"
+  ]
+}

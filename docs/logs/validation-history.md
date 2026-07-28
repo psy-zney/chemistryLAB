@@ -27,7 +27,7 @@ Final build:
 
 - Result: **pass**
 - Unity warnings: **0**
-- Reported player size: **94,030,828 bytes**
+- Reported player size: **94,110,464 bytes**
 - Executable: `NativeChemistryLab/Builds/ChemistryLab3D/ChemistryLab3D.exe`
 
 Reaction validation:
@@ -39,6 +39,17 @@ Reaction validation:
 - Four procedural audio signal classes were checked for finite, non-silent,
   bounded waveforms.
 
+Compound-generation matrix validation:
+
+- Result: **pass**, Unity warnings: **0**, errors: **0**.
+- **27** matrix elements and **46** reusable ions were loaded from JSON.
+- **565** charge-balanced coordinates were accepted, representing **541**
+  unique formulas.
+- **45** compounds/properties use reviewed overrides.
+- **9** unstable or misleading coordinates are explicitly excluded.
+- Existing dynamic reaction coverage remained **155 / 780** catalogue pairs
+  after formula, solubility, colour and hazard integration.
+
 Shipping smoke test:
 
 | Check | Result |
@@ -47,7 +58,10 @@ Shipping smoke test:
 | Reactions | 38 |
 | High-school elements | 52 |
 | Mission product estimate | 3.673 g |
-| Runtime audio clips | 14 |
+| Generated compounds | 565 |
+| Unique generated formulas | 541 |
+| Reviewed generated compounds | 45 |
+| Runtime audio clips | 15 |
 | Pause buttons | 3 |
 | Default camera FOV | 66.0° |
 

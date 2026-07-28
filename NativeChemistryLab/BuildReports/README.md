@@ -2,7 +2,8 @@
 
 Unity editor automation writes durable JSON summaries here:
 
-- `desktop-validation-report.json` — chemistry, safety and audio-signal matrix
+- `desktop-validation-report.json` — chemistry, generated-compound, safety and
+  audio-signal matrix
 - `desktop-build-report.json` — Windows player result, warning/error counts,
   output size and the same validation matrix
 - `desktop-smoke-report.json` — runtime database, UI, camera and audio assertions

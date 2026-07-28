@@ -1,84 +1,95 @@
-# Chemistry Lab 3D — Windows
+# Native Chemistry Lab
 
-Đây là bản Unity/C# độc lập, không chạy trên trình duyệt.
+This folder is the active Unity/C# desktop game project. Open this folder in Unity 6 when working on the current 3D Windows version.
 
-## Cấu trúc project
-
-`NativeChemistryLab` là project Unity production. Mã ứng dụng nằm trong một
-feature root duy nhất:
+## Project Layout
 
 ```text
 Assets/ChemistryLab/
-├── Runtime/
-│   ├── Audio/          # nhạc nền và hiệu ứng procedural
-│   ├── Bootstrap/      # composition root, dựng phòng lab
-│   ├── Chemistry/      # chất, nguyên tố, phản ứng và simulator
-│   ├── Core/           # theme và accessibility settings
-│   ├── Diagnostics/    # bảng trạng thái F3
-│   ├── Player/         # camera, di chuyển và tương tác
-│   └── UI/             # HUD và menu pause
-├── Editor/BuildPipeline/ # scene generation, validation và Windows build
-├── Resources/          # material runtime
-└── Scenes/             # scene vào game
+|-- Editor/
+|   `-- BuildPipeline/       Build, validation, smoke-report, and scene tooling
+|-- Resources/
+|   `-- Chemistry/           JSON source data for the compound-generation matrix
+|-- Runtime/
+|   |-- Audio/               Procedural ambient, UI, movement, reaction, and hazard sounds
+|   |-- Bootstrap/           DesktopLabGame composition root and procedural room builder
+|   |-- Chemistry/           Chemical catalogue, periodic table, simulator, dynamic engine
+|   |-- Core/                Theme colors, fonts, reduced-motion settings
+|   |-- Diagnostics/         F3 runtime debug panel
+|   |-- Player/              First-person controller and interactable world objects
+|   |-- Safety/              Hazard profiles, PPE state, exposure consequences
+|   `-- UI/                  HUD, inspector, pause menu, safety panel, button feedback
+`-- Scenes/                  DesktopChemistryLab.unity
 ```
 
-Runtime và Editor được tách bằng hai assembly definition
-`ChemistryLab.Desktop` và `ChemistryLab.Desktop.Editor`. Không còn dùng junction
-hoặc chia sẻ source ngầm với Unity project ở root repository.
+Runtime and editor code are split by assembly definitions:
 
-## Chạy game
+- `ChemistryLab.Desktop`
+- `ChemistryLab.Desktop.Editor`
 
-Mở `Builds/ChemistryLab3D/ChemistryLab3D.exe`. Giữ nguyên thư mục
-`ChemistryLab3D_Data` cạnh file `.exe`.
+## Run
 
-## Điều khiển
+Open `NativeChemistryLab` in Unity `6000.5.3f1` or newer, then open:
 
-- `WASD`: di chuyển
-- Chuột: quan sát
-- `Shift`: chạy
-- `E`: lấy chất, nạp cốc hoặc đọc ô nguyên tố
-- `F`: mở/đóng bảng phân tích
-- `[` / `]`: giảm/tăng khối lượng mẫu
-- `Q`: cất mẫu đang cầm
-- `F3`: mở/đóng bảng chẩn đoán runtime (FPS, camera, vị trí, dữ liệu và âm thanh)
-- `F9`: bật/tắt toàn bộ âm thanh
-- `F10`: bật/tắt chuyển động giảm
-- `Esc`: tạm dừng; menu có nút tiếp tục, âm thanh và thoát game
+```text
+Assets/ChemistryLab/Scenes/DesktopChemistryLab.unity
+```
 
-## Hình ảnh, camera và âm thanh
+The built executable is:
 
-- Góc nhìn thứ nhất 3D với cánh tay nhà hóa học, camera bob nhẹ khi đi và FOV mở rộng
-  khi chạy. `F10` tắt các chuyển động không thiết yếu.
-- Phòng thí nghiệm dựng hoàn toàn trong Unity: bàn phản ứng, tủ hút, kho hóa chất,
-  bồn rửa, bàn phân tích, bảng tuần hoàn và thiết bị an toàn.
-- Nhạc nền ambient, tiếng thông gió, bước chân, nút bấm, lấy/rót mẫu, rửa cốc và
-  bốn nhóm âm phản ứng được tổng hợp bằng C# khi chạy. Không dùng tệp âm thanh có
-  bản quyền hoặc cần kết nối mạng.
+```text
+Builds/ChemistryLab3D/ChemistryLab3D.exe
+```
 
-## Nội dung mô phỏng
+Keep the generated `ChemistryLab3D_Data` folder next to the `.exe`.
 
-- 52 nguyên tố thường gặp trong chương trình THPT
-- 40 chất: axit, bazơ, muối, kim loại, oxit và peoxit
-- 38 phản ứng định lượng: trung hòa, kết tủa, sinh khí, phản ứng thế,
-  phản ứng tỏa nhiệt và xúc tác
-- Khóa an toàn các phản ứng sinh khí độc ngoài tủ hút
+## Controls
 
-Số liệu được dùng cho mô phỏng giáo dục. Không dùng game thay cho quy trình
-an toàn hoặc tài liệu phòng thí nghiệm thực tế.
+```text
+WASD          Move
+Mouse         Look
+Shift         Sprint
+E             Interact
+F             Inspector
+[ / ]         Adjust sample mass
+Q             Clear selected sample
+F3            Diagnostics
+F6            Buy/equip/remove respirator
+F7            Connect/disconnect gas trap
+F9            Audio on/off
+F10           Reduced motion
+Esc           Pause
+```
 
-## Kiểm thử dành cho nhà phát triển
+## Simulation Scope
 
-Menu Unity `Chemistry Lab/Desktop/Create Native Scene` tạo lại scene. Pipeline build
-chạy validation toàn bộ 38 phản ứng theo cả hai thứ tự nạp, quy tắc tủ hút, bốn nhóm
-hiệu ứng và tín hiệu âm thanh procedural. Bản build cũng hỗ trợ:
+- 52 high-school-relevant elements.
+- 40 chemicals with physical properties, colors, hazards, handling notes, and 3D material settings.
+- 38 curated reactions.
+- 9 dynamic reaction rule families.
+- 155 valid dynamic two-chemical pairs from the 780-pair catalogue matrix.
+- 27 compound-matrix elements and 46 reusable ions.
+- 565 accepted charge-balanced coordinates representing 541 unique formulas,
+  including 45 reviewed property overrides.
+- Generated physical classes for phase, solubility, appearance/color, hazards, confidence, and validation notes.
+- Gas hazard profiles for `CO2`, `H2`, `O2`, `NH3`, `H2S`, `Cl2`, `NO2`, and `SO2`.
 
-- `-smokeTest -reportPath <path.json>`: kiểm tra database, phản ứng nhiệm vụ,
-  UI/camera, 14 clip runtime và ghi báo cáo JSON
-- `-captureTest -captureView pause`: chụp menu pause
-- `-captureTest -captureView debug`: chụp bảng diagnostics
-- `-captureTest -captureView periodic`: chụp bảng tuần hoàn
+The data-driven matrix is stored at:
 
-Mỗi lần chạy validation/build qua `DesktopLabBuild`, kết quả quan trọng được ghi
-thành JSON trong `NativeChemistryLab/BuildReports/`. Raw `*.log` chỉ là dữ liệu
-tạm và không được commit. Lịch sử đã chuẩn hóa nằm tại
-`docs/logs/validation-history.json` và `docs/logs/validation-history.md`.
+```text
+Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json
+```
+
+`CompoundGenerationMatrix` validates this file at startup and during batch validation. Curated reactions remain authoritative; generated compounds support the fallback engine and are labelled `Reviewed` or `RuleDerived` in the HUD.
+
+The simulation is educational. Gameplay values for damage, exposure, and cost are not medical or industrial safety limits.
+
+## Developer Reports
+
+Committed structured reports live in:
+
+```text
+BuildReports/
+```
+
+Important reports are JSON. Raw editor/player logs are temporary and should not be committed unless first converted into a concise JSON or Markdown report.

@@ -1,0 +1,649 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Chemistry Lab 3D - OOP, Data Structures, and Algorithms</title>
+  <style>
+    :root {
+      --ink: #17211f;
+      --muted: #5b6865;
+      --paper: #f7f4ec;
+      --panel: #ffffff;
+      --line: #d8d2c4;
+      --accent: #b64f3a;
+      --accent-2: #287c7b;
+      --accent-3: #d19b2a;
+      --graphite: #26302d;
+      --safe: #27724a;
+      --danger: #a6332b;
+      --code: #f1ede3;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      line-height: 1.55;
+      color: var(--ink);
+      background: var(--paper);
+    }
+
+    header {
+      padding: 48px 6vw 36px;
+      color: #f8f2e5;
+      background: linear-gradient(135deg, #1f2a28, #33403d 58%, #7d3d31);
+    }
+
+    header p {
+      max-width: 920px;
+      margin: 14px 0 0;
+      color: #e7dfd1;
+      font-size: 18px;
+    }
+
+    h1 {
+      max-width: 1000px;
+      margin: 0;
+      font-size: clamp(34px, 5vw, 58px);
+      line-height: 1.05;
+      letter-spacing: 0;
+    }
+
+    h2 {
+      margin: 0 0 16px;
+      font-size: 28px;
+    }
+
+    h3 {
+      margin: 0 0 8px;
+      font-size: 18px;
+    }
+
+    main {
+      width: min(1180px, 92vw);
+      margin: 0 auto;
+      padding: 34px 0 56px;
+    }
+
+    section {
+      margin: 24px 0;
+      padding: 26px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--panel);
+      box-shadow: 0 10px 28px rgba(23, 33, 31, 0.06);
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+    }
+
+    .card {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fbfaf6;
+    }
+
+    .metric {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+    }
+
+    .metric div {
+      padding: 14px;
+      border-left: 4px solid var(--accent-2);
+      background: #eef5f2;
+    }
+
+    .metric strong {
+      display: block;
+      font-size: 28px;
+      line-height: 1;
+    }
+
+    .flow {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+      gap: 12px;
+      align-items: stretch;
+    }
+
+    .step {
+      position: relative;
+      padding: 16px;
+      min-height: 126px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffdf8;
+    }
+
+    .step b {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      margin-bottom: 10px;
+      border-radius: 50%;
+      color: #fff;
+      background: var(--accent);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      color: #fff;
+      background: var(--graphite);
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 5px;
+      background: var(--code);
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 0.94em;
+    }
+
+    pre {
+      overflow: auto;
+      padding: 16px;
+      border-radius: 8px;
+      color: #f6efe2;
+      background: #1f2927;
+    }
+
+    .tag {
+      display: inline-block;
+      margin: 2px 4px 2px 0;
+      padding: 4px 8px;
+      border-radius: 999px;
+      color: #fff;
+      background: var(--accent-2);
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .danger {
+      background: var(--danger);
+    }
+
+    .safe {
+      background: var(--safe);
+    }
+
+    .note {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .two {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 18px;
+    }
+
+    @media (max-width: 780px) {
+      .two {
+        grid-template-columns: 1fr;
+      }
+
+      section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Chemistry Lab 3D: OOP, Data Structures, and Algorithms</h1>
+    <p>
+      This document explains how the desktop Unity/C# game works internally. It focuses on direct examples from the codebase: how objects collaborate, which data structures hold game state, and which algorithms resolve chemistry, safety, UI, audio, and movement.
+    </p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Runtime Snapshot</h2>
+      <div class="metric">
+        <div><strong>52</strong> periodic elements</div>
+        <div><strong>40</strong> chemicals</div>
+        <div><strong>38</strong> curated reactions</div>
+        <div><strong>9</strong> dynamic rule families</div>
+        <div><strong>155</strong> generated valid pairs</div>
+        <div><strong>565</strong> accepted coordinates</div>
+        <div><strong>541</strong> unique formulas</div>
+        <div><strong>45</strong> reviewed compound overrides</div>
+        <div><strong>15</strong> procedural audio clips</div>
+      </div>
+      <p class="note">
+        Source: <code>NativeChemistryLab/BuildReports/desktop-validation-report.json</code>.
+      </p>
+    </section>
+
+    <section>
+      <h2>Direct Gameplay Flow</h2>
+      <div class="flow">
+        <div class="step">
+          <b>1</b>
+          <h3>Player aims and presses E</h3>
+          <p><code>FirstPersonChemistController</code> raycasts from the camera and finds the focused <code>LabInteractable</code>.</p>
+        </div>
+        <div class="step">
+          <b>2</b>
+          <h3>Interactable chooses action</h3>
+          <p>A bottle calls <code>SelectChemical</code>; a vessel calls <code>AddSelectedToVessel</code>; the sink calls <code>WashVessels</code>.</p>
+        </div>
+        <div class="step">
+          <b>3</b>
+          <h3>Game updates state</h3>
+          <p><code>DesktopLabGame</code> stores selected chemicals and vessel contents in dictionaries keyed by <code>LabStation</code>.</p>
+        </div>
+        <div class="step">
+          <b>4</b>
+          <h3>Chemistry is evaluated</h3>
+          <p><code>ReactionSimulator</code> checks curated reactions first, then asks <code>DynamicReactionEngine</code> for rule-based fallback and <code>CompoundGenerationMatrix</code> for validated products.</p>
+        </div>
+        <div class="step">
+          <b>5</b>
+          <h3>Safety is applied</h3>
+          <p><code>LabSafetySystem</code> computes exposure, health loss, credits lost, and evacuation state for hazardous gases.</p>
+        </div>
+        <div class="step">
+          <b>6</b>
+          <h3>Player receives feedback</h3>
+          <p><code>DesktopLabHud</code>, <code>DesktopLabAudio</code>, materials, and particles show the result.</p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>OOP in the Game</h2>
+      <div class="grid">
+        <div class="card">
+          <h3>Encapsulation</h3>
+          <p>
+            <code>ChemicalDefinition</code> hides its fields behind private setters. Once a chemical is created, other systems read its formula, phase, hazards, color, and physical properties without mutating the catalogue.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Inheritance</h3>
+          <p>
+            <code>LabInteractable</code> is an abstract base class. Specific objects inherit from it and implement <code>Prompt</code> and <code>Interact()</code>.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Polymorphism</h3>
+          <p>
+            The player controller only knows it has a <code>LabInteractable</code>. It does not need to know whether the target is a bottle, vessel, sink, analysis bench, or periodic element tile.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Composition</h3>
+          <p>
+            <code>DesktopLabGame</code> composes HUD, audio, diagnostics, world objects, safety state, materials, and player controller. This matches Unity's component style.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Plain C# Domain Objects</h3>
+          <p>
+            Chemistry data classes such as <code>ReactionDefinition</code>, <code>VesselAddition</code>, and <code>ReactionOutcome</code> are not Unity components. They can be validated in editor/build code without scene dependencies.
+          </p>
+        </div>
+        <div class="card">
+          <h3>Sealed Classes</h3>
+          <p>
+            Runtime data models are marked <code>sealed</code> when inheritance is not intended. This keeps behavior easier to reason about and avoids accidental subclass contracts.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>OOP Example: Interactions</h2>
+      <pre><code>LabInteractable
+|-- ChemicalBottleInteractable  -> Game.SelectChemical(chemicalId)
+|-- VesselInteractable          -> Game.AddSelectedToVessel(station)
+|-- SinkInteractable            -> Game.WashVessels()
+|-- AnalysisInteractable        -> Game.ToggleInspector(true)
+`-- ElementTileInteractable     -> Game.InspectElement(atomicNumber)</code></pre>
+      <p>
+        The important point is that <code>FirstPersonChemistController</code> runs one generic interaction algorithm: raycast, focus, show prompt, call <code>Interact()</code>. The object itself decides what the action means.
+      </p>
+    </section>
+
+    <section>
+      <h2>Data Structures</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Structure</th>
+            <th>Where It Appears</th>
+            <th>Why It Fits</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>List&lt;ChemicalDefinition&gt;</code></td>
+            <td><code>DesktopChemistryDatabase</code></td>
+            <td>Ordered catalogue traversal for shelves, validation, and UI listings.</td>
+          </tr>
+          <tr>
+            <td><code>Dictionary&lt;string, ChemicalDefinition&gt;</code></td>
+            <td><code>ChemicalById</code></td>
+            <td>Fast lookup when gameplay only has a chemical id such as <code>copper-sulfate</code>.</td>
+          </tr>
+          <tr>
+            <td><code>Dictionary&lt;LabStation, List&lt;VesselAddition&gt;&gt;</code></td>
+            <td><code>DesktopLabGame.vesselAdditions</code></td>
+            <td>Separates workbench and fume hood vessel contents while keeping each vessel's addition history.</td>
+          </tr>
+          <tr>
+            <td><code>Dictionary&lt;LabStation, VesselVisual&gt;</code></td>
+            <td><code>DesktopLabGame.vesselVisuals</code></td>
+            <td>Maps simulation state to the correct 3D liquid renderer and particle system.</td>
+          </tr>
+          <tr>
+            <td><code>Dictionary&lt;string, Material&gt;</code></td>
+            <td><code>DesktopLabGame.materials</code></td>
+            <td>Caches generated Unity materials so repeated colors and chemical surfaces do not create duplicate runtime assets.</td>
+          </tr>
+          <tr>
+            <td><code>Dictionary&lt;string, Species&gt;</code></td>
+            <td><code>DynamicReactionEngine.SpeciesById</code></td>
+            <td>Connects catalogue chemicals to ion/species metadata for rule-based chemistry.</td>
+          </tr>
+          <tr>
+            <td><code>Dictionary&lt;string, ChemistryIonDefinition&gt;</code></td>
+            <td><code>CompoundGenerationMatrix</code></td>
+            <td>Provides constant-time lookup of the 46 reusable ions loaded from JSON.</td>
+          </tr>
+          <tr>
+            <td><code>Dictionary&lt;string, MatrixCompoundOverrideRecord&gt;</code></td>
+            <td><code>CompoundGenerationMatrix</code></td>
+            <td>Maps one X/Y/Z coordinate to reviewed formula, phase, solubility, colour, hazard, and evidence metadata.</td>
+          </tr>
+          <tr>
+            <td><code>HashSet&lt;string&gt;</code></td>
+            <td>Validation code</td>
+            <td>Detects duplicate chemical ids, duplicate reaction ids, and duplicate element symbols.</td>
+          </tr>
+          <tr>
+            <td><code>IReadOnlyList&lt;T&gt;</code></td>
+            <td>Public catalogues and simulator input</td>
+            <td>Lets systems read catalogue data without taking ownership or changing it.</td>
+          </tr>
+          <tr>
+            <td><code>enum</code></td>
+            <td><code>ChemicalPhase</code>, <code>ReactionEffect</code>, <code>HazardSeverity</code></td>
+            <td>Represents small fixed state sets clearly and cheaply.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>Algorithms</h2>
+      <div class="two">
+        <div class="card">
+          <h3>Reaction Matching</h3>
+          <p>
+            <code>ReactionSimulator.Evaluate</code> aggregates grams by chemical id, checks every curated reaction for both reactants, and uses the curated match when available. This preserves hand-authored observations and safety notes.
+          </p>
+          <span class="tag safe">curated first</span>
+          <span class="tag">dictionary aggregation</span>
+        </div>
+        <div class="card">
+          <h3>Dynamic Reaction Resolution</h3>
+          <p>
+            <code>DynamicReactionEngine.TryResolve</code> sorts valid ids, checks every two-chemical pair, dispatches by species kind, and builds a generated <code>ReactionDefinition</code> when a rule family applies.
+          </p>
+          <span class="tag">pair search</span>
+          <span class="tag">rule dispatch</span>
+        </div>
+        <div class="card">
+          <h3>Stoichiometry</h3>
+          <p>
+            The simulator converts grams to moles, divides by reaction coefficients, chooses the smaller extent as the limiting reagent, then estimates product mass from molar mass and yield fraction.
+          </p>
+          <span class="tag">limiting reagent</span>
+          <span class="tag">mass balance</span>
+        </div>
+        <div class="card">
+          <h3>Formula Construction</h3>
+          <p>
+            <code>CompoundGenerationMatrix</code> combines cations and anions by charge using a greatest-common-divisor reduction. Polyatomic ions are parenthesized when count is greater than one, then reviewed overrides and exclusions are applied.
+          </p>
+          <span class="tag">GCD</span>
+          <span class="tag">ion charge</span>
+        </div>
+        <div class="card">
+          <h3>Balancing Search</h3>
+          <p>
+            Exchange, gas-release, displacement, and metal-acid reactions use bounded coefficient searches. The search space is intentionally small because high-school reactions use small integer coefficients.
+          </p>
+          <span class="tag">bounded brute force</span>
+          <span class="tag">integer coefficients</span>
+        </div>
+        <div class="card">
+          <h3>Solubility and Activity Rules</h3>
+          <p>
+            Precipitation depends on solubility rules for nitrates, alkali/ammonium salts, halides, sulfates, carbonates, phosphates, and sulfides. Metal displacement compares activity values.
+          </p>
+          <span class="tag">solubility table</span>
+          <span class="tag">activity series</span>
+        </div>
+        <div class="card">
+          <h3>Safety Consequences</h3>
+          <p>
+            <code>LabSafetySystem.Apply</code> calculates exposure from fume hood capture, gas trap capture, respirator efficiency, gas severity, and released gas mass. It updates health, credits, incident count, and emergency evacuation state.
+          </p>
+          <span class="tag danger">hazard model</span>
+          <span class="tag">game economy</span>
+        </div>
+        <div class="card">
+          <h3>First-Person Focus</h3>
+          <p>
+            Each frame, the controller raycasts forward from the camera. If the hit object has a parent <code>LabInteractable</code>, the HUD prompt updates and the target receives focus highlighting.
+          </p>
+          <span class="tag">raycast</span>
+          <span class="tag">state transition</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2>Enriched X/Y/Z Compound Matrix</h2>
+      <pre><code>X: metal / cation + activity rank
+Y: nonmetal / anion family
+Z: oxygen count + explicit oxidation state
+  |
+  v
+validate oxidation state
+  |
+  v
+balance charge with GCD
+  |
+  v
+generate formula + molar mass
+  |
+  v
+estimate phase / solubility / colour / hazards
+  |
+  +-- reviewed override -> confidence Reviewed
+  +-- explicit exclusion -> reject candidate
+  `-- general rule       -> confidence RuleDerived</code></pre>
+      <p>
+        The matrix is data-driven through <code>Resources/Chemistry/compound-generation-matrix.json</code>. A literal three-dimensional array would lose oxidation-state and polyatomic-ion information, so the game stores rich coordinate objects while preserving the original X/Y/Z concept.
+      </p>
+    </section>
+
+    <section>
+      <h2>Chemistry Engine Decision Tree</h2>
+      <pre><code>Vessel additions
+  |
+  v
+Aggregate grams by chemical id
+  |
+  v
+Curated reaction exists?
+  |-- yes -> use reviewed ReactionDefinition
+  |
+  `-- no
+      |
+      v
+      DynamicReactionEngine
+        |-- acid + base
+        |-- acid + carbonate / bicarbonate
+        |-- acid + sulfide
+        |-- ammonium salt + base
+        |-- salt + salt precipitation
+        |-- metal + salt displacement
+        |-- metal + non-oxidising acid
+        `-- basic oxide + acid
+              |
+              v
+      CompoundGenerationMatrix
+        |-- charge-balanced formula
+        |-- phase / solubility / colour
+        |-- hazard flags
+        |-- Reviewed or RuleDerived confidence
+        `-- explicit rejection for unstable candidates
+              |
+              v
+      generated ReactionDefinition or NoMatch</code></pre>
+    </section>
+
+    <section>
+      <h2>Safety Flow</h2>
+      <div class="flow">
+        <div class="step">
+          <b>1</b>
+          <h3>Gas product</h3>
+          <p>The reaction effect is <code>Gas</code>, so the product formula is looked up in <code>AirborneHazardCatalog</code>.</p>
+        </div>
+        <div class="step">
+          <b>2</b>
+          <h3>Control check</h3>
+          <p>Fume hood captures 90 percent. Fume hood plus gas trap captures 99.5 percent. Respirator then reduces inhalation exposure where applicable.</p>
+        </div>
+        <div class="step">
+          <b>3</b>
+          <h3>Consequence</h3>
+          <p>Unsafe exposure reduces health and credits. At zero health, the player is evacuated and returns with 35 health.</p>
+        </div>
+        <div class="step">
+          <b>4</b>
+          <h3>Feedback</h3>
+          <p>The HUD shows warning text, audio plays a hazard alarm, and the incident remains visible in the safety panel.</p>
+        </div>
+      </div>
+      <p class="note">
+        These numbers are gameplay values for learning risk-control relationships. They are not medical dose limits.
+      </p>
+    </section>
+
+    <section>
+      <h2>Folder Structure</h2>
+      <pre><code>chemistryLAB/
+|-- README.md
+|-- docs/
+|   |-- architecture/
+|   |   `-- oop-data-algorithms.html
+|   |-- chemistry/
+|   |   |-- compound-generation-matrix.md
+|   |   |-- compound-generation-matrix.json
+|   |   |-- dynamic-reaction-engine.md
+|   |   `-- dynamic-reaction-engine.json
+|   `-- logs/
+|       |-- validation-history.md
+|       `-- validation-history.json
+|-- NativeChemistryLab/
+|   |-- Assets/ChemistryLab/
+|   |-- BuildReports/
+|   |-- Packages/
+|   |-- ProjectSettings/
+|   `-- README.md
+|-- LAB-animated/
+|-- Assets/_Game/
+|-- ChemistryLabGame/
+`-- PlanCoreGame/</code></pre>
+    </section>
+
+    <section>
+      <h2>Key Source Files</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>File</th>
+            <th>Responsibility</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code>Runtime/Bootstrap/DesktopLabGame.cs</code></td>
+            <td>Game composition, procedural lab construction, vessel state, mission state, runtime smoke test.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Chemistry/ChemistryData.cs</code></td>
+            <td>Chemical definitions, curated reactions, reaction outcomes, simulator entry point.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Chemistry/DynamicReactionEngine.cs</code></td>
+            <td>Species model, reaction-family dispatch, stoichiometry balancing, and activity series.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Chemistry/CompoundGenerationMatrix.cs</code></td>
+            <td>JSON-backed element/ion graph, X/Y/Z compound generation, charge balancing, property estimation, confidence, overrides, and exclusions.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Safety/LabSafetySystem.cs</code></td>
+            <td>Chemical hazard classification, airborne hazard profiles, respirator/gas-trap state, exposure consequences.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Player/LabInteractions.cs</code></td>
+            <td>Abstract interactables, concrete interaction objects, first-person movement, raycast focus, hotkeys.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/UI/DesktopLabHud.cs</code></td>
+            <td>HUD, inspector, safety panel, pause menu, transient messages, UI button feedback.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Audio/DesktopLabAudio.cs</code></td>
+            <td>Procedural audio generation and playback for UI, movement, reactions, and hazards.</td>
+          </tr>
+          <tr>
+            <td><code>Editor/BuildPipeline/DesktopLabBuild.cs</code></td>
+            <td>Editor validation, dynamic matrix validation, Windows build report generation.</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+  </main>
+</body>
+</html>
