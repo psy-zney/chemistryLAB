@@ -3134,6 +3134,7 @@ MonoBehaviour:
   questButton: {fileID: 0}
   characterButton: {fileID: 0}
   enterLabButton: {fileID: 0}
+  sandboxModeButton: {fileID: 0}
   characterCreationPanel: {fileID: 0}
   mainLabPanel: {fileID: 0}
 --- !u!114 &1369989674
@@ -4668,6 +4669,6 @@ SceneRoots:
   m_Roots:
   - {fileID: 1499048989}
   - {fileID: 1469016103}
-  - {fileID: 452966694}
   - {fileID: 351006290}
   - {fileID: 441495633}
+  - {fileID: 452966694}

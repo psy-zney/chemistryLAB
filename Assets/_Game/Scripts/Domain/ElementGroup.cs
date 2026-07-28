@@ -14,6 +14,7 @@ namespace ChemistryLab.Domain
         AlkalineEarthMetal = 6,
         Metalloid = 7,
         Lanthanide = 8,
-        Actinide = 9
+        Actinide = 9,
+        TransitionMetal = 10
     }
 }

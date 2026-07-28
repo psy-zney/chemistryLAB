@@ -59,6 +59,7 @@ namespace ChemistryLab.Presentation.UnityViews
                     mainLabView);
 
                 mainLabView.BindPresenter(mainLabPresenter);
+                mainLabPresenter.Initialize();
                 Debug.Log("[GameBootstrapManager] Bound MainLabPresenter to MainLabUnityView successfully.");
             }
             else

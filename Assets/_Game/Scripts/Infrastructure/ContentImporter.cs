@@ -22,6 +22,13 @@ namespace ChemistryLab.Infrastructure
             var contentVersion = OptionalString(root, "contentVersion", "ContentVersion");
             if (string.IsNullOrWhiteSpace(contentVersion)) throw new FormatException("The root contentVersion is required.");
 
+            // The first playable catalogue shipped with nested reaction data. Keep it
+            // loadable while the domain model consumes the newer, normalised format.
+            if (!HasValue(root, "reactionParticipants", "ReactionParticipants"))
+            {
+                return ImportLegacyCatalogue(root, contentVersion);
+            }
+
             var catalogue = new ContentCatalogue(
                 ImportChemicalItems(GetArray(root, "chemicalItems", "ChemicalItems"), contentVersion),
                 ImportReactions(GetArray(root, "reactions", "Reactions"), contentVersion),
@@ -41,6 +48,136 @@ namespace ChemistryLab.Infrastructure
 
             return catalogue;
         }
+
+        private static ContentCatalogue ImportLegacyCatalogue(Dictionary<string, object> root, string contentVersion)
+        {
+            var chemicals = new List<ChemicalItem>(ImportChemicalItems(GetArray(root, "chemicalItems", "ChemicalItems"), contentVersion));
+            var reactions = new List<Reaction>();
+            var participants = new List<ReactionParticipant>();
+            var observations = new List<ReactionObservation>();
+            var rawReactions = GetArray(root, "reactions", "Reactions");
+
+            for (var reactionIndex = 0; reactionIndex < rawReactions.Count; reactionIndex++)
+            {
+                var legacyReaction = AsObject(rawReactions[reactionIndex], "reactions[" + reactionIndex + "]");
+                var reactionId = RequiredString(legacyReaction, "id", "Id");
+                var legacyParticipants = GetArray(legacyReaction, "participants", "Participants");
+                string outputId = null;
+
+                for (var participantIndex = 0; participantIndex < legacyParticipants.Count; participantIndex++)
+                {
+                    var legacyParticipant = AsObject(legacyParticipants[participantIndex], "reactions[" + reactionIndex + "].participants[" + participantIndex + "]");
+                    var role = ReadEnum<ReactionParticipantRole>(legacyParticipant, "role", "Role");
+                    var coefficient = RequiredInt(legacyParticipant, "coefficient", "Coefficient");
+                    var itemId = RequiredString(legacyParticipant, "itemId", "ItemId");
+                    if (role == ReactionParticipantRole.Product && outputId == null) outputId = itemId;
+                    participants.Add(new ReactionParticipant(reactionId, itemId, role, coefficient, coefficient * 10m, participantIndex));
+                }
+
+                if (string.IsNullOrWhiteSpace(outputId))
+                    throw new FormatException("reactions[" + reactionIndex + "] must contain at least one product participant.");
+
+                reactions.Add(new Reaction(
+                    reactionId,
+                    RequiredString(legacyReaction, "formulaEquation", "EquationDisplay"),
+                    "lab.condition.clean",
+                    RequiredString(legacyReaction, "requiredToolId", "toolId", "ToolId"),
+                    OptionalInt(legacyReaction, 0, "unlockLevel", "UnlockLevel"),
+                    outputId,
+                    10m,
+                    1.5m,
+                    "Chemistry Lab legacy catalogue",
+                    "Chemistry Lab",
+                    LegacyReviewDate,
+                    contentVersion));
+
+                var legacyObservations = GetArray(legacyReaction, "observations", "Observations");
+                for (var observationIndex = 0; observationIndex < legacyObservations.Count; observationIndex++)
+                {
+                    var legacyObservation = AsObject(legacyObservations[observationIndex], "reactions[" + reactionIndex + "].observations[" + observationIndex + "]");
+                    observations.Add(new ReactionObservation(
+                        reactionId,
+                        observationIndex,
+                        ReadEnum<ReactionObservationType>(legacyObservation, "type", "Type"),
+                        ReactionObservationTimingPhase.OnCompletion,
+                        ObservationIntensity.Medium,
+                        OptionalString(legacyObservation, "beforeColor", "BeforeColor"),
+                        OptionalString(legacyObservation, "afterColor", "AfterColor"),
+                        null,
+                        null,
+                        null,
+                        RequiredString(legacyObservation, "descriptionKey", "localisationKey", "LocalisationKey"),
+                        "Chemistry Lab legacy catalogue",
+                        "Chemistry Lab",
+                        LegacyReviewDate,
+                        contentVersion));
+                }
+            }
+
+            var tools = ImportLegacyTools(GetArray(root, "labTools", "LabTools"), contentVersion);
+            var quests = ImportLegacyQuests(GetArray(root, "questTemplates", "QuestTemplates", "quests", "Quests"), contentVersion);
+            var catalogue = new ContentCatalogue(chemicals, reactions, participants, observations, tools, quests);
+            var issues = new ContentValidator().Validate(catalogue);
+            for (var index = 0; index < issues.Count; index++)
+                if (issues[index].Severity == ContentValidationSeverity.Error)
+                    throw new FormatException("Invalid legacy content at " + issues[index].Row + "." + issues[index].Field + ": " + issues[index].Message);
+            return catalogue;
+        }
+
+        private static IEnumerable<LabTool> ImportLegacyTools(List<object> values, string contentVersion)
+        {
+            var result = new List<LabTool>();
+            for (var index = 0; index < values.Count; index++)
+            {
+                var value = AsObject(values[index], "labTools[" + index + "]");
+                result.Add(new LabTool(
+                    RequiredString(value, "id", "Id"),
+                    RequiredString(value, "nameKey", "NameKey"),
+                    LabToolType.Container,
+                    RequiredDecimal(value, "capacityMl", "capacityGram", "CapacityGram"),
+                    true,
+                    ToolCleanState.Clean,
+                    OptionalInt(value, 0, "unlockLevel", "UnlockLevel"),
+                    RequiredLong(value, "price", "Price"),
+                    RequiredString(value, "iconAddress", "visualAddressKey", "VisualAddressKey"),
+                    new[] { LabToolCapability.Contain, LabToolCapability.Measure, LabToolCapability.Pour, LabToolCapability.Stir },
+                    "Chemistry Lab legacy catalogue",
+                    "Chemistry Lab",
+                    LegacyReviewDate,
+                    contentVersion));
+            }
+            return result;
+        }
+
+        private static IEnumerable<QuestTemplate> ImportLegacyQuests(List<object> values, string contentVersion)
+        {
+            var result = new List<QuestTemplate>();
+            for (var index = 0; index < values.Count; index++)
+            {
+                var value = AsObject(values[index], "questTemplates[" + index + "]");
+                var reward = AsObject(GetValue(value, "rewardRule", "RewardRule"), "questTemplates[" + index + "].rewardRule");
+                var unlockIds = new List<string>();
+                var rawUnlockIds = GetArray(reward, "itemUnlockIds", "ItemUnlockIds");
+                for (var unlockIndex = 0; unlockIndex < rawUnlockIds.Count; unlockIndex++)
+                    unlockIds.Add(ReadString(rawUnlockIds[unlockIndex], "itemUnlockIds[" + unlockIndex + "]"));
+
+                result.Add(new QuestTemplate(
+                    RequiredString(value, "id", "Id"),
+                    QuestTier.Tutorial,
+                    RequiredString(value, "targetReactionId", "TargetReactionId"),
+                    RequiredString(value, "titleKey", "dialogueKey", "DialogueKey"),
+                    RequiredString(value, "descriptionKey", "applicationKey", "ApplicationKey"),
+                    new QuestRewardRule(RequiredLong(reward, "dollars", "Dollars"), OptionalInt(reward, 0, "experience", "diamonds", "Experience"), unlockIds),
+                    new List<QuestPrerequisite>(),
+                    "Chemistry Lab legacy catalogue",
+                    "Chemistry Lab",
+                    LegacyReviewDate,
+                    contentVersion));
+            }
+            return result;
+        }
+
+        private static readonly DateTimeOffset LegacyReviewDate = new DateTimeOffset(2026, 7, 21, 0, 0, 0, TimeSpan.Zero);
 
         private static IEnumerable<ChemicalItem> ImportChemicalItems(List<object> values, string fallbackVersion)
         {
@@ -193,6 +330,13 @@ namespace ChemistryLab.Infrastructure
             }
 
             throw new FormatException("Required field '" + names[0] + "' is missing.");
+        }
+
+        private static bool HasValue(Dictionary<string, object> value, params string[] names)
+        {
+            for (var index = 0; index < names.Length; index++)
+                if (value.ContainsKey(names[index])) return true;
+            return false;
         }
 
         private static string RequiredString(Dictionary<string, object> value, params string[] names)

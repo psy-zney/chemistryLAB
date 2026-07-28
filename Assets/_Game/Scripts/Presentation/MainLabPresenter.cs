@@ -6,6 +6,32 @@ using ChemistryLab.Infrastructure;
 
 namespace ChemistryLab.Presentation
 {
+    /// <summary>Read-only chemical stock row tailored for a Unity inventory card.</summary>
+    public sealed class ChemicalInventoryEntry
+    {
+        public ChemicalInventoryEntry(string id, string name, string formula, string colour, string iconAddress, decimal availableGram, HazardTier hazardTier)
+        {
+            Id = id; Name = name; Formula = formula; Colour = colour; IconAddress = iconAddress;
+            AvailableGram = availableGram; HazardTier = hazardTier;
+        }
+        public string Id { get; private set; }
+        public string Name { get; private set; }
+        public string Formula { get; private set; }
+        public string Colour { get; private set; }
+        public string IconAddress { get; private set; }
+        public decimal AvailableGram { get; private set; }
+        public HazardTier HazardTier { get; private set; }
+    }
+
+    /// <summary>Read-only recipe row tailored for a Unity recipe shelf.</summary>
+    public sealed class ReactionEntry
+    {
+        public ReactionEntry(string id, string name, string equation) { Id = id; Name = name; Equation = equation; }
+        public string Id { get; private set; }
+        public string Name { get; private set; }
+        public string Equation { get; private set; }
+    }
+
     /// <summary>One-way output port for the Main Lab scene. Implement this in a Unity view adapter.</summary>
     public interface IMainLabView
     {
@@ -14,6 +40,8 @@ namespace ChemistryLab.Presentation
         void ShowExperimentReady(string reactionId, string outputItemId, decimal outputMassGram);
         void ShowProductCollected(string itemId, decimal massGram);
         void RefreshTool(string toolId, ToolCleanState cleanliness);
+        void ShowChemicalInventory(IReadOnlyList<ChemicalInventoryEntry> entries);
+        void ShowReactionOptions(IReadOnlyList<ReactionEntry> entries, string selectedReactionId);
     }
 
     /// <summary>
@@ -50,6 +78,14 @@ namespace ChemistryLab.Presentation
         public string SelectedReactionId { get { return selectedReactionId; } }
         public string SelectedToolId { get { return selectedToolId; } }
 
+        /// <summary>Publishes the initial view state after the Unity view has bound its controls.</summary>
+        public void Initialize()
+        {
+            PublishInventory();
+            PublishReactions();
+            PublishBench();
+        }
+
         /// <summary>Called by a recipe card; no reaction is inferred from chemical names at runtime.</summary>
         public void OnSelectReaction(string reactionId)
         {
@@ -60,6 +96,7 @@ namespace ChemistryLab.Presentation
             }
 
             selectedReactionId = reactionId;
+            PublishReactions();
             PublishBench();
         }
 
@@ -153,6 +190,7 @@ namespace ChemistryLab.Presentation
 
             benchItems.Clear();
             pendingResult = result;
+            PublishInventory();
             view.ShowExperimentReady(result.ReactionId, result.OutputId, result.OutputMassGram);
             PublishBench();
         }
@@ -208,6 +246,7 @@ namespace ChemistryLab.Presentation
             view.ShowProductCollected(pendingResult.OutputId, pendingResult.OutputMassGram);
             view.RefreshTool(selectedToolId, ToolCleanState.Dirty);
             pendingResult = null;
+            PublishInventory();
         }
 
         public void OnWashTool(string toolId)
@@ -246,6 +285,34 @@ namespace ChemistryLab.Presentation
         private void PublishBench()
         {
             view.ShowBench(new Dictionary<string, decimal>(benchItems, StringComparer.Ordinal), selectedToolId);
+        }
+
+        private void PublishInventory()
+        {
+            var quantities = saveRepository.LoadInventory();
+            var entries = new List<ChemicalInventoryEntry>();
+            for (var index = 0; index < catalogue.ChemicalItems.Count; index++)
+            {
+                var chemical = catalogue.ChemicalItems[index];
+                if (chemical == null) continue;
+                decimal available;
+                if (!quantities.TryGetValue(chemical.Id, out available) || available <= 0m) continue;
+                entries.Add(new ChemicalInventoryEntry(chemical.Id, chemical.NameKey, chemical.Formula, chemical.Color,
+                    chemical.IconAddress, available, chemical.HazardTier));
+            }
+            view.ShowChemicalInventory(entries);
+        }
+
+        private void PublishReactions()
+        {
+            var entries = new List<ReactionEntry>();
+            for (var index = 0; index < catalogue.Reactions.Count; index++)
+            {
+                var reaction = catalogue.Reactions[index];
+                if (reaction == null) continue;
+                entries.Add(new ReactionEntry(reaction.Id, reaction.Id, reaction.EquationDisplay));
+            }
+            view.ShowReactionOptions(entries, selectedReactionId);
         }
 
         private ChemicalItem FindChemical(string id)
