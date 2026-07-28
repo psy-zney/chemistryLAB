@@ -1,0 +1,22 @@
+{
+    "schemaVersion": "1.0",
+    "generatedAtUtc": "2026-07-28T10:10:43.6745528Z",
+    "unityVersion": "6000.5.3f1",
+    "phase": "validation",
+    "result": "succeeded",
+    "platform": "Windows Standalone x64",
+    "scene": "Assets/ChemistryLab/Scenes/DesktopChemistryLab.unity",
+    "output": "",
+    "warnings": 0,
+    "errors": 0,
+    "sizeBytes": 0,
+    "validation": {
+        "elements": 52,
+        "chemicals": 40,
+        "reactions": 38,
+        "fumeHoodRules": 11,
+        "effectClasses": 4,
+        "proceduralAudioSignalClasses": 4,
+        "reactantOrdersPerReaction": 2
+    }
+}

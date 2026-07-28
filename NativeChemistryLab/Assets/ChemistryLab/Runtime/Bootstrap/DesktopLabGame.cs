@@ -1690,11 +1690,13 @@ namespace ChemistryLab.Desktop
                 || player.ViewCamera.GetComponent<AudioListener>() == null
                 || diagnostics == null)
             {
+                WriteSmokeReport("failed", "One or more runtime assertions failed.", outcome);
                 Debug.LogError("DESKTOP_LAB_SMOKE_FAIL");
                 Application.Quit(2);
                 yield break;
             }
 
+            WriteSmokeReport("succeeded", null, outcome);
             Debug.Log(
                 "DESKTOP_LAB_SMOKE_PASS chemicals="
                 + DesktopChemistryDatabase.AllChemicals.Count
@@ -1714,11 +1716,67 @@ namespace ChemistryLab.Desktop
             Application.Quit(0);
         }
 
+        private void WriteSmokeReport(string result, string failure, ReactionOutcome outcome)
+        {
+            var reportPath = GetCommandLineValue("-reportPath");
+            if (string.IsNullOrWhiteSpace(reportPath))
+            {
+                return;
+            }
+
+            var parentDirectory = Path.GetDirectoryName(reportPath);
+            if (!string.IsNullOrWhiteSpace(parentDirectory))
+            {
+                Directory.CreateDirectory(parentDirectory);
+            }
+
+            var report = new StructuredSmokeReport
+            {
+                schemaVersion = "1.0",
+                generatedAtUtc = DateTime.UtcNow.ToString("O"),
+                unityVersion = Application.unityVersion,
+                result = result,
+                failure = failure,
+                chemicals = DesktopChemistryDatabase.AllChemicals.Count,
+                reactions = DesktopChemistryDatabase.AllReactions.Count,
+                elements = HighSchoolPeriodicTable.All.Count,
+                estimatedProductGrams = outcome == null ? 0d : outcome.EstimatedProductGrams,
+                runtimeAudioClips = audioSystem == null ? 0 : audioSystem.ClipCount,
+                pauseButtons = hud == null ? 0 : hud.PauseButtonCount,
+                cameraFovDegrees = player == null || player.ViewCamera == null
+                    ? 0f
+                    : player.ViewCamera.fieldOfView,
+                graphicsDevice = SystemInfo.graphicsDeviceName
+            };
+            File.WriteAllText(
+                reportPath,
+                JsonUtility.ToJson(report, true) + Environment.NewLine);
+            Debug.Log("DESKTOP_LAB_JSON_SMOKE_REPORT path=" + reportPath);
+        }
+
         private sealed class VesselVisual
         {
             public Transform Root;
             public Renderer LiquidRenderer;
             public ParticleSystem Particles;
+        }
+
+        [Serializable]
+        private sealed class StructuredSmokeReport
+        {
+            public string schemaVersion;
+            public string generatedAtUtc;
+            public string unityVersion;
+            public string result;
+            public string failure;
+            public int chemicals;
+            public int reactions;
+            public int elements;
+            public double estimatedProductGrams;
+            public int runtimeAudioClips;
+            public int pauseButtons;
+            public float cameraFovDegrees;
+            public string graphicsDevice;
         }
     }
 }

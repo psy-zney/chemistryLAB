@@ -2,6 +2,30 @@
 
 Đây là bản Unity/C# độc lập, không chạy trên trình duyệt.
 
+## Cấu trúc project
+
+`NativeChemistryLab` là project Unity production. Mã ứng dụng nằm trong một
+feature root duy nhất:
+
+```text
+Assets/ChemistryLab/
+├── Runtime/
+│   ├── Audio/          # nhạc nền và hiệu ứng procedural
+│   ├── Bootstrap/      # composition root, dựng phòng lab
+│   ├── Chemistry/      # chất, nguyên tố, phản ứng và simulator
+│   ├── Core/           # theme và accessibility settings
+│   ├── Diagnostics/    # bảng trạng thái F3
+│   ├── Player/         # camera, di chuyển và tương tác
+│   └── UI/             # HUD và menu pause
+├── Editor/BuildPipeline/ # scene generation, validation và Windows build
+├── Resources/          # material runtime
+└── Scenes/             # scene vào game
+```
+
+Runtime và Editor được tách bằng hai assembly definition
+`ChemistryLab.Desktop` và `ChemistryLab.Desktop.Editor`. Không còn dùng junction
+hoặc chia sẻ source ngầm với Unity project ở root repository.
+
 ## Chạy game
 
 Mở `Builds/ChemistryLab3D/ChemistryLab3D.exe`. Giữ nguyên thư mục
@@ -48,7 +72,13 @@ Menu Unity `Chemistry Lab/Desktop/Create Native Scene` tạo lại scene. Pipeli
 chạy validation toàn bộ 38 phản ứng theo cả hai thứ tự nạp, quy tắc tủ hút, bốn nhóm
 hiệu ứng và tín hiệu âm thanh procedural. Bản build cũng hỗ trợ:
 
-- `-smokeTest`: kiểm tra database, phản ứng nhiệm vụ và 14 clip runtime
+- `-smokeTest -reportPath <path.json>`: kiểm tra database, phản ứng nhiệm vụ,
+  UI/camera, 14 clip runtime và ghi báo cáo JSON
 - `-captureTest -captureView pause`: chụp menu pause
 - `-captureTest -captureView debug`: chụp bảng diagnostics
 - `-captureTest -captureView periodic`: chụp bảng tuần hoàn
+
+Mỗi lần chạy validation/build qua `DesktopLabBuild`, kết quả quan trọng được ghi
+thành JSON trong `NativeChemistryLab/BuildReports/`. Raw `*.log` chỉ là dữ liệu
+tạm và không được commit. Lịch sử đã chuẩn hóa nằm tại
+`docs/logs/validation-history.json` và `docs/logs/validation-history.md`.

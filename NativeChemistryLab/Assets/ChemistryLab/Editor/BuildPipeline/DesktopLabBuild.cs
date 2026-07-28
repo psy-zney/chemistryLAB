@@ -11,18 +11,26 @@ namespace ChemistryLab.Desktop.Editor
 {
     public static class DesktopLabBuild
     {
-        private const string SceneDirectory = "Assets/_DesktopLab/Scenes";
+        private const string SceneDirectory = "Assets/ChemistryLab/Scenes";
         private const string ScenePath = SceneDirectory + "/DesktopChemistryLab.unity";
-        private const string ResourceDirectory = "Assets/_DesktopLab/Resources";
+        private const string ResourceDirectory = "Assets/ChemistryLab/Resources";
         private const string StandardMaterialPath = ResourceDirectory + "/DesktopLabStandard.mat";
         private const string BuildDirectory = "Builds/ChemistryLab3D";
         private const string ExecutablePath = BuildDirectory + "/ChemistryLab3D.exe";
+        private const string ReportDirectory = "BuildReports";
+        private const string BuildReportFile = "desktop-build-report.json";
+        private const string ValidationReportFile = "desktop-validation-report.json";
 
         [MenuItem("Chemistry Lab/Desktop/Create Native Scene")]
         public static void CreateScene()
         {
             ValidateData();
-            Directory.CreateDirectory(Path.Combine(Application.dataPath, "_DesktopLab", "Scenes"));
+            CreateSceneAssets();
+        }
+
+        private static void CreateSceneAssets()
+        {
+            Directory.CreateDirectory(Path.Combine(Application.dataPath, "ChemistryLab", "Scenes"));
             EnsureRuntimeMaterial();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
@@ -36,7 +44,16 @@ namespace ChemistryLab.Desktop.Editor
 
         public static void ValidateOnly()
         {
-            ValidateData();
+            var validation = ValidateData();
+            WriteStructuredReport(
+                ValidationReportFile,
+                "validation",
+                "succeeded",
+                validation,
+                0,
+                0,
+                0L,
+                null);
             Debug.Log(
                 "DESKTOP_LAB_DATA_PASS elements=" + HighSchoolPeriodicTable.All.Count
                 + " chemicals=" + DesktopChemistryDatabase.AllChemicals.Count
@@ -45,7 +62,8 @@ namespace ChemistryLab.Desktop.Editor
 
         public static void BuildWindows()
         {
-            CreateScene();
+            var validation = ValidateData();
+            CreateSceneAssets();
             var projectRoot = Directory.GetParent(Application.dataPath).FullName;
             var absoluteBuildDirectory = Path.Combine(projectRoot, BuildDirectory);
             var absoluteExecutablePath = Path.Combine(projectRoot, ExecutablePath);
@@ -59,6 +77,15 @@ namespace ChemistryLab.Desktop.Editor
                 options = BuildOptions.None
             };
             var report = BuildPipeline.BuildPlayer(options);
+            WriteStructuredReport(
+                BuildReportFile,
+                "windows-player",
+                report.summary.result == BuildResult.Succeeded ? "succeeded" : "failed",
+                validation,
+                (int)report.summary.totalWarnings,
+                (int)report.summary.totalErrors,
+                (long)report.summary.totalSize,
+                ExecutablePath);
             if (report.summary.result != BuildResult.Succeeded)
             {
                 throw new InvalidOperationException(
@@ -73,7 +100,7 @@ namespace ChemistryLab.Desktop.Editor
                 + " warnings=" + report.summary.totalWarnings);
         }
 
-        private static void ValidateData()
+        private static ValidationSummary ValidateData()
         {
             DesktopChemistryDatabase.ValidateOrThrow();
             HighSchoolPeriodicTable.ValidateOrThrow();
@@ -166,6 +193,17 @@ namespace ChemistryLab.Desktop.Editor
                 + " hoodRules=" + hoodReactionCount
                 + " effects=" + effects.Count
                 + " audioSignals=4");
+
+            return new ValidationSummary
+            {
+                elements = HighSchoolPeriodicTable.All.Count,
+                chemicals = DesktopChemistryDatabase.AllChemicals.Count,
+                reactions = DesktopChemistryDatabase.AllReactions.Count,
+                fumeHoodRules = hoodReactionCount,
+                effectClasses = effects.Count,
+                proceduralAudioSignalClasses = 4,
+                reactantOrdersPerReaction = 2
+            };
         }
 
         private static void ValidateReactionOutcome(
@@ -192,7 +230,7 @@ namespace ChemistryLab.Desktop.Editor
 
         private static void EnsureRuntimeMaterial()
         {
-            Directory.CreateDirectory(Path.Combine(Application.dataPath, "_DesktopLab", "Resources"));
+            Directory.CreateDirectory(Path.Combine(Application.dataPath, "ChemistryLab", "Resources"));
             var material = AssetDatabase.LoadAssetAtPath<Material>(StandardMaterialPath);
             if (material != null)
             {
@@ -217,6 +255,71 @@ namespace ChemistryLab.Desktop.Editor
             AssetDatabase.CreateAsset(material, StandardMaterialPath);
             AssetDatabase.SaveAssets();
             AssetDatabase.Refresh();
+        }
+
+        private static void WriteStructuredReport(
+            string fileName,
+            string phase,
+            string result,
+            ValidationSummary validation,
+            int warnings,
+            int errors,
+            long sizeBytes,
+            string outputPath)
+        {
+            var projectRoot = Directory.GetParent(Application.dataPath).FullName;
+            var absoluteReportDirectory = Path.Combine(projectRoot, ReportDirectory);
+            var absoluteReportPath = Path.Combine(absoluteReportDirectory, fileName);
+            Directory.CreateDirectory(absoluteReportDirectory);
+
+            var document = new StructuredBuildReport
+            {
+                schemaVersion = "1.0",
+                generatedAtUtc = DateTime.UtcNow.ToString("O"),
+                unityVersion = Application.unityVersion,
+                phase = phase,
+                result = result,
+                platform = "Windows Standalone x64",
+                scene = ScenePath,
+                output = outputPath,
+                warnings = warnings,
+                errors = errors,
+                sizeBytes = sizeBytes,
+                validation = validation
+            };
+            File.WriteAllText(
+                absoluteReportPath,
+                JsonUtility.ToJson(document, true) + Environment.NewLine);
+            Debug.Log("DESKTOP_LAB_JSON_REPORT path=" + absoluteReportPath);
+        }
+
+        [Serializable]
+        private sealed class StructuredBuildReport
+        {
+            public string schemaVersion;
+            public string generatedAtUtc;
+            public string unityVersion;
+            public string phase;
+            public string result;
+            public string platform;
+            public string scene;
+            public string output;
+            public int warnings;
+            public int errors;
+            public long sizeBytes;
+            public ValidationSummary validation;
+        }
+
+        [Serializable]
+        private sealed class ValidationSummary
+        {
+            public int elements;
+            public int chemicals;
+            public int reactions;
+            public int fumeHoodRules;
+            public int effectClasses;
+            public int proceduralAudioSignalClasses;
+            public int reactantOrdersPerReaction;
         }
     }
 }
