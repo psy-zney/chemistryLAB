@@ -22,6 +22,30 @@ The game is built as an educational simulation, not as real laboratory operating
 - Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
 - JSON build, validation, and smoke-test reports under `NativeChemistryLab/BuildReports/`.
 
+## Current Chemistry Matrix — 3D Graph
+
+![Isometric 3D graph of the current chemistry compound matrix](docs/chemistry/compound-matrix-3d.svg)
+
+The diagram projects the current enriched chemistry space into three axes:
+
+| Axis | Runtime meaning | Examples shown |
+| --- | --- | --- |
+| **X — metal/cation** | Metal activity from strong to weak plus explicit oxidation state | K/Na, Mg/Ca, Al, Zn/Cr/Mn, Fe/Co/Ni, Pb/H, Cu/Ag |
+| **Y — nonmetal/anion** | Nonmetal or reusable anion family | halide, sulfide, carbonate, nitrate, sulfate, phosphate, permanganate |
+| **Z — oxygen/oxidation** | Oxygen count and oxidation-state layer | binary salts at `O = 0`; oxides, hydroxides, oxyacids and oxysalts at `O = 1…4+` |
+
+A coordinate is not just a cell in a literal array. It carries ion charge,
+oxidation state, formula coefficients, molar mass, phase, solubility, color,
+hazards, confidence, and validation notes. The plotted nodes are representative
+landmarks; the JSON-backed graph currently contains **565 accepted coordinates
+and 541 unique formulas**. The left side of the figure shows the actual resolver
+order used by the game: curated reactions → redox rules → dynamic families →
+compound matrix → condition engine → reusable product batch.
+
+This is a chemical relationship map, not a molecular-geometry or orbital model.
+The source SVG is available at
+[`docs/chemistry/compound-matrix-3d.svg`](docs/chemistry/compound-matrix-3d.svg).
+
 ## Main Project
 
 ```text
@@ -145,6 +169,7 @@ Structured reports:
 - `NativeChemistryLab/BuildReports/desktop-smoke-report.json`
 - `docs/chemistry/compound-generation-matrix.md`
 - `docs/chemistry/compound-generation-matrix.json`
+- `docs/chemistry/compound-matrix-3d.svg`
 - `docs/chemistry/reaction-condition-engine.md`
 - `docs/chemistry/reaction-condition-engine.json`
 

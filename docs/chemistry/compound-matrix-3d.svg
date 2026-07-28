@@ -1,0 +1,415 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1050" viewBox="0 0 1600 1050" role="img" aria-labelledby="title description">
+  <title id="title">Mô hình 3D ma trận và đồ thị hóa chất Chemistry Lab</title>
+  <desc id="description">Đồ thị isometric với trục X là kim loại theo dãy hoạt động, trục Y là phi kim hoặc họ anion, trục Z là số nguyên tử oxi và trạng thái oxi hóa. Các nút đại diện cho oxit, bazơ, muối nhị nguyên, muối oxi, axit và sản phẩm redox.</desc>
+
+  <defs>
+    <linearGradient id="background" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#09141d"/>
+      <stop offset="0.55" stop-color="#102532"/>
+      <stop offset="1" stop-color="#071117"/>
+    </linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#183443" stop-opacity="0.94"/>
+      <stop offset="1" stop-color="#0d202b" stop-opacity="0.94"/>
+    </linearGradient>
+    <linearGradient id="floor" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#39b9c7" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#4b7cf0" stop-opacity="0.025"/>
+    </linearGradient>
+    <linearGradient id="oxygenPlane" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#9a7cff" stop-opacity="0.035"/>
+      <stop offset="1" stop-color="#b690ff" stop-opacity="0.14"/>
+    </linearGradient>
+    <radialGradient id="binaryNode" cx="32%" cy="24%">
+      <stop offset="0" stop-color="#fff5bf"/>
+      <stop offset="0.34" stop-color="#f4c95d"/>
+      <stop offset="1" stop-color="#9c641c"/>
+    </radialGradient>
+    <radialGradient id="oxideNode" cx="32%" cy="24%">
+      <stop offset="0" stop-color="#e9fdff"/>
+      <stop offset="0.34" stop-color="#56dce7"/>
+      <stop offset="1" stop-color="#157a91"/>
+    </radialGradient>
+    <radialGradient id="oxySaltNode" cx="32%" cy="24%">
+      <stop offset="0" stop-color="#f7efff"/>
+      <stop offset="0.34" stop-color="#b793ff"/>
+      <stop offset="1" stop-color="#6044ae"/>
+    </radialGradient>
+    <radialGradient id="acidNode" cx="32%" cy="24%">
+      <stop offset="0" stop-color="#fff0ee"/>
+      <stop offset="0.34" stop-color="#ff8c7b"/>
+      <stop offset="1" stop-color="#a93536"/>
+    </radialGradient>
+    <radialGradient id="redoxNode" cx="32%" cy="24%">
+      <stop offset="0" stop-color="#effff3"/>
+      <stop offset="0.34" stop-color="#64e593"/>
+      <stop offset="1" stop-color="#168655"/>
+    </radialGradient>
+    <filter id="shadow" x="-60%" y="-60%" width="220%" height="220%">
+      <feDropShadow dx="0" dy="7" stdDeviation="8" flood-color="#000" flood-opacity="0.48"/>
+    </filter>
+    <filter id="softGlow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <marker id="arrowCyan" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#5de5ee"/>
+    </marker>
+    <marker id="arrowGreen" markerWidth="10" markerHeight="10" refX="8" refY="4" orient="auto">
+      <path d="M0,0 L8,4 L0,8 Z" fill="#64e593"/>
+    </marker>
+    <style>
+      .heading { fill: #f1fbff; font: 700 34px "Segoe UI", Arial, sans-serif; letter-spacing: .4px; }
+      .subheading { fill: #9fc1ce; font: 400 16px "Segoe UI", Arial, sans-serif; }
+      .metric-number { fill: #ecfbff; font: 700 24px "Segoe UI", Arial, sans-serif; }
+      .metric-label { fill: #7ea4b2; font: 600 11px "Segoe UI", Arial, sans-serif; letter-spacing: 1.1px; }
+      .panel-title { fill: #ecfbff; font: 700 17px "Segoe UI", Arial, sans-serif; letter-spacing: .6px; }
+      .panel-copy { fill: #a9c6d0; font: 400 13px "Segoe UI", Arial, sans-serif; }
+      .axis-title { fill: #f0fbff; font: 700 15px "Segoe UI", Arial, sans-serif; }
+      .axis-copy { fill: #8fb0bd; font: 400 12px "Segoe UI", Arial, sans-serif; }
+      .axis-tick { fill: #a8c7d1; font: 600 12px "Segoe UI", Arial, sans-serif; }
+      .grid { stroke: #70a9b7; stroke-width: 1; stroke-opacity: .19; fill: none; }
+      .grid-strong { stroke: #7bd6df; stroke-width: 1.6; stroke-opacity: .5; fill: none; }
+      .axis { stroke: #62e6ef; stroke-width: 3; fill: none; marker-end: url(#arrowCyan); }
+      .reaction-edge { stroke: #64e593; stroke-width: 2.2; stroke-dasharray: 7 6; fill: none; marker-end: url(#arrowGreen); opacity: .85; }
+      .node-label { fill: #f6fdff; font: 700 13px "Segoe UI", Arial, sans-serif; paint-order: stroke; stroke: #071117; stroke-width: 4px; stroke-linejoin: round; }
+      .node-sub { fill: #a8c6cf; font: 500 10px "Segoe UI", Arial, sans-serif; paint-order: stroke; stroke: #071117; stroke-width: 3px; }
+      .flow-label { fill: #dff8fc; font: 650 12px "Segoe UI", Arial, sans-serif; text-anchor: middle; }
+      .flow-sub { fill: #82a9b7; font: 500 10px "Segoe UI", Arial, sans-serif; text-anchor: middle; }
+      .legend { fill: #b6d0d8; font: 500 12px "Segoe UI", Arial, sans-serif; }
+    </style>
+  </defs>
+
+  <rect x="0" y="0" width="1600" height="1050" rx="30" fill="url(#background)"/>
+  <rect x="1.5" y="1.5" width="1597" height="1047" rx="29" fill="none" stroke="#376171" stroke-opacity=".45" stroke-width="3"/>
+
+  <text x="48" y="58" class="heading">CHEMISTRY SPACE · MA TRẬN / ĐỒ THỊ 3D HIỆN TẠI</text>
+  <text x="49" y="87" class="subheading">Một lát cắt đại diện của 541 công thức đã cân bằng điện tích — không phải mô hình hình học phân tử.</text>
+
+  <g transform="translate(48 106)">
+    <g>
+      <rect width="132" height="58" rx="12" fill="#17313f" stroke="#2d5868"/>
+      <text x="16" y="27" class="metric-number">27</text>
+      <text x="16" y="46" class="metric-label">NGUYÊN TỐ NÚT</text>
+    </g>
+    <g transform="translate(144 0)">
+      <rect width="132" height="58" rx="12" fill="#17313f" stroke="#2d5868"/>
+      <text x="16" y="27" class="metric-number">46</text>
+      <text x="16" y="46" class="metric-label">ION TÁI DỤNG</text>
+    </g>
+    <g transform="translate(288 0)">
+      <rect width="148" height="58" rx="12" fill="#17313f" stroke="#2d5868"/>
+      <text x="16" y="27" class="metric-number">565</text>
+      <text x="16" y="46" class="metric-label">TỌA ĐỘ HỢP LỆ</text>
+    </g>
+    <g transform="translate(448 0)">
+      <rect width="148" height="58" rx="12" fill="#17313f" stroke="#2d5868"/>
+      <text x="16" y="27" class="metric-number">541</text>
+      <text x="16" y="46" class="metric-label">CÔNG THỨC RIÊNG</text>
+    </g>
+    <g transform="translate(608 0)">
+      <rect width="140" height="58" rx="12" fill="#17313f" stroke="#2d5868"/>
+      <text x="16" y="27" class="metric-number">38</text>
+      <text x="16" y="46" class="metric-label">PHẢN ỨNG MẪU</text>
+    </g>
+    <g transform="translate(760 0)">
+      <rect width="140" height="58" rx="12" fill="#17313f" stroke="#2d5868"/>
+      <text x="16" y="27" class="metric-number">155</text>
+      <text x="16" y="46" class="metric-label">CẶP ĐỘNG</text>
+    </g>
+    <g transform="translate(912 0)">
+      <rect width="132" height="58" rx="12" fill="#17313f" stroke="#2d5868"/>
+      <text x="16" y="27" class="metric-number">8</text>
+      <text x="16" y="46" class="metric-label">LUẬT REDOX</text>
+    </g>
+    <g transform="translate(1056 0)">
+      <rect width="142" height="58" rx="12" fill="#17313f" stroke="#2d5868"/>
+      <text x="16" y="27" class="metric-number">9</text>
+      <text x="16" y="46" class="metric-label">HỌ LUẬT ĐỘNG</text>
+    </g>
+  </g>
+
+  <!-- Left explanation and resolver graph -->
+  <g transform="translate(42 188)">
+    <rect width="278" height="804" rx="20" fill="url(#panel)" stroke="#315568" filter="url(#shadow)"/>
+    <text x="22" y="38" class="panel-title">TỌA ĐỘ HÓA HỌC (x, y, z)</text>
+    <text x="22" y="67" class="panel-copy">Mỗi nút lưu nhiều dữ liệu hơn một</text>
+    <text x="22" y="86" class="panel-copy">ô 3D: điện tích, số oxi hóa, độ tan,</text>
+    <text x="22" y="105" class="panel-copy">pha, màu, nguy hại và độ tin cậy.</text>
+
+    <g transform="translate(18 130)">
+      <rect width="242" height="82" rx="13" fill="#102b38" stroke="#238ba0"/>
+      <circle cx="22" cy="23" r="9" fill="#54dce7"/>
+      <text x="40" y="28" class="axis-title">X · KIM LOẠI / CATION</text>
+      <text x="18" y="51" class="axis-copy">K, Na → Mg, Al, Zn, Fe → Cu, Ag</text>
+      <text x="18" y="69" class="axis-copy">mạnh → yếu + trạng thái oxi hóa</text>
+    </g>
+    <g transform="translate(18 224)">
+      <rect width="242" height="82" rx="13" fill="#102b38" stroke="#d9a43a"/>
+      <circle cx="22" cy="23" r="9" fill="#f4c95d"/>
+      <text x="40" y="28" class="axis-title">Y · PHI KIM / ANION</text>
+      <text x="18" y="51" class="axis-copy">halide, sulfide, carbonate, nitrate,</text>
+      <text x="18" y="69" class="axis-copy">sulfate, phosphate, permanganate…</text>
+    </g>
+    <g transform="translate(18 318)">
+      <rect width="242" height="82" rx="13" fill="#102b38" stroke="#9877e7"/>
+      <circle cx="22" cy="23" r="9" fill="#b793ff"/>
+      <text x="40" y="28" class="axis-title">Z · OXI / SỐ OXI HÓA</text>
+      <text x="18" y="51" class="axis-copy">O = 0: muối nhị nguyên</text>
+      <text x="18" y="69" class="axis-copy">O = 1…4+: oxit, bazơ, muối oxi</text>
+    </g>
+
+    <text x="20" y="437" class="panel-title">ĐỒ THỊ GIẢI PHẢN ỨNG</text>
+    <g transform="translate(20 458)">
+      <rect width="238" height="48" rx="11" fill="#183a48" stroke="#4c8798"/>
+      <text x="119" y="21" class="flow-label">38 PHẢN ỨNG ĐÃ DUYỆT</text>
+      <text x="119" y="37" class="flow-sub">ưu tiên quan sát và an toàn</text>
+      <path d="M119 48 V65" stroke="#5de5ee" stroke-width="2"/>
+
+      <rect y="65" width="238" height="48" rx="11" fill="#193945" stroke="#47a06e"/>
+      <text x="119" y="86" class="flow-label">8 LUẬT OXI HÓA–KHỬ</text>
+      <text x="119" y="102" class="flow-sub">quy đồng electron bằng GCD / LCM</text>
+      <path d="M119 113 V130" stroke="#5de5ee" stroke-width="2"/>
+
+      <rect y="130" width="238" height="48" rx="11" fill="#193642" stroke="#8a70c2"/>
+      <text x="119" y="151" class="flow-label">9 HỌ LUẬT ĐỘNG</text>
+      <text x="119" y="167" class="flow-sub">axit–bazơ, kết tủa, thế, khí…</text>
+      <path d="M119 178 V195" stroke="#5de5ee" stroke-width="2"/>
+
+      <rect y="195" width="238" height="48" rx="11" fill="#19333f" stroke="#b2863c"/>
+      <text x="119" y="216" class="flow-label">MA TRẬN SINH HỢP CHẤT</text>
+      <text x="119" y="232" class="flow-sub">cân bằng điện tích → công thức</text>
+      <path d="M119 243 V260" stroke="#5de5ee" stroke-width="2"/>
+
+      <rect y="260" width="238" height="60" rx="11" fill="#17323e" stroke="#c35b55"/>
+      <text x="119" y="281" class="flow-label">ĐIỀU KIỆN PHẢN ỨNG</text>
+      <text x="119" y="298" class="flow-sub">T°, M, pH, xúc tác, tốc độ</text>
+      <text x="119" y="313" class="flow-sub">→ sản phẩm có thể tái sử dụng</text>
+    </g>
+  </g>
+
+  <!-- Isometric matrix volume -->
+  <g>
+    <!-- floor and oxygen layers -->
+    <path d="M370 790 L1070 566 L1370 734 L670 958 Z" fill="url(#floor)" stroke="#67d6df" stroke-opacity=".46" stroke-width="2"/>
+    <path d="M370 550 L1070 326 L1370 494 L670 718 Z" fill="url(#oxygenPlane)" stroke="#a58ae9" stroke-opacity=".32"/>
+    <path d="M370 470 L1070 246 L1370 414 L670 638 Z" fill="url(#oxygenPlane)" stroke="#b493ff" stroke-opacity=".48"/>
+
+    <!-- base X grid -->
+    <path class="grid" d="M470 758 L770 926"/>
+    <path class="grid" d="M570 726 L870 894"/>
+    <path class="grid" d="M670 694 L970 862"/>
+    <path class="grid" d="M770 662 L1070 830"/>
+    <path class="grid" d="M870 630 L1170 798"/>
+    <path class="grid" d="M970 598 L1270 766"/>
+    <path class="grid" d="M1070 566 L1370 734"/>
+
+    <!-- base Y grid -->
+    <path class="grid" d="M445 832 L1145 608"/>
+    <path class="grid" d="M520 874 L1220 650"/>
+    <path class="grid" d="M595 916 L1295 692"/>
+    <path class="grid" d="M670 958 L1370 734"/>
+
+    <!-- upper repeated grids -->
+    <path class="grid" d="M370 710 L1070 486 L1370 654 L670 878 Z"/>
+    <path class="grid" d="M370 630 L1070 406 L1370 574 L670 798 Z"/>
+    <path class="grid" d="M370 550 L1070 326 L1370 494 L670 718 Z"/>
+    <path class="grid" d="M370 470 L1070 246 L1370 414 L670 638 Z"/>
+
+    <!-- vertical frame -->
+    <path class="grid-strong" d="M370 790 V390"/>
+    <path class="grid-strong" d="M1070 566 V166"/>
+    <path class="grid-strong" d="M1370 734 V334"/>
+    <path class="grid-strong" d="M670 958 V558"/>
+    <path class="grid-strong" d="M370 390 L1070 166 L1370 334 L670 558 Z"/>
+    <path class="grid" d="M445 832 V432 M520 874 V474 M595 916 V516"/>
+    <path class="grid" d="M470 758 V358 M570 726 V326 M670 694 V294 M770 662 V262 M870 630 V230 M970 598 V198"/>
+
+    <!-- axes -->
+    <path class="axis" d="M370 790 L1110 553"/>
+    <path class="axis" d="M370 790 L697 973"/>
+    <path class="axis" d="M370 790 V355"/>
+    <text x="1118" y="548" class="axis-title">X · kim loại mạnh → yếu</text>
+    <text x="706" y="989" class="axis-title">Y · phi kim / họ anion</text>
+    <text x="347" y="330" class="axis-title" text-anchor="middle">Z</text>
+    <text x="347" y="348" class="axis-copy" text-anchor="middle">oxi + số oxi hóa</text>
+
+    <!-- X tick labels -->
+    <text x="452" y="785" class="axis-tick">K / Na</text>
+    <text x="548" y="750" class="axis-tick">Ca / Mg</text>
+    <text x="653" y="715" class="axis-tick">Al</text>
+    <text x="746" y="683" class="axis-tick">Zn / Cr / Mn</text>
+    <text x="852" y="650" class="axis-tick">Fe / Co / Ni</text>
+    <text x="955" y="617" class="axis-tick">Pb / H</text>
+    <text x="1051" y="584" class="axis-tick">Cu / Ag</text>
+
+    <!-- Y tick labels -->
+    <text x="432" y="856" class="axis-tick">halide</text>
+    <text x="504" y="897" class="axis-tick">sulfide</text>
+    <text x="578" y="939" class="axis-tick">carbonate</text>
+    <text x="648" y="980" class="axis-tick">oxy-anion</text>
+
+    <!-- Z tick labels -->
+    <text x="337" y="795" class="axis-tick" text-anchor="end">O = 0</text>
+    <text x="337" y="715" class="axis-tick" text-anchor="end">O = 1</text>
+    <text x="337" y="635" class="axis-tick" text-anchor="end">O = 2</text>
+    <text x="337" y="555" class="axis-tick" text-anchor="end">O = 3</text>
+    <text x="337" y="475" class="axis-tick" text-anchor="end">O = 4+</text>
+
+    <!-- reaction edges: neutralisation / precipitation / redox -->
+    <path class="reaction-edge" d="M445 790 C500 760 506 804 545 800"/>
+    <path class="reaction-edge" d="M470 678 C740 580 1070 470 1370 414"/>
+    <path class="reaction-edge" d="M770 606 C900 540 1008 470 1120 390"/>
+
+    <!-- Binary salts, z=0 -->
+    <g filter="url(#shadow)">
+      <circle cx="545" cy="800" r="16" fill="url(#binaryNode)" stroke="#ffe497" stroke-width="2"/>
+      <text x="566" y="798" class="node-label">NaCl</text>
+      <text x="566" y="814" class="node-sub">muối nhị nguyên</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="1020" cy="714" r="16" fill="url(#binaryNode)" stroke="#ffe497" stroke-width="2"/>
+      <text x="1039" y="710" class="node-label">FeS</text>
+      <text x="1039" y="726" class="node-sub">acid → H₂S↑</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="1145" cy="608" r="16" fill="url(#binaryNode)" stroke="#ffe497" stroke-width="2"/>
+      <text x="1165" y="604" class="node-label">AgCl</text>
+      <text x="1165" y="620" class="node-sub">kết tủa trắng</text>
+    </g>
+
+    <!-- Oxides and hydroxides on X-Z plane -->
+    <g filter="url(#shadow)">
+      <circle cx="470" cy="678" r="16" fill="url(#oxideNode)" stroke="#bdfaff" stroke-width="2"/>
+      <text x="489" y="674" class="node-label">NaOH</text>
+      <text x="489" y="690" class="node-sub">bazơ mạnh</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="570" cy="646" r="16" fill="url(#oxideNode)" stroke="#bdfaff" stroke-width="2"/>
+      <text x="589" y="642" class="node-label">MgO</text>
+      <text x="589" y="658" class="node-sub">oxit bazơ</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="670" cy="534" r="16" fill="url(#oxideNode)" stroke="#bdfaff" stroke-width="2"/>
+      <text x="689" y="530" class="node-label">Al₂O₃</text>
+      <text x="689" y="546" class="node-sub">lưỡng tính</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="870" cy="390" r="16" fill="url(#oxideNode)" stroke="#bdfaff" stroke-width="2"/>
+      <text x="889" y="386" class="node-label">Fe₂O₃</text>
+      <text x="889" y="402" class="node-sub">Fe(III)</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="1070" cy="486" r="16" fill="url(#oxideNode)" stroke="#bdfaff" stroke-width="2"/>
+      <text x="1089" y="482" class="node-label">CuO</text>
+      <text x="1089" y="498" class="node-sub">đen · Cu(II)</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="720" cy="574" r="18" fill="url(#oxideNode)" stroke="#bdfaff" stroke-width="2"/>
+      <text x="740" y="570" class="node-label">Cu(OH)₂</text>
+      <text x="740" y="586" class="node-sub">kết tủa xanh</text>
+    </g>
+
+    <!-- Acids / nonmetal oxides near Y-Z plane -->
+    <g filter="url(#shadow)">
+      <circle cx="445" cy="790" r="16" fill="url(#acidNode)" stroke="#ffc2b8" stroke-width="2"/>
+      <text x="382" y="777" class="node-label">HCl</text>
+      <text x="380" y="794" class="node-sub">axit · Cl⁻</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="520" cy="714" r="16" fill="url(#acidNode)" stroke="#ffc2b8" stroke-width="2"/>
+      <text x="453" y="705" class="node-label">SO₂</text>
+      <text x="437" y="721" class="node-sub">oxit axit · khí</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="595" cy="756" r="16" fill="url(#acidNode)" stroke="#ffc2b8" stroke-width="2"/>
+      <text x="614" y="752" class="node-label">CO₂</text>
+      <text x="614" y="768" class="node-sub">C(+IV)</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="670" cy="718" r="16" fill="url(#acidNode)" stroke="#ffc2b8" stroke-width="2"/>
+      <text x="689" y="714" class="node-label">HNO₃</text>
+      <text x="689" y="730" class="node-sub">NO₃⁻ · O = 3</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="670" cy="638" r="16" fill="url(#acidNode)" stroke="#ffc2b8" stroke-width="2"/>
+      <text x="689" y="634" class="node-label">H₂SO₄</text>
+      <text x="689" y="650" class="node-sub">SO₄²⁻ · O = 4</text>
+    </g>
+
+    <!-- Oxy salts in volume -->
+    <g filter="url(#shadow)">
+      <circle cx="770" cy="686" r="17" fill="url(#oxySaltNode)" stroke="#e0cdff" stroke-width="2"/>
+      <text x="790" y="682" class="node-label">KNO₃</text>
+      <text x="790" y="698" class="node-sub">tan · O = 3</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="770" cy="606" r="17" fill="url(#oxySaltNode)" stroke="#e0cdff" stroke-width="2"/>
+      <text x="790" y="602" class="node-label">KMnO₄</text>
+      <text x="790" y="618" class="node-sub">Mn(+VII) · oxi hóa</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="795" cy="612" r="15" fill="url(#oxySaltNode)" stroke="#e0cdff" stroke-width="2"/>
+      <text x="815" y="633" class="node-label">CaCO₃</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="870" cy="574" r="17" fill="url(#oxySaltNode)" stroke="#e0cdff" stroke-width="2"/>
+      <text x="890" y="570" class="node-label">Na₂SO₄</text>
+      <text x="890" y="586" class="node-sub">SO₄²⁻ · O = 4</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="1070" cy="510" r="17" fill="url(#oxySaltNode)" stroke="#e0cdff" stroke-width="2"/>
+      <text x="1090" y="526" class="node-label">FeSO₄</text>
+    </g>
+    <g filter="url(#shadow)">
+      <circle cx="1370" cy="414" r="19" fill="url(#oxySaltNode)" stroke="#e0cdff" stroke-width="2" filter="url(#softGlow)"/>
+      <text x="1393" y="410" class="node-label">CuSO₄</text>
+      <text x="1393" y="427" class="node-sub">xanh · Cu²⁺</text>
+    </g>
+
+    <!-- Redox product constellation -->
+    <g transform="translate(1120 205)">
+      <rect width="414" height="130" rx="18" fill="#102832" stroke="#318d62" stroke-width="1.5" filter="url(#shadow)"/>
+      <text x="22" y="29" class="panel-title">CHÙM SẢN PHẨM OXI HÓA–KHỬ</text>
+      <text x="22" y="51" class="panel-copy">Điều kiện pH · nồng độ · nhiệt độ chọn nhánh sản phẩm</text>
+      <g transform="translate(38 85)">
+        <circle r="13" fill="url(#redoxNode)" stroke="#baffcf"/>
+        <text x="20" y="5" class="node-label">O₂</text>
+      </g>
+      <g transform="translate(110 85)">
+        <circle r="13" fill="url(#redoxNode)" stroke="#baffcf"/>
+        <text x="20" y="5" class="node-label">I₂</text>
+      </g>
+      <g transform="translate(178 85)">
+        <circle r="13" fill="url(#redoxNode)" stroke="#baffcf"/>
+        <text x="20" y="5" class="node-label">NO</text>
+      </g>
+      <g transform="translate(255 85)">
+        <circle r="13" fill="url(#redoxNode)" stroke="#baffcf"/>
+        <text x="20" y="5" class="node-label">NO₂</text>
+      </g>
+      <g transform="translate(340 85)">
+        <circle r="13" fill="url(#redoxNode)" stroke="#baffcf"/>
+        <text x="20" y="5" class="node-label">SO₂</text>
+      </g>
+    </g>
+  </g>
+
+  <!-- Legend -->
+  <g transform="translate(820 970)">
+    <circle cx="0" cy="0" r="9" fill="url(#binaryNode)"/>
+    <text x="16" y="4" class="legend">muối nhị nguyên</text>
+    <circle cx="144" cy="0" r="9" fill="url(#oxideNode)"/>
+    <text x="160" y="4" class="legend">oxit / bazơ</text>
+    <circle cx="264" cy="0" r="9" fill="url(#oxySaltNode)"/>
+    <text x="280" y="4" class="legend">muối oxi</text>
+    <circle cx="378" cy="0" r="9" fill="url(#acidNode)"/>
+    <text x="394" y="4" class="legend">axit / oxit phi kim</text>
+    <circle cx="548" cy="0" r="9" fill="url(#redoxNode)"/>
+    <text x="564" y="4" class="legend">sản phẩm redox</text>
+  </g>
+  <text x="820" y="1010" class="axis-copy">Các nút được chọn để minh họa lớp dữ liệu; toàn bộ 565 tọa độ nằm trong JSON và được kiểm định tự động.</text>
+</svg>

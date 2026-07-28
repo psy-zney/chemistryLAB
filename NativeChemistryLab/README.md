@@ -67,6 +67,10 @@ Esc           Pause
 
 ## Simulation Scope
 
+The current X/Y/Z chemistry graph is rendered in the repository README:
+
+![Current isometric chemistry matrix](../docs/chemistry/compound-matrix-3d.svg)
+
 - 52 high-school-relevant elements.
 - 40 chemicals with physical properties, colors, hazards, handling notes, and 3D material settings.
 - 38 curated reactions.
