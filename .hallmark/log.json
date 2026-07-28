@@ -1,0 +1,23 @@
+[
+  {
+    "date": "2026-07-28",
+    "macrostructure": "Map / Diagram",
+    "theme": "Coral",
+    "enrichment": "Tier-D Unity procedural 3D laboratory + procedural audio + runtime diagnostics",
+    "brief": "Native Windows first-person 3D chemistry laboratory"
+  },
+  {
+    "date": "2026-07-28",
+    "macrostructure": "Workbench",
+    "theme": "Cobalt",
+    "enrichment": "Tier-D React Three Fiber procedural 3D scene",
+    "brief": "Chemistry Lab desktop first-person 3D simulation"
+  },
+  {
+    "date": "2026-07-23",
+    "macrostructure": "One-point Diorama",
+    "theme": "studied-DNA",
+    "enrichment": "Tier-B SVG + CSS perspective",
+    "brief": "Chemistry Lab animated 2.5D lobby from user reference"
+  }
+]
