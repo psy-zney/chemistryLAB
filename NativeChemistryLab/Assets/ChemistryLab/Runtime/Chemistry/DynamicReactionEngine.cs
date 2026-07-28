@@ -87,6 +87,10 @@ namespace ChemistryLab.Desktop
             public int AnionCount;
             public string Formula;
             public double MolarMass;
+            public string Colour;
+            public CompoundSolubility Solubility;
+            public ChemicalHazardFlags Hazards;
+            public CompoundConfidence Confidence;
         }
 
         private static readonly Ion Sodium = Cation("sodium", "Na", 1, 22.990, "#EEEDE7");
@@ -95,7 +99,7 @@ namespace ChemistryLab.Desktop
         private static readonly Ion Barium = Cation("barium", "Ba", 2, 137.327, "#EEEDE7");
         private static readonly Ion CopperTwo = Cation("copper-two", "Cu", 2, 63.546, "#3D9A9D");
         private static readonly Ion Silver = Cation("silver", "Ag", 1, 107.868, "#E7E6DD");
-        private static readonly Ion Lead = Cation("lead", "Pb", 2, 207.200, "#E4DFC8");
+        private static readonly Ion Lead = Cation("lead-two", "Pb", 2, 207.200, "#E4DFC8");
         private static readonly Ion IronThree = Cation("iron-three", "Fe", 3, 55.845, "#A76535");
         private static readonly Ion IronTwo = Cation("iron-two", "Fe", 2, 55.845, "#7F9E82");
         private static readonly Ion Aluminium = Cation("aluminium", "Al", 3, 26.982, "#EEEDE7");
@@ -167,6 +171,8 @@ namespace ChemistryLab.Desktop
 
         public static void ValidateOrThrow()
         {
+            CompoundGenerationMatrix.ValidateOrThrow();
+
             if (SpeciesById.Count != DesktopChemistryDatabase.AllChemicals.Count)
             {
                 throw new InvalidOperationException(
@@ -334,7 +340,7 @@ namespace ChemistryLab.Desktop
                 salt.Formula,
                 salt.MolarMass,
                 ReactionEffect.Heat,
-                salt.Cation.Colour,
+                salt.Colour,
                 6f + waterCoefficient * 1.4f,
                 false,
                 "Axit và bazơ trung hòa; nhiệt độ tăng, tạo muối " + salt.Formula + " và nước.",
@@ -363,7 +369,7 @@ namespace ChemistryLab.Desktop
                 salt.Formula,
                 salt.MolarMass,
                 ReactionEffect.Heat,
-                salt.Cation.Colour,
+                salt.Colour,
                 5f,
                 true,
                 "Amoniac bị giữ lại dưới dạng muối amoni " + salt.Formula + ".",
@@ -504,11 +510,12 @@ namespace ChemistryLab.Desktop
                 precipitate.Formula,
                 precipitate.MolarMass * precipitateCoefficient,
                 ReactionEffect.Precipitate,
-                precipitate.Cation.Colour,
+                precipitate.Colour,
                 .6f,
                 false,
                 "Xuất hiện kết tủa " + precipitate.Formula + " theo quy tắc độ tan.",
                 IsHeavyMetal(precipitate.Cation)
+                    || (precipitate.Hazards & ChemicalHazardFlags.HeavyMetal) != 0
                     ? "Lọc và thu gom kết tủa vào bình chất thải kim loại nặng."
                     : "Lọc chất rắn và kiểm tra ion còn dư trước khi xử lý.");
         }
@@ -625,7 +632,7 @@ namespace ChemistryLab.Desktop
                 salt.Formula,
                 salt.MolarMass,
                 ReactionEffect.Heat,
-                salt.Cation.Colour,
+                salt.Colour,
                 9f,
                 false,
                 "Oxit tan dần, tạo muối " + salt.Formula + " và nước; hỗn hợp nóng lên.",
@@ -706,6 +713,16 @@ namespace ChemistryLab.Desktop
 
         private static bool IsInsoluble(FormulaUnit salt)
         {
+            GeneratedCompoundDefinition generated;
+            if (CompoundGenerationMatrix.TryGenerateIonicCompound(
+                    salt.Cation.Id,
+                    salt.Anion.Id,
+                    out generated))
+            {
+                return generated.Solubility == CompoundSolubility.Insoluble
+                    || generated.Solubility == CompoundSolubility.SlightlySoluble;
+            }
+
             if (salt.Cation.Id == Sodium.Id
                 || salt.Cation.Id == Potassium.Id
                 || salt.Cation.Id == Ammonium.Id
@@ -757,6 +774,27 @@ namespace ChemistryLab.Desktop
 
         private static FormulaUnit MakeFormula(Ion cation, Ion anion)
         {
+            GeneratedCompoundDefinition generated;
+            if (CompoundGenerationMatrix.TryGenerateIonicCompound(
+                    cation.Id,
+                    anion.Id,
+                    out generated))
+            {
+                return new FormulaUnit
+                {
+                    Cation = cation,
+                    Anion = anion,
+                    CationCount = generated.CationCount,
+                    AnionCount = generated.AnionCount,
+                    Formula = generated.Formula,
+                    MolarMass = generated.MolarMass,
+                    Colour = generated.Colour,
+                    Solubility = generated.Solubility,
+                    Hazards = generated.Hazards,
+                    Confidence = generated.Confidence
+                };
+            }
+
             var divisor = GreatestCommonDivisor(cation.Charge, anion.Charge);
             var cationCount = anion.Charge / divisor;
             var anionCount = cation.Charge / divisor;
@@ -767,7 +805,11 @@ namespace ChemistryLab.Desktop
                 CationCount = cationCount,
                 AnionCount = anionCount,
                 Formula = FormatIon(cation.Formula, cationCount) + FormatIon(anion.Formula, anionCount),
-                MolarMass = cation.MolarMass * cationCount + anion.MolarMass * anionCount
+                MolarMass = cation.MolarMass * cationCount + anion.MolarMass * anionCount,
+                Colour = cation.Colour,
+                Solubility = CompoundSolubility.Unknown,
+                Hazards = ChemicalHazardFlags.None,
+                Confidence = CompoundConfidence.RuleDerived
             };
         }
 

@@ -57,7 +57,10 @@ namespace ChemistryLab.Desktop.Editor
             Debug.Log(
                 "DESKTOP_LAB_DATA_PASS elements=" + HighSchoolPeriodicTable.All.Count
                 + " chemicals=" + DesktopChemistryDatabase.AllChemicals.Count
-                + " reactions=" + DesktopChemistryDatabase.AllReactions.Count);
+                + " reactions=" + DesktopChemistryDatabase.AllReactions.Count
+                + " generatedCompounds=" + CompoundGenerationMatrix.AcceptedCompoundCount
+                + " uniqueFormulas=" + CompoundGenerationMatrix.UniqueFormulaCount
+                + " reviewedGeneratedCompounds=" + CompoundGenerationMatrix.ReviewedCompoundCount);
         }
 
         public static void BuildWindows()
@@ -104,6 +107,7 @@ namespace ChemistryLab.Desktop.Editor
         {
             DesktopChemistryDatabase.ValidateOrThrow();
             HighSchoolPeriodicTable.ValidateOrThrow();
+            CompoundGenerationMatrix.ValidateOrThrow();
             DynamicReactionEngine.ValidateOrThrow();
             AirborneHazardCatalog.ValidateOrThrow();
             LabSafetySystem.ValidateOrThrow();
@@ -151,9 +155,34 @@ namespace ChemistryLab.Desktop.Editor
             if (generated.Status != ReactionStatus.Reaction
                 || !generated.GeneratedByRule
                 || !string.Equals(generated.RuleFamily, "acid-base", StringComparison.Ordinal)
+                || generated.ProductConfidence != CompoundConfidence.RuleDerived
+                || string.IsNullOrWhiteSpace(generated.GeneratedPropertyBasis)
                 || generated.Equation.IndexOf("Ca(NO₃)₂", StringComparison.Ordinal) < 0)
             {
                 throw new InvalidOperationException("Dynamic reaction fallback validation failed.");
+            }
+
+            var generatedToxicGas = ReactionSimulator.Evaluate(
+                new[]
+                {
+                    new VesselAddition("phosphoric-acid", 10d),
+                    new VesselAddition("sodium-sulfide", 10d)
+                },
+                LabStation.Workbench,
+                24f);
+            if (generatedToxicGas.Status != ReactionStatus.Reaction
+                || !generatedToxicGas.GeneratedByRule
+                || !string.Equals(
+                    generatedToxicGas.RuleFamily,
+                    "acid-sulfide",
+                    StringComparison.Ordinal)
+                || generatedToxicGas.ProductConfidence != CompoundConfidence.Reviewed
+                || generatedToxicGas.Hazard == null
+                || generatedToxicGas.Hazard.Severity != HazardSeverity.Critical
+                || !generatedToxicGas.SafetyViolation)
+            {
+                throw new InvalidOperationException(
+                    "Generated compound safety integration validation failed.");
             }
 
             var hoodReactionCount = 0;
@@ -217,6 +246,8 @@ namespace ChemistryLab.Desktop.Editor
                 + " hoodRules=" + hoodReactionCount
                 + " dynamicFamilies=" + DynamicReactionEngine.RuleFamilyCount
                 + " dynamicPairs=" + dynamicResolvedPairs
+                + " generatedCompounds=" + CompoundGenerationMatrix.AcceptedCompoundCount
+                + " uniqueFormulas=" + CompoundGenerationMatrix.UniqueFormulaCount
                 + " effects=" + effects.Count
                 + " audioSignals=5");
 
@@ -228,6 +259,11 @@ namespace ChemistryLab.Desktop.Editor
                 dynamicSpecies = DynamicReactionEngine.SupportedSpeciesCount,
                 dynamicRuleFamilies = DynamicReactionEngine.RuleFamilyCount,
                 dynamicResolvedPairs = dynamicResolvedPairs,
+                generatedCompounds = CompoundGenerationMatrix.AcceptedCompoundCount,
+                uniqueGeneratedFormulas = CompoundGenerationMatrix.UniqueFormulaCount,
+                reviewedGeneratedCompounds = CompoundGenerationMatrix.ReviewedCompoundCount,
+                compoundMatrixElements = CompoundGenerationMatrix.Elements.Count,
+                compoundMatrixIons = CompoundGenerationMatrix.Ions.Count,
                 fumeHoodRules = hoodReactionCount,
                 effectClasses = effects.Count,
                 proceduralAudioSignalClasses = 5,
@@ -394,6 +430,11 @@ namespace ChemistryLab.Desktop.Editor
             public int dynamicSpecies;
             public int dynamicRuleFamilies;
             public int dynamicResolvedPairs;
+            public int generatedCompounds;
+            public int uniqueGeneratedFormulas;
+            public int reviewedGeneratedCompounds;
+            public int compoundMatrixElements;
+            public int compoundMatrixIons;
             public int fumeHoodRules;
             public int effectClasses;
             public int proceduralAudioSignalClasses;

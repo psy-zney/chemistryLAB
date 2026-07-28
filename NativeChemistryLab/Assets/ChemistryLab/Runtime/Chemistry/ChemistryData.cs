@@ -273,6 +273,9 @@ namespace ChemistryLab.Desktop
         public ReactionDefinition Reaction;
         public bool GeneratedByRule;
         public string RuleFamily;
+        public CompoundConfidence ProductConfidence;
+        public ChemicalHazardFlags ProductHazards;
+        public string GeneratedPropertyBasis;
         public string Title;
         public string Equation;
         public string Message;
@@ -697,6 +700,11 @@ namespace ChemistryLab.Desktop
                 ? AirborneHazardCatalog.Find(match.ProductFormula)
                 : null;
             var safetyViolation = match.RequiresFumeHood && station != LabStation.FumeHood;
+            GeneratedCompoundDefinition generatedProduct = null;
+            var hasGeneratedProduct = generatedByRule
+                && CompoundGenerationMatrix.TryFindByFormula(
+                    match.ProductFormula,
+                    out generatedProduct);
 
             return new ReactionOutcome
             {
@@ -704,6 +712,21 @@ namespace ChemistryLab.Desktop
                 Reaction = match,
                 GeneratedByRule = generatedByRule,
                 RuleFamily = ruleFamily,
+                ProductConfidence = generatedByRule
+                    ? hasGeneratedProduct
+                        ? generatedProduct.Confidence
+                        : CompoundConfidence.RuleDerived
+                    : CompoundConfidence.Reviewed,
+                ProductHazards = hasGeneratedProduct
+                    ? generatedProduct.Hazards
+                    : ChemicalHazardFlags.None,
+                GeneratedPropertyBasis = hasGeneratedProduct
+                    ? generatedProduct.Family + " · "
+                        + generatedProduct.Solubility + " · "
+                        + generatedProduct.ValidationNotes
+                    : generatedByRule
+                        ? "Reaction-rule output; no compound-property record matched the primary product."
+                        : "Reviewed reaction catalogue.",
                 Title = match.Name,
                 Equation = match.Equation,
                 Message = safetyViolation

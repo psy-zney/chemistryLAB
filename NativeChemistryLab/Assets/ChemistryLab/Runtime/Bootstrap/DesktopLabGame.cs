@@ -94,6 +94,7 @@ namespace ChemistryLab.Desktop
         {
             DesktopChemistryDatabase.ValidateOrThrow();
             HighSchoolPeriodicTable.ValidateOrThrow();
+            CompoundGenerationMatrix.ValidateOrThrow();
             DynamicReactionEngine.ValidateOrThrow();
             AirborneHazardCatalog.ValidateOrThrow();
             LabSafetySystem.ValidateOrThrow();
@@ -1761,6 +1762,10 @@ namespace ChemistryLab.Desktop
                 + DesktopChemistryDatabase.AllReactions.Count
                 + " elements="
                 + HighSchoolPeriodicTable.All.Count
+                + " generatedCompounds="
+                + CompoundGenerationMatrix.AcceptedCompoundCount
+                + " uniqueFormulas="
+                + CompoundGenerationMatrix.UniqueFormulaCount
                 + " product="
                 + outcome.EstimatedProductGrams.ToString("0.000")
                 + "g audioClips="
@@ -1797,6 +1802,9 @@ namespace ChemistryLab.Desktop
                 chemicals = DesktopChemistryDatabase.AllChemicals.Count,
                 reactions = DesktopChemistryDatabase.AllReactions.Count,
                 elements = HighSchoolPeriodicTable.All.Count,
+                generatedCompounds = CompoundGenerationMatrix.AcceptedCompoundCount,
+                uniqueGeneratedFormulas = CompoundGenerationMatrix.UniqueFormulaCount,
+                reviewedGeneratedCompounds = CompoundGenerationMatrix.ReviewedCompoundCount,
                 estimatedProductGrams = outcome == null ? 0d : outcome.EstimatedProductGrams,
                 runtimeAudioClips = audioSystem == null ? 0 : audioSystem.ClipCount,
                 pauseButtons = hud == null ? 0 : hud.PauseButtonCount,
@@ -1829,6 +1837,9 @@ namespace ChemistryLab.Desktop
             public int chemicals;
             public int reactions;
             public int elements;
+            public int generatedCompounds;
+            public int uniqueGeneratedFormulas;
+            public int reviewedGeneratedCompounds;
             public double estimatedProductGrams;
             public int runtimeAudioClips;
             public int pauseButtons;

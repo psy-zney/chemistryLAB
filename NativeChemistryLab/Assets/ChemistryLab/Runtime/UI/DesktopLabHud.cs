@@ -290,6 +290,19 @@ namespace ChemistryLab.Desktop
                 builder.Append(outcome.GeneratedByRule
                     ? "Luật suy diễn · " + outcome.RuleFamily
                     : "Phản ứng mẫu đã duyệt");
+                if (outcome.GeneratedByRule)
+                {
+                    builder.Append("\n\nĐỘ TIN CẬY SẢN PHẨM\n");
+                    builder.Append(outcome.ProductConfidence);
+                    builder.Append("\n\nCƠ SỞ ƯỚC TÍNH\n");
+                    builder.Append(outcome.GeneratedPropertyBasis);
+                    if (outcome.ProductHazards != ChemicalHazardFlags.None)
+                    {
+                        builder.Append("\n\nCỜ NGUY HẠI SẢN PHẨM\n");
+                        builder.Append(outcome.ProductHazards);
+                    }
+                }
+
                 builder.Append("\n\nCHẤT GIỚI HẠN\n");
                 builder.Append(limiting == null ? "—" : limiting.Formula);
                 builder.Append("\n\nSẢN LƯỢNG LÝ THUYẾT\n");

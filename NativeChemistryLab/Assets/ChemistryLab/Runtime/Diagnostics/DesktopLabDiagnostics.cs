@@ -114,6 +114,10 @@ namespace ChemistryLab.Desktop
                 .Append(DesktopChemistryDatabase.AllChemicals.Count).Append(" chất · ")
                 .Append(DesktopChemistryDatabase.AllReactions.Count).Append(" mẫu · ")
                 .Append(DynamicReactionEngine.RuleFamilyCount).Append(" luật\n");
+            builder.Append("MATRIX   ")
+                .Append(CompoundGenerationMatrix.AcceptedCompoundCount).Append(" tọa độ · ")
+                .Append(CompoundGenerationMatrix.UniqueFormulaCount).Append(" công thức · ")
+                .Append(CompoundGenerationMatrix.ReviewedCompoundCount).Append(" đã duyệt\n");
             var safety = game.SafetySystem;
             builder.Append("SAFETY   ")
                 .Append(safety == null

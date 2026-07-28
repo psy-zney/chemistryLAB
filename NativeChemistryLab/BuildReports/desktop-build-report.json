@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-28T17:32:47.1224805Z",
+    "generatedAtUtc": "2026-07-28T18:16:57.9256039Z",
     "unityVersion": "6000.5.3f1",
     "phase": "windows-player",
     "result": "succeeded",
@@ -9,7 +9,7 @@
     "output": "Builds/ChemistryLab3D/ChemistryLab3D.exe",
     "warnings": 0,
     "errors": 0,
-    "sizeBytes": 94059868,
+    "sizeBytes": 94110464,
     "validation": {
         "elements": 52,
         "chemicals": 40,
@@ -17,6 +17,11 @@
         "dynamicSpecies": 40,
         "dynamicRuleFamilies": 9,
         "dynamicResolvedPairs": 155,
+        "generatedCompounds": 565,
+        "uniqueGeneratedFormulas": 541,
+        "reviewedGeneratedCompounds": 45,
+        "compoundMatrixElements": 27,
+        "compoundMatrixIons": 46,
         "fumeHoodRules": 11,
         "effectClasses": 4,
         "proceduralAudioSignalClasses": 5,
