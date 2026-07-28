@@ -228,6 +228,16 @@ namespace ChemistryLab.Desktop
                 game.ToggleDiagnostics();
             }
 
+            if (Input.GetKeyDown(KeyCode.F6))
+            {
+                game.ToggleRespirator();
+            }
+
+            if (Input.GetKeyDown(KeyCode.F7))
+            {
+                game.ToggleGasTrap();
+            }
+
             if (Input.GetKeyDown(KeyCode.LeftBracket))
             {
                 game.AdjustSelectedAmount(-1f);

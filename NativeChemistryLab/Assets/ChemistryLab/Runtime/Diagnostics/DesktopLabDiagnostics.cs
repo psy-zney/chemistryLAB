@@ -112,7 +112,16 @@ namespace ChemistryLab.Desktop
             builder.Append("DATA     ")
                 .Append(HighSchoolPeriodicTable.All.Count).Append(" nguyên tố · ")
                 .Append(DesktopChemistryDatabase.AllChemicals.Count).Append(" chất · ")
-                .Append(DesktopChemistryDatabase.AllReactions.Count).Append(" p/ư\n");
+                .Append(DesktopChemistryDatabase.AllReactions.Count).Append(" mẫu · ")
+                .Append(DynamicReactionEngine.RuleFamilyCount).Append(" luật\n");
+            var safety = game.SafetySystem;
+            builder.Append("SAFETY   ")
+                .Append(safety == null
+                    ? "—"
+                    : safety.Health.ToString("0.0") + " HP · "
+                      + safety.Credits + " cr · "
+                      + safety.IncidentCount + " sự cố")
+                .Append('\n');
             builder.Append("AUDIO    ")
                 .Append(audioSystem == null ? "—" : audioSystem.StatusLabel + " · " + audioSystem.ClipCount + " clip")
                 .Append('\n');

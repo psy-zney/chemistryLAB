@@ -30,6 +30,9 @@ namespace ChemistryLab.Desktop
         private Text audioStatusText;
         private Text audioButtonText;
         private Text debugText;
+        private Text playerSafetyText;
+        private Text respiratorButtonText;
+        private Text gasTrapButtonText;
         private GameObject inspectorPanel;
         private CanvasGroup inspectorGroup;
         private RectTransform inspectorRect;
@@ -65,6 +68,7 @@ namespace ChemistryLab.Desktop
                     && pauseOverlay != null
                     && debugPanel != null
                     && resumeButton != null
+                    && playerSafetyText != null
                     && PauseButtonCount == 3
                     && UnityEngine.Object.FindAnyObjectByType<EventSystem>() != null;
             }
@@ -109,6 +113,45 @@ namespace ChemistryLab.Desktop
             safetyText.text = safe ? "AN TOÀN" : "ĐÃ KHÓA";
             safetyText.color = safe ? LabTheme.Safe : LabTheme.Warning;
             safetyText.gameObject.name = message;
+        }
+
+        public void SetSafetySystem(LabSafetySystem state)
+        {
+            if (state == null || playerSafetyText == null)
+            {
+                return;
+            }
+
+            var incident = state.LastIncident;
+            var warning = state.Health < 50f
+                || incident != null && !incident.Controlled && incident.Severity >= HazardSeverity.Dangerous;
+            playerSafetyText.text =
+                "SỨC KHỎE  " + state.Health.ToString("0.0") + " / 100"
+                + "     TÍN DỤNG  " + state.Credits + "\n"
+                + "MẶT NẠ  " + (state.RespiratorEquipped ? "ĐANG ĐEO" : state.RespiratorOwned ? "ĐÃ THÁO" : "CHƯA MUA")
+                + "     BÌNH CÁCH LY  " + (state.GasTrapConnected ? "ĐÃ NỐI" : "CHƯA NỐI") + "\n"
+                + (incident == null ? "Chưa ghi nhận sự cố." : incident.Title + " · " + incident.Message);
+            playerSafetyText.color = warning ? LabTheme.Warning : LabTheme.GraphiteInk;
+
+            if (respiratorButtonText != null)
+            {
+                respiratorButtonText.text = !state.RespiratorOwned
+                    ? "F6 · MUA MẶT NẠ · " + LabSafetySystem.RespiratorPrice
+                    : state.RespiratorEquipped ? "F6 · THÁO MẶT NẠ" : "F6 · ĐEO MẶT NẠ";
+            }
+
+            if (gasTrapButtonText != null)
+            {
+                gasTrapButtonText.text = state.GasTrapConnected
+                    ? "F7 · THÁO BÌNH CÁCH LY"
+                    : "F7 · NỐI BÌNH CÁCH LY";
+            }
+
+            if (safetyText != null)
+            {
+                safetyText.text = warning ? "CẢNH BÁO" : "AN TOÀN";
+                safetyText.color = warning ? LabTheme.Warning : LabTheme.Safe;
+            }
         }
 
         public void SetMission(string title, bool completed)
@@ -243,7 +286,11 @@ namespace ChemistryLab.Desktop
             if (outcome.Status == ReactionStatus.Reaction)
             {
                 var limiting = DesktopChemistryDatabase.GetChemical(outcome.LimitingChemicalId);
-                builder.Append("\nCHẤT GIỚI HẠN\n");
+                builder.Append("\nNGUỒN MÔ PHỎNG\n");
+                builder.Append(outcome.GeneratedByRule
+                    ? "Luật suy diễn · " + outcome.RuleFamily
+                    : "Phản ứng mẫu đã duyệt");
+                builder.Append("\n\nCHẤT GIỚI HẠN\n");
                 builder.Append(limiting == null ? "—" : limiting.Formula);
                 builder.Append("\n\nSẢN LƯỢNG LÝ THUYẾT\n");
                 builder.Append(outcome.TheoreticalProductGrams.ToString("0.000"));
@@ -251,6 +298,15 @@ namespace ChemistryLab.Desktop
                 builder.Append(outcome.EstimatedProductGrams.ToString("0.000"));
                 builder.Append(" g\n\nQUAN SÁT\n");
                 builder.Append(outcome.Message);
+                if (outcome.Hazard != null)
+                {
+                    builder.Append("\n\nKHÍ / HƠI NGUY HIỂM\n");
+                    builder.Append(outcome.Hazard.Formula);
+                    builder.Append(" · ");
+                    builder.Append(outcome.Hazard.Severity);
+                    builder.Append("\n");
+                    builder.Append(outcome.Hazard.Warning);
+                }
             }
             else
             {
@@ -498,6 +554,8 @@ namespace ChemistryLab.Desktop
                 new Vector2(16f, 8f),
                 new Vector2(-12f, -8f));
 
+            CreateSafetyPanel(canvasObject.transform);
+
             var promptPanel = CreatePanel(
                 "Interaction Prompt Surface",
                 canvasObject.transform,
@@ -567,7 +625,7 @@ namespace ChemistryLab.Desktop
             CreateText(
                 "Movement Controls",
                 footer.transform,
-                "WASD  DI CHUYỂN     SHIFT  CHẠY     E  TƯƠNG TÁC     F  DỮ LIỆU     [ / ]  ĐỊNH LƯỢNG     ESC  TẠM DỪNG",
+                "WASD  DI CHUYỂN    E  TƯƠNG TÁC    F  DỮ LIỆU    F6  MẶT NẠ    F7  CÁCH LY    ESC  TẠM DỪNG",
                 bodyFont,
                 13,
                 FontStyle.Bold,
@@ -629,8 +687,8 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
-                new Vector2(20f, -438f),
-                new Vector2(390f, -174f),
+                new Vector2(20f, -614f),
+                new Vector2(390f, -350f),
                 LabTheme.WithAlpha(LabTheme.Graphite, 0.92f));
 
             CreateText(
@@ -660,6 +718,52 @@ namespace ChemistryLab.Desktop
                 Vector2.one,
                 new Vector2(16f, 12f),
                 new Vector2(-14f, -48f));
+        }
+
+        private void CreateSafetyPanel(Transform parent)
+        {
+            var panel = CreatePanel(
+                "Safety Consequence Panel",
+                parent,
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(0f, 1f),
+                new Vector2(20f, -334f),
+                new Vector2(410f, -170f),
+                LabTheme.WithAlpha(LabTheme.Graphite, 0.92f));
+
+            playerSafetyText = CreateText(
+                "Safety State",
+                panel.transform,
+                "SỨC KHỎE  100 / 100     TÍN DỤNG  1200\n"
+                + "MẶT NẠ  CHƯA MUA     BÌNH CÁCH LY  CHƯA NỐI\nChưa ghi nhận sự cố.",
+                bodyFont,
+                12,
+                FontStyle.Bold,
+                LabTheme.GraphiteInk,
+                TextAnchor.UpperLeft,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(14f, 58f),
+                new Vector2(-14f, -12f));
+
+            var respiratorButton = CreateButton(
+                "Respirator Button",
+                panel.transform,
+                "F6 · MUA MẶT NẠ · 250",
+                new Vector2(14f, 12f),
+                new Vector2(187f, 50f),
+                game.ToggleRespirator);
+            respiratorButtonText = respiratorButton.GetComponentInChildren<Text>();
+
+            var trapButton = CreateButton(
+                "Gas Trap Button",
+                panel.transform,
+                "F7 · NỐI BÌNH CÁCH LY",
+                new Vector2(199f, 12f),
+                new Vector2(376f, 50f),
+                game.ToggleGasTrap);
+            gasTrapButtonText = trapButton.GetComponentInChildren<Text>();
         }
 
         private void CreateInspector(Transform parent)

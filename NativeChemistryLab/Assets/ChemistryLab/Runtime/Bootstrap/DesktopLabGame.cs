@@ -30,6 +30,7 @@ namespace ChemistryLab.Desktop
         private LabStation currentZone = LabStation.Workbench;
         private LabStation currentVesselStation = LabStation.Workbench;
         private ReactionOutcome currentOutcome;
+        private LabSafetySystem labSafety;
         private bool missionComplete;
         private bool inspectorOpen;
 
@@ -68,6 +69,11 @@ namespace ChemistryLab.Desktop
             get { return currentOutcome; }
         }
 
+        public LabSafetySystem SafetySystem
+        {
+            get { return labSafety; }
+        }
+
         public LabStation CurrentZone
         {
             get { return currentZone; }
@@ -88,6 +94,9 @@ namespace ChemistryLab.Desktop
         {
             DesktopChemistryDatabase.ValidateOrThrow();
             HighSchoolPeriodicTable.ValidateOrThrow();
+            DynamicReactionEngine.ValidateOrThrow();
+            AirborneHazardCatalog.ValidateOrThrow();
+            LabSafetySystem.ValidateOrThrow();
             DesktopLabAudio.ValidateSignalGenerationOrThrow();
             Application.targetFrameRate = 120;
             QualitySettings.vSyncCount = 1;
@@ -96,6 +105,7 @@ namespace ChemistryLab.Desktop
             vesselAdditions[LabStation.Workbench] = new List<VesselAddition>();
             vesselAdditions[LabStation.FumeHood] = new List<VesselAddition>();
 
+            labSafety = new LabSafetySystem();
             CreateHud();
             BuildWorld();
             BuildAudio();
@@ -107,6 +117,7 @@ namespace ChemistryLab.Desktop
             hud.SetMission("Tạo kết tủa xanh Cu(OH)₂", false);
             hud.SetZone(ZoneLabel(currentZone));
             hud.SetAudioState(audioSystem != null && !audioSystem.IsMuted);
+            hud.SetSafetySystem(labSafety);
             hud.ShowTransient("Tìm CuSO₄·5H₂O và NaOH trong tủ hóa chất.");
 
             if (HasCommandLineFlag("-captureTest"))
@@ -136,8 +147,18 @@ namespace ChemistryLab.Desktop
             hud.SetSelectedChemical(selectedChemical, selectedAmountGrams);
             hud.ShowChemicalSection();
             ToggleInspector(true);
-            hud.ShowTransient("Đã lấy " + next.Formula + " · " + next.Name);
-            audioSystem.PlaySamplePickup();
+            var hazard = ChemicalHazardClassifier.Classify(next);
+            if (hazard.Severity >= HazardSeverity.Dangerous)
+            {
+                hud.SetSafety(false, hazard.Message);
+                hud.ShowTransient("CẢNH BÁO HÓA CHẤT · " + hazard.Message, true);
+                audioSystem.PlayError();
+            }
+            else
+            {
+                hud.ShowTransient("Đã lấy " + next.Formula + " · " + next.Name);
+                audioSystem.PlaySamplePickup();
+            }
         }
 
         public void ClearSelectedChemical()
@@ -181,31 +202,31 @@ namespace ChemistryLab.Desktop
             currentVesselStation = station;
             currentOutcome = nextOutcome;
 
-            if (nextOutcome.Status == ReactionStatus.Blocked)
-            {
-                hud.SetVessel(candidate, nextOutcome, station);
-                hud.SetSafety(false, nextOutcome.Safety);
-                hud.SetTemperature(nextOutcome.TemperatureC);
-                hud.ShowVesselSection();
-                ToggleInspector(true);
-                hud.ShowTransient(nextOutcome.Message, true);
-                audioSystem.PlayError();
-                return;
-            }
-
             additions.Add(candidate[candidate.Count - 1]);
             UpdateVesselVisual(station, additions, nextOutcome);
             audioSystem.PlayPour(GetVesselPosition(station));
             hud.SetVessel(additions, nextOutcome, station);
             hud.SetTemperature(nextOutcome.TemperatureC);
-            hud.SetSafety(true, nextOutcome.Safety);
+            hud.SetSafety(!nextOutcome.SafetyViolation, nextOutcome.Safety);
             hud.ShowVesselSection();
             ToggleInspector(true);
 
             if (nextOutcome.Status == ReactionStatus.Reaction)
             {
+                var incident = labSafety.Apply(nextOutcome, station);
+                hud.SetSafetySystem(labSafety);
                 PlayReactionEffect(station, nextOutcome);
-                hud.ShowTransient(nextOutcome.Title + " · " + nextOutcome.Message);
+                if (!incident.Controlled)
+                {
+                    hud.ShowTransient(incident.Title + " · " + incident.Message, true);
+                    audioSystem.PlayHazardAlarm();
+                }
+                else
+                {
+                    hud.ShowTransient(
+                        nextOutcome.Title + " · " + nextOutcome.Message
+                        + (nextOutcome.GeneratedByRule ? " · suy diễn " + nextOutcome.RuleFamily : string.Empty));
+                }
                 if (!missionComplete
                     && nextOutcome.Reaction != null
                     && string.Equals(nextOutcome.Reaction.Id, MissionReactionId, StringComparison.Ordinal))
@@ -297,6 +318,39 @@ namespace ChemistryLab.Desktop
 
             audioSystem.ToggleMuted();
             hud.SetAudioState(!audioSystem.IsMuted);
+        }
+
+        public void ToggleRespirator()
+        {
+            if (labSafety == null)
+            {
+                return;
+            }
+
+            var message = labSafety.BuyOrToggleRespirator();
+            hud.SetSafetySystem(labSafety);
+            hud.ShowTransient(message, !labSafety.RespiratorOwned);
+            if (labSafety.RespiratorOwned)
+            {
+                audioSystem.PlayUiClick();
+            }
+            else
+            {
+                audioSystem.PlayError();
+            }
+        }
+
+        public void ToggleGasTrap()
+        {
+            if (labSafety == null)
+            {
+                return;
+            }
+
+            var message = labSafety.ToggleGasTrap();
+            hud.SetSafetySystem(labSafety);
+            hud.ShowTransient(message);
+            audioSystem.PlayUiClick();
         }
 
         public void ToggleDiagnostics()
@@ -1308,7 +1362,8 @@ namespace ChemistryLab.Desktop
             currentVesselStation = station;
             hud.SetVessel(additions, currentOutcome, station);
             hud.SetTemperature(currentOutcome.TemperatureC);
-            hud.SetSafety(currentOutcome.Status != ReactionStatus.Blocked, currentOutcome.Safety);
+            hud.SetSafety(!currentOutcome.SafetyViolation, currentOutcome.Safety);
+            hud.SetSafetySystem(labSafety);
         }
 
         private void RefreshVesselVisual(LabStation station)
@@ -1682,9 +1737,11 @@ namespace ChemistryLab.Desktop
                 || outcome.EstimatedProductGrams <= 0d
                 || audioSystem == null
                 || !audioSystem.Ready
-                || audioSystem.ClipCount != 14
+                || audioSystem.ClipCount != 15
                 || hud == null
                 || !hud.RuntimeUiReady
+                || labSafety == null
+                || labSafety.Health < 99.9f
                 || player == null
                 || player.ViewCamera == null
                 || player.ViewCamera.GetComponent<AudioListener>() == null
