@@ -1,0 +1,1253 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Đồ thị Three.js tương tác của ma trận hợp chất đang dùng trong Chemistry Lab 3D.">
+  <title>Ma trận hợp chất 3D · Chemistry Lab</title>
+  <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./compound-matrix-3d.tokens.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.185.1/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.185.1/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body data-load-state="loading">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand__mark" aria-hidden="true">CL</span>
+      <div class="brand__copy">
+        <h1>Ma trận hợp chất 3D</h1>
+        <p id="brandMeta">đang đọc dữ liệu engine…</p>
+      </div>
+    </div>
+
+    <div class="topbar__tools">
+      <button class="search-pill" id="openSearch" type="button" aria-label="Tìm công thức hoặc tên chất">
+        <span class="search-pill__label">Tìm công thức hoặc tên chất</span>
+        <span><kbd>Ctrl</kbd> <kbd>K</kbd></span>
+      </button>
+      <div>
+        <button class="icon-button" type="button" data-mobile-panel="filters" aria-label="Mở bộ lọc">
+          <span aria-hidden="true">≡</span>
+          <span class="icon-button__text">Bộ lọc</span>
+        </button>
+        <button class="icon-button" id="openSearchCompact" type="button" aria-label="Tìm chất">
+          <span aria-hidden="true">⌕</span>
+          <span class="icon-button__text">Tìm chất</span>
+        </button>
+        <button class="icon-button" type="button" data-mobile-panel="inspector" aria-label="Mở bảng phân tích">
+          <span aria-hidden="true">i</span>
+          <span class="icon-button__text">Phân tích</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="app-shell" id="appShell">
+    <aside class="panel panel--filters" id="filterPanel" aria-label="Bộ lọc đồ thị">
+      <div class="panel__head">
+        <h2>Lớp dữ liệu</h2>
+        <button class="panel__close" type="button" data-close-panel aria-label="Đóng bộ lọc">×</button>
+      </div>
+      <div class="panel__body">
+        <div class="readout" aria-label="Thống kê điểm">
+          <div class="readout__item">
+            <strong id="visibleCount">—</strong>
+            <span>đang hiển thị</span>
+          </div>
+          <div class="readout__item">
+            <strong id="formulaCount">—</strong>
+            <span>công thức riêng</span>
+          </div>
+        </div>
+
+        <fieldset class="filter-group">
+          <legend>Họ hợp chất</legend>
+          <div class="filter-list" id="familyFilters"></div>
+        </fieldset>
+
+        <fieldset class="filter-group">
+          <legend>Mức tin cậy</legend>
+          <div class="filter-list">
+            <label class="check-row">
+              <input type="checkbox" name="confidence" value="Reviewed" checked>
+              <span>Đã thẩm định</span>
+              <span class="check-row__count" id="reviewedCount">—</span>
+            </label>
+            <label class="check-row">
+              <input type="checkbox" name="confidence" value="RuleDerived" checked>
+              <span>Suy ra bằng luật</span>
+              <span class="check-row__count" id="derivedCount">—</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="filter-group">
+          <legend>Hiển thị</legend>
+          <div class="filter-list">
+            <label class="check-row">
+              <input id="hazardOnly" type="checkbox">
+              <span>Chỉ chất có cảnh báo</span>
+              <span class="check-row__count">!</span>
+            </label>
+            <label class="check-row">
+              <input id="showGrid" type="checkbox" checked>
+              <span>Lưới tọa độ</span>
+              <span class="check-row__count">XYZ</span>
+            </label>
+            <label class="check-row">
+              <input id="showRejected" type="checkbox">
+              <span>Điểm bị loại</span>
+              <span class="check-row__count" id="rejectedCount">—</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <button class="tool-button" id="selectAllFamilies" type="button">Hiện lại mọi lớp</button>
+      </div>
+    </aside>
+
+    <section class="stage" id="stage" aria-label="Đồ thị hợp chất ba chiều">
+      <div id="viewport" tabindex="0" aria-label="Kéo để xoay đồ thị, cuộn để thu phóng, nhấp một điểm để xem tính chất"></div>
+
+      <div class="stage__toolbar" aria-label="Góc nhìn">
+        <button class="view-button" type="button" data-view="perspective" aria-pressed="true">Phối cảnh</button>
+        <button class="view-button" type="button" data-view="top" aria-pressed="false">Từ trên</button>
+        <button class="view-button" type="button" data-view="front" aria-pressed="false">Mặt trước</button>
+        <button class="view-button" id="resetCamera" type="button">Đặt lại</button>
+      </div>
+
+      <div class="axis-key" aria-hidden="true">
+        <span class="axis-key__x"><i></i>X · kim loại / cation</span>
+        <span class="axis-key__y"><i></i>Y · phi kim / anion</span>
+        <span class="axis-key__z"><i></i>Z · oxy / số oxi hóa</span>
+      </div>
+
+      <span class="axis-label" id="axisX" aria-hidden="true">X · hoạt động mạnh → yếu</span>
+      <span class="axis-label" id="axisY" aria-hidden="true">Y · anion / gốc axit</span>
+      <span class="axis-label" id="axisZ" aria-hidden="true">Z · số nguyên tử O</span>
+
+      <div class="hover-card" id="hoverCard" role="tooltip">
+        <strong id="hoverFormula"></strong>
+        <span id="hoverMeta"></span>
+      </div>
+
+      <div class="loading-screen" id="loadingScreen">
+        <span class="loading-screen__mark" aria-hidden="true"></span>
+        <h2>Đang dựng 565 điểm hợp chất</h2>
+        <p id="loadingMessage">Đọc ma trận JSON và cân bằng điện tích bằng cùng quy tắc với engine Unity.</p>
+      </div>
+    </section>
+
+    <aside class="panel panel--inspector" id="inspectorPanel" aria-label="Tính chất hợp chất">
+      <div class="panel__head">
+        <h2>Phân tích điểm</h2>
+        <button class="panel__close" type="button" data-close-panel aria-label="Đóng bảng phân tích">×</button>
+      </div>
+      <div class="panel__body" id="inspectorBody">
+        <div class="inspector-empty" id="inspectorEmpty">
+          Chọn một điểm trên đồ thị hoặc tìm theo công thức. Màu nút lấy trực tiếp từ dữ liệu hóa chất; hình học biểu thị họ hợp chất.
+        </div>
+
+        <div id="compoundDetails" hidden>
+          <div class="compound-title">
+            <span class="compound-title__formula" id="detailFormula"></span>
+            <span class="compound-title__name" id="detailName"></span>
+          </div>
+
+          <dl class="property-list">
+            <div><dt>Họ</dt><dd id="detailFamily"></dd></div>
+            <div><dt>Tọa độ</dt><dd id="detailCoordinate"></dd></div>
+            <div><dt>Thành phần</dt><dd id="detailIons"></dd></div>
+            <div><dt>Tỉ lệ ion</dt><dd id="detailRatio"></dd></div>
+            <div><dt>Khối lượng mol</dt><dd id="detailMass"></dd></div>
+            <div><dt>Trạng thái</dt><dd id="detailPhase"></dd></div>
+            <div><dt>Độ tan</dt><dd id="detailSolubility"></dd></div>
+            <div><dt>Màu mô phỏng</dt><dd id="detailColour"></dd></div>
+            <div><dt>Độ tin cậy</dt><dd id="detailConfidence"></dd></div>
+          </dl>
+
+          <div>
+            <p class="filter-label">Cảnh báo</p>
+            <div class="hazard-list" id="detailHazards"></div>
+          </div>
+
+          <p class="notes" id="detailAppearance"></p>
+          <p class="notes" id="detailNotes"></p>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <button class="panel-scrim" id="panelScrim" type="button" aria-label="Đóng bảng đang mở"></button>
+
+  <footer class="statusbar">
+    <span class="statusbar__message" id="statusMessage" role="status" aria-live="polite">Đang khởi tạo WebGL…</span>
+    <span class="statusbar__help">Chuột trái: xoay · con lăn: zoom · chuột phải: pan · Ctrl K: tìm</span>
+  </footer>
+
+  <dialog class="search-dialog" id="searchDialog" aria-labelledby="searchTitle">
+    <div class="search-dialog__field">
+      <span aria-hidden="true">⌕</span>
+      <input id="searchInput" type="search" autocomplete="off" spellcheck="false" aria-label="Tìm công thức hoặc tên chất" placeholder="Ví dụ: CuSO₄, hydroxide, khí độc">
+      <kbd>Esc</kbd>
+    </div>
+    <div class="search-results" id="searchResults" role="listbox" aria-label="Kết quả tìm chất"></div>
+    <div class="search-dialog__foot">
+      <span><kbd>↑</kbd> <kbd>↓</kbd> di chuyển</span>
+      <span><kbd>Enter</kbd> chọn</span>
+      <span id="searchTitle">Tìm trong toàn bộ ma trận</span>
+    </div>
+  </dialog>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    const DATA_URL = "../../NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json";
+    const EXPECTED_ACCEPTED = 565;
+    const EXPECTED_UNIQUE = 541;
+    const DEFAULT_CAMERA = new THREE.Vector3(25, 21, 31);
+    const DEFAULT_TARGET = new THREE.Vector3(0, 5.4, 0);
+    const SUBSCRIPT = "₀₁₂₃₄₅₆₇₈₉";
+
+    const FAMILY_INFO = {
+      BinarySalt: { label: "Muối nhị nguyên", shape: "round" },
+      OxySalt: { label: "Muối có oxy", shape: "diamond" },
+      Acid: { label: "Axit", shape: "diamond" },
+      Hydroxide: { label: "Bazơ / hydroxide", shape: "soft" },
+      MetalOxide: { label: "Oxit kim loại", shape: "soft" },
+      NonmetalOxide: { label: "Oxit phi kim", shape: "diamond" },
+      AmmoniumSalt: { label: "Muối amoni", shape: "round" },
+      Molecular: { label: "Phân tử", shape: "round" }
+    };
+
+    const els = {
+      viewport: document.querySelector("#viewport"),
+      stage: document.querySelector("#stage"),
+      loading: document.querySelector("#loadingScreen"),
+      loadingMessage: document.querySelector("#loadingMessage"),
+      brandMeta: document.querySelector("#brandMeta"),
+      familyFilters: document.querySelector("#familyFilters"),
+      visibleCount: document.querySelector("#visibleCount"),
+      formulaCount: document.querySelector("#formulaCount"),
+      reviewedCount: document.querySelector("#reviewedCount"),
+      derivedCount: document.querySelector("#derivedCount"),
+      rejectedCount: document.querySelector("#rejectedCount"),
+      hazardOnly: document.querySelector("#hazardOnly"),
+      showGrid: document.querySelector("#showGrid"),
+      showRejected: document.querySelector("#showRejected"),
+      selectAllFamilies: document.querySelector("#selectAllFamilies"),
+      hoverCard: document.querySelector("#hoverCard"),
+      hoverFormula: document.querySelector("#hoverFormula"),
+      hoverMeta: document.querySelector("#hoverMeta"),
+      status: document.querySelector("#statusMessage"),
+      axisX: document.querySelector("#axisX"),
+      axisY: document.querySelector("#axisY"),
+      axisZ: document.querySelector("#axisZ"),
+      filterPanel: document.querySelector("#filterPanel"),
+      inspectorPanel: document.querySelector("#inspectorPanel"),
+      panelScrim: document.querySelector("#panelScrim"),
+      inspectorEmpty: document.querySelector("#inspectorEmpty"),
+      compoundDetails: document.querySelector("#compoundDetails"),
+      searchDialog: document.querySelector("#searchDialog"),
+      searchInput: document.querySelector("#searchInput"),
+      searchResults: document.querySelector("#searchResults")
+    };
+
+    const detailFields = Object.fromEntries(
+      ["Formula", "Name", "Family", "Coordinate", "Ions", "Ratio", "Mass", "Phase", "Solubility", "Colour", "Confidence", "Hazards", "Appearance", "Notes"]
+        .map(name => [name.toLowerCase(), document.querySelector(`#detail${name}`)])
+    );
+
+    const state = {
+      document: null,
+      records: [],
+      recordByCoordinate: new Map(),
+      families: new Map(),
+      activeFamilies: new Set(Object.keys(FAMILY_INFO)),
+      activeConfidence: new Set(["Reviewed", "RuleDerived"]),
+      selected: null,
+      hovered: null,
+      hoverTimer: null,
+      lastPointer: null,
+      searchMatches: [],
+      searchIndex: 0,
+      pointerDown: null,
+      centralOrder: [],
+      anionOrder: [],
+      world: null
+    };
+
+    function repairText(value) {
+      if (typeof value !== "string" || !/[ÃÂâ]/.test(value)) return value;
+      try {
+        return decodeURIComponent(escape(value));
+      } catch {
+        return value;
+      }
+    }
+
+    function subscript(value) {
+      return String(value).split("").map(digit => SUBSCRIPT[Number(digit)]).join("");
+    }
+
+    function gcd(a, b) {
+      let left = Math.abs(a);
+      let right = Math.abs(b);
+      while (right !== 0) {
+        [left, right] = [right, left % right];
+      }
+      return left;
+    }
+
+    function formatIon(ion, count) {
+      const formula = repairText(ion.formula);
+      if (count <= 1) return formula;
+      return `${ion.polyatomic ? `(${formula})` : formula}${subscript(count)}`;
+    }
+
+    function formatElement(symbol, count) {
+      return count <= 1 ? symbol : `${symbol}${subscript(count)}`;
+    }
+
+    function unique(values) {
+      return [...new Set(values.filter(Boolean))];
+    }
+
+    function normalizeSearch(value) {
+      return repairText(String(value))
+        .normalize("NFD")
+        .replace(/\p{Diacritic}/gu, "")
+        .replace(/[₀₁₂₃₄₅₆₇₈₉]/g, digit => String(SUBSCRIPT.indexOf(digit)))
+        .toLocaleLowerCase("vi");
+    }
+
+    function familyFor(cation, anion) {
+      if (cation.id === "hydrogen") {
+        return anion.id === "oxide" || anion.id === "hydroxide" ? "Molecular" : "Acid";
+      }
+      if (cation.id === "ammonium") return "AmmoniumSalt";
+      if (anion.id === "oxide") return "MetalOxide";
+      if (anion.id === "hydroxide") return "Hydroxide";
+      return anion.oxygenCount > 0 ? "OxySalt" : "BinarySalt";
+    }
+
+    function estimateSolubility(cation, anion) {
+      if (cation.id === "hydrogen") return "Soluble";
+      if (["lithium", "sodium", "potassium", "ammonium"].includes(cation.id)) {
+        return anion.id === "oxide" ? "ReactsWithWater" : "Soluble";
+      }
+      if (["nitrate", "nitrite", "acetate", "chlorate", "hypochlorite", "bicarbonate", "dichromate"].includes(anion.id)) {
+        return "Soluble";
+      }
+      if (["chloride", "bromide", "iodide"].includes(anion.id)) {
+        return cation.id === "silver" || cation.id.startsWith("lead-") ? "Insoluble" : "Soluble";
+      }
+      if (anion.id === "sulfate") {
+        if (cation.id === "barium" || cation.id.startsWith("lead-")) return "Insoluble";
+        return cation.id === "calcium" ? "SlightlySoluble" : "Soluble";
+      }
+      if (anion.id === "hydroxide") {
+        if (cation.id === "barium") return "Soluble";
+        return cation.id === "calcium" ? "SlightlySoluble" : "Insoluble";
+      }
+      if (anion.id === "oxide") {
+        return ["calcium", "barium"].includes(cation.id) ? "ReactsWithWater" : "Insoluble";
+      }
+      if (["carbonate", "phosphate", "sulfide", "silicate", "chromate"].includes(anion.id)) {
+        return "Insoluble";
+      }
+      return "Unknown";
+    }
+
+    function estimatePhase(cation, anion) {
+      if (cation.id === "hydrogen" && anion.id === "sulfide") return "Gas";
+      if (cation.id === "hydrogen") return "Liquid";
+      return "Solid";
+    }
+
+    function estimateHazards(cation, anion, family, solubility) {
+      const hazards = [...(cation.hazards || []), ...(anion.hazards || [])];
+      if (family === "Acid" || (family === "Hydroxide" && solubility === "Soluble")) {
+        hazards.push("corrosive");
+      }
+      if (family === "Acid" && ["carbonate", "sulfide", "nitrite", "hypochlorite"].includes(anion.id)) {
+        hazards.push("gas-release-potential");
+      }
+      return unique(hazards);
+    }
+
+    function appearanceFor(colour, phase, solubility) {
+      if (phase === "Gas") return "Khí sinh bởi luật; màu là tín hiệu hiển thị ước tính.";
+      if (phase === "Liquid" || phase === "Aqueous") return `Dung dịch/chất lỏng có màu ước tính ${colour}.`;
+      if (["Insoluble", "SlightlySoluble"].includes(solubility)) {
+        return `Chất rắn; có thể xuất hiện dưới dạng kết tủa. Màu ước tính ${colour}.`;
+      }
+      return `Chất rắn ion có màu ước tính ${colour}.`;
+    }
+
+    function buildName(cation, anion, family) {
+      if (family === "Acid") return `${repairText(anion.name)} acid`;
+      if (family === "Molecular") return "Water-derived molecular compound";
+      return `${repairText(cation.name)} ${repairText(anion.name)}`;
+    }
+
+    function generateRecords(documentData) {
+      const elementsBySymbol = new Map(documentData.elements.map(element => [element.symbol, element]));
+      const ionsById = new Map(documentData.ions.map(ion => [ion.id, ion]));
+      const overrides = new Map(documentData.overrides.map(item => [item.coordinate, item]));
+      const exclusions = new Map(documentData.exclusions.map(item => [item.coordinate, repairText(item.reason)]));
+      const cations = documentData.ions.filter(ion => ion.charge > 0);
+      const anions = documentData.ions.filter(ion => ion.charge < 0);
+      const records = [];
+
+      for (const cation of cations) {
+        for (const anion of anions) {
+          const coordinate = `${cation.id}|${anion.id}`;
+          if (exclusions.has(coordinate)) continue;
+
+          const divisor = gcd(cation.charge, anion.charge);
+          const cationCount = Math.abs(anion.charge) / divisor;
+          const anionCount = Math.abs(cation.charge) / divisor;
+          const family = familyFor(cation, anion);
+          let solubility = estimateSolubility(cation, anion);
+          let phase = estimatePhase(cation, anion);
+          let formula = formatIon(cation, cationCount) + formatIon(anion, anionCount);
+          let colour = anion.colour.toUpperCase() !== "#ECECE8" ? anion.colour : cation.colour;
+          let hazards = estimateHazards(cation, anion, family, solubility);
+          let confidence = "RuleDerived";
+          let appearance = appearanceFor(colour, phase, solubility);
+          let notes = "Cân bằng điện tích và phân loại bằng luật ion, độ tan và nguy cơ của engine.";
+
+          const reviewed = overrides.get(coordinate);
+          if (reviewed) {
+            formula = repairText(reviewed.formula || formula);
+            solubility = reviewed.solubility || solubility;
+            phase = reviewed.phase || phase;
+            colour = reviewed.colour || colour;
+            hazards = unique([...hazards, ...(reviewed.hazards || [])]);
+            confidence = reviewed.confidence || "Reviewed";
+            appearance = repairText(reviewed.appearance || appearanceFor(colour, phase, solubility));
+            notes = repairText(reviewed.notes || "Reviewed compound override.");
+          }
+
+          const element = elementsBySymbol.get(cation.elementSymbol);
+          records.push({
+            coordinate,
+            name: buildName(cation, anion, family),
+            formula,
+            family,
+            cationId: cation.id,
+            anionId: anion.id,
+            cationName: repairText(cation.name),
+            anionName: repairText(anion.name),
+            cationCount,
+            anionCount,
+            molarMass: cation.molarMass * cationCount + anion.molarMass * anionCount,
+            oxygenCount: anion.oxygenCount * anionCount,
+            oxidationState: cation.charge,
+            activityRank: element?.activityRank ?? 0,
+            centralKey: cation.elementSymbol || "NH₄",
+            solubility,
+            phase,
+            appearance,
+            colour,
+            hazards,
+            confidence,
+            notes,
+            isOxideRoute: false
+          });
+        }
+      }
+
+      const oxide = ionsById.get("oxide");
+      for (const element of documentData.elements) {
+        for (const oxidationState of element.oxidationStates) {
+          if (oxidationState <= 0) continue;
+          const coordinate = `oxide:${element.symbol}:${oxidationState}`;
+          if (exclusions.has(coordinate)) continue;
+
+          const divisor = gcd(oxidationState, Math.abs(oxide.charge));
+          const elementCount = Math.abs(oxide.charge) / divisor;
+          const oxygenCount = oxidationState / divisor;
+          const family = element.axis === "Metal" ? "MetalOxide" : "NonmetalOxide";
+          let formula = formatElement(element.symbol, elementCount) + formatElement("O", oxygenCount);
+          let solubility = element.axis === "Metal" ? "Insoluble" : "ReactsWithWater";
+          let phase = "Solid";
+          let colour = element.axis === "Metal" ? "#E3E2DB" : "#DDE7E8";
+          let hazards = [];
+          let confidence = "RuleDerived";
+          let notes = "Công thức oxit thực nghiệm suy ra từ số oxi hóa được cho phép.";
+          let appearance = appearanceFor(colour, phase, solubility);
+
+          const reviewed = overrides.get(coordinate);
+          if (reviewed) {
+            formula = repairText(reviewed.formula || formula);
+            solubility = reviewed.solubility || solubility;
+            phase = reviewed.phase || phase;
+            colour = reviewed.colour || colour;
+            hazards = unique(reviewed.hazards || []);
+            confidence = reviewed.confidence || "Reviewed";
+            notes = repairText(reviewed.notes || notes);
+            appearance = repairText(reviewed.appearance || appearanceFor(colour, phase, solubility));
+          }
+
+          records.push({
+            coordinate,
+            name: `${repairText(element.name)} oxide (${oxidationState})`,
+            formula,
+            family,
+            cationId: `${element.symbol}+${oxidationState}`,
+            anionId: "oxide",
+            cationName: `${repairText(element.name)} (${oxidationState})`,
+            anionName: "Oxide",
+            cationCount: elementCount,
+            anionCount: oxygenCount,
+            molarMass: element.atomicMass * elementCount + 15.999 * oxygenCount,
+            oxygenCount,
+            oxidationState,
+            activityRank: element.activityRank,
+            centralKey: element.symbol,
+            solubility,
+            phase,
+            appearance,
+            colour,
+            hazards,
+            confidence,
+            notes,
+            isOxideRoute: true
+          });
+        }
+      }
+
+      const activityElements = documentData.elements
+        .filter(element => element.axis === "Metal" || element.symbol === "H")
+        .sort((left, right) => right.activityRank - left.activityRank);
+      const nonmetals = documentData.elements
+        .filter(element => element.axis !== "Metal" && element.symbol !== "H");
+      state.centralOrder = [...activityElements.map(item => item.symbol), "NH₄", ...nonmetals.map(item => item.symbol)];
+      state.anionOrder = anions.map(anion => anion.id);
+
+      const centralIndex = new Map(state.centralOrder.map((key, index) => [key, index]));
+      const anionIndex = new Map(state.anionOrder.map((key, index) => [key, index]));
+      const xSpan = 38;
+      const ySpan = 25;
+
+      for (const record of records) {
+        const xBase = (centralIndex.get(record.centralKey) / Math.max(1, state.centralOrder.length - 1) - 0.5) * xSpan;
+        const oxidationOffset = (record.oxidationState - 2) * 0.18;
+        const anionPosition = anionIndex.get(record.anionId) ?? anionIndex.get("oxide") ?? 0;
+        const z = (anionPosition / Math.max(1, state.anionOrder.length - 1) - 0.5) * ySpan;
+        const y = 0.35 + record.oxygenCount * 1.08;
+        record.position = new THREE.Vector3(xBase + oxidationOffset, y, z);
+        record.matrixCoordinate = {
+          x: centralIndex.get(record.centralKey),
+          y: anionPosition,
+          z: record.oxygenCount
+        };
+      }
+
+      return { records, exclusions, ionsById, elementsBySymbol };
+    }
+
+    function cssTokenToThree(tokenName) {
+      const value = getComputedStyle(document.documentElement).getPropertyValue(tokenName).trim();
+      const canvas = document.createElement("canvas");
+      canvas.width = 1;
+      canvas.height = 1;
+      const context = canvas.getContext("2d", { willReadFrequently: true });
+      context.fillStyle = value;
+      context.fillRect(0, 0, 1, 1);
+      const pixel = context.getImageData(0, 0, 1, 1).data;
+      return new THREE.Color(pixel[0] / 255, pixel[1] / 255, pixel[2] / 255);
+    }
+
+    function makeFamilyGeometry(family) {
+      switch (family) {
+        case "OxySalt": return new THREE.OctahedronGeometry(0.29, 0);
+        case "Acid": return new THREE.ConeGeometry(0.26, 0.52, 8);
+        case "Hydroxide": return new THREE.CylinderGeometry(0.21, 0.21, 0.46, 8);
+        case "MetalOxide": return new THREE.BoxGeometry(0.43, 0.43, 0.43);
+        case "NonmetalOxide": return new THREE.TetrahedronGeometry(0.34, 0);
+        case "AmmoniumSalt": return new THREE.DodecahedronGeometry(0.29, 0);
+        case "Molecular": return new THREE.TorusGeometry(0.24, 0.08, 6, 14);
+        default: return new THREE.SphereGeometry(0.25, 10, 8);
+      }
+    }
+
+    function buildGrid(documentData, generated) {
+      const group = new THREE.Group();
+      group.name = "matrix-grid";
+      const major = cssTokenToThree("--color-canvas-major");
+      const minor = cssTokenToThree("--color-canvas-minor");
+      const grid = new THREE.GridHelper(44, 28, major, minor);
+      grid.position.y = 0;
+      group.add(grid);
+
+      const layerMaterial = new THREE.LineBasicMaterial({ color: minor, transparent: true, opacity: 0.35 });
+      const layerPoints = [];
+      for (let level = 2; level <= 14; level += 2) {
+        const y = 0.35 + level * 1.08;
+        layerPoints.push(
+          new THREE.Vector3(-19, y, -12.5), new THREE.Vector3(19, y, -12.5),
+          new THREE.Vector3(19, y, -12.5), new THREE.Vector3(19, y, 12.5),
+          new THREE.Vector3(19, y, 12.5), new THREE.Vector3(-19, y, 12.5),
+          new THREE.Vector3(-19, y, 12.5), new THREE.Vector3(-19, y, -12.5)
+        );
+      }
+      group.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(layerPoints), layerMaterial));
+
+      const axisOrigin = new THREE.Vector3(-19.8, 0.05, 13.1);
+      const axisX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), axisOrigin, 39.6, cssTokenToThree("--color-axis-x"), 0.7, 0.35);
+      const axisY = new THREE.ArrowHelper(new THREE.Vector3(0, 0, -1), axisOrigin, 26.2, cssTokenToThree("--color-axis-y"), 0.7, 0.35);
+      const axisZ = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), axisOrigin, 16.6, cssTokenToThree("--color-axis-z"), 0.7, 0.35);
+      group.add(axisX, axisY, axisZ);
+
+      const rejectedGroup = new THREE.Group();
+      rejectedGroup.name = "rejected-coordinates";
+      const rejectedMaterial = new THREE.LineBasicMaterial({ color: cssTokenToThree("--color-danger") });
+      const rejectedPoints = [];
+      for (const coordinate of generated.exclusions.keys()) {
+        let position = null;
+        if (coordinate.includes("|")) {
+          const [cationId, anionId] = coordinate.split("|");
+          const cation = generated.ionsById.get(cationId);
+          const anion = generated.ionsById.get(anionId);
+          if (cation && anion) {
+            const central = cation.elementSymbol || "NH₄";
+            const xIndex = state.centralOrder.indexOf(central);
+            const zIndex = state.anionOrder.indexOf(anionId);
+            position = new THREE.Vector3(
+              (xIndex / Math.max(1, state.centralOrder.length - 1) - 0.5) * 38 + (cation.charge - 2) * 0.18,
+              0.35 + anion.oxygenCount * 1.08,
+              (zIndex / Math.max(1, state.anionOrder.length - 1) - 0.5) * 25
+            );
+          }
+        } else if (coordinate.startsWith("oxide:")) {
+          const [, symbol, oxidationText] = coordinate.split(":");
+          const oxidationState = Number(oxidationText);
+          const xIndex = state.centralOrder.indexOf(symbol);
+          const zIndex = state.anionOrder.indexOf("oxide");
+          position = new THREE.Vector3(
+            (xIndex / Math.max(1, state.centralOrder.length - 1) - 0.5) * 38 + (oxidationState - 2) * 0.18,
+            0.35 + oxidationState * 0.54,
+            (zIndex / Math.max(1, state.anionOrder.length - 1) - 0.5) * 25
+          );
+        }
+        if (!position) continue;
+        const size = 0.35;
+        rejectedPoints.push(
+          position.clone().add(new THREE.Vector3(-size, -size, 0)),
+          position.clone().add(new THREE.Vector3(size, size, 0)),
+          position.clone().add(new THREE.Vector3(-size, size, 0)),
+          position.clone().add(new THREE.Vector3(size, -size, 0))
+        );
+      }
+      rejectedGroup.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(rejectedPoints), rejectedMaterial));
+      rejectedGroup.visible = false;
+      group.add(rejectedGroup);
+
+      return { group, rejectedGroup };
+    }
+
+    function createWorld(documentData, generated) {
+      const scene = new THREE.Scene();
+      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      renderer.outputColorSpace = THREE.SRGBColorSpace;
+      renderer.setClearColor(cssTokenToThree("--color-canvas"), 1);
+      els.viewport.append(renderer.domElement);
+
+      const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 160);
+      camera.position.copy(DEFAULT_CAMERA);
+      const controls = new OrbitControls(camera, renderer.domElement);
+      controls.target.copy(DEFAULT_TARGET);
+      controls.enableDamping = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      controls.dampingFactor = 0.075;
+      controls.minDistance = 7;
+      controls.maxDistance = 78;
+      controls.maxPolarAngle = Math.PI * 0.49;
+      controls.update();
+
+      scene.add(new THREE.HemisphereLight(cssTokenToThree("--color-paper"), cssTokenToThree("--color-rule-2"), 2.2));
+      const keyLight = new THREE.DirectionalLight(cssTokenToThree("--color-paper"), 2.6);
+      keyLight.position.set(15, 27, 18);
+      scene.add(keyLight);
+      const rimLight = new THREE.DirectionalLight(cssTokenToThree("--color-accent-soft"), 1.2);
+      rimLight.position.set(-18, 10, -15);
+      scene.add(rimLight);
+
+      const grid = buildGrid(documentData, generated);
+      scene.add(grid.group);
+
+      const families = new Map();
+      for (const familyName of Object.keys(FAMILY_INFO)) {
+        const records = generated.records.filter(record => record.family === familyName);
+        if (records.length === 0) continue;
+        const geometry = makeFamilyGeometry(familyName);
+        const material = new THREE.MeshBasicMaterial({ toneMapped: false });
+        const mesh = new THREE.InstancedMesh(geometry, material, records.length);
+        mesh.name = familyName;
+        mesh.userData.records = records;
+        mesh.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+        families.set(familyName, mesh);
+        scene.add(mesh);
+      }
+
+      const selectionMarker = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.5, 1),
+        new THREE.MeshBasicMaterial({ color: cssTokenToThree("--color-accent"), wireframe: true })
+      );
+      selectionMarker.visible = false;
+      scene.add(selectionMarker);
+
+      const hoverMarker = new THREE.Mesh(
+        new THREE.IcosahedronGeometry(0.42, 1),
+        new THREE.MeshBasicMaterial({ color: cssTokenToThree("--color-ink"), wireframe: true })
+      );
+      hoverMarker.visible = false;
+      scene.add(hoverMarker);
+
+      const selectionStemGeometry = new THREE.BufferGeometry();
+      const selectionStem = new THREE.Line(
+        selectionStemGeometry,
+        new THREE.LineBasicMaterial({ color: cssTokenToThree("--color-accent") })
+      );
+      selectionStem.visible = false;
+      scene.add(selectionStem);
+
+      const raycaster = new THREE.Raycaster();
+      const pointer = new THREE.Vector2();
+      const dummy = new THREE.Object3D();
+
+      const resize = () => {
+        const rect = els.viewport.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) return;
+        camera.aspect = rect.width / rect.height;
+        camera.updateProjectionMatrix();
+        renderer.setSize(rect.width, rect.height, false);
+      };
+      const resizeObserver = new ResizeObserver(resize);
+      resizeObserver.observe(els.viewport);
+      resize();
+
+      return {
+        scene,
+        renderer,
+        camera,
+        controls,
+        families,
+        gridGroup: grid.group,
+        rejectedGroup: grid.rejectedGroup,
+        selectionMarker,
+        hoverMarker,
+        selectionStem,
+        raycaster,
+        pointer,
+        dummy,
+        resizeObserver
+      };
+    }
+
+    function recordVisible(record) {
+      return state.activeFamilies.has(record.family)
+        && state.activeConfidence.has(record.confidence)
+        && (!els.hazardOnly.checked || record.hazards.length > 0);
+    }
+
+    function updateInstances() {
+      const world = state.world;
+      let visible = 0;
+      const visibleFormulas = new Set();
+      for (const [family, mesh] of world.families) {
+        const records = mesh.userData.records;
+        records.forEach((record, index) => {
+          const isVisible = recordVisible(record);
+          world.dummy.position.copy(record.position);
+          world.dummy.rotation.set(0, record.isOxideRoute ? record.oxidationState * 0.09 : 0, 0);
+          const reviewedScale = record.confidence === "Reviewed" ? 1.22 : 0.86;
+          world.dummy.scale.setScalar(isVisible ? reviewedScale : 0.0001);
+          world.dummy.updateMatrix();
+          mesh.setMatrixAt(index, world.dummy.matrix);
+          mesh.setColorAt(index, new THREE.Color(record.colour));
+          record.visible = isVisible;
+          if (isVisible) {
+            visible += 1;
+            visibleFormulas.add(record.formula);
+          }
+        });
+        mesh.instanceMatrix.needsUpdate = true;
+        if (mesh.instanceColor) {
+          mesh.instanceColor.needsUpdate = true;
+        }
+        mesh.computeBoundingSphere();
+      }
+      els.visibleCount.textContent = visible.toLocaleString("vi-VN");
+      els.formulaCount.textContent = visibleFormulas.size.toLocaleString("vi-VN");
+      els.status.textContent = `${visible} / ${state.records.length} điểm · ${visibleFormulas.size} công thức riêng`;
+      if (state.selected && !state.selected.visible) clearSelection();
+    }
+
+    function buildFamilyFilters() {
+      const counts = new Map();
+      for (const record of state.records) counts.set(record.family, (counts.get(record.family) || 0) + 1);
+      els.familyFilters.replaceChildren();
+      for (const [family, info] of Object.entries(FAMILY_INFO)) {
+        if (!counts.has(family)) continue;
+        const label = document.createElement("label");
+        label.className = "check-row";
+        const input = document.createElement("input");
+        input.type = "checkbox";
+        input.name = "family";
+        input.value = family;
+        input.checked = true;
+        const shape = document.createElement("span");
+        shape.className = "check-row__shape";
+        shape.dataset.shape = info.shape;
+        shape.setAttribute("aria-hidden", "true");
+        const text = document.createElement("span");
+        text.textContent = info.label;
+        const count = document.createElement("span");
+        count.className = "check-row__count";
+        count.textContent = counts.get(family);
+        label.append(input, shape, text, count);
+        els.familyFilters.append(label);
+      }
+    }
+
+    function pickRecord(clientX, clientY) {
+      const world = state.world;
+      const rect = world.renderer.domElement.getBoundingClientRect();
+      world.pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
+      world.pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
+      world.raycaster.setFromCamera(world.pointer, world.camera);
+      const intersections = world.raycaster.intersectObjects([...world.families.values()], false);
+      for (const hit of intersections) {
+        const record = hit.object.userData.records?.[hit.instanceId];
+        if (record?.visible) return record;
+      }
+      return null;
+    }
+
+    function setHovered(record, event) {
+      state.lastPointer = event;
+      if (state.hovered === record && record) {
+        if (els.hoverCard.classList.contains("is-visible")) positionTooltip(event);
+        return;
+      }
+      window.clearTimeout(state.hoverTimer);
+      state.hovered = record;
+      state.world.hoverMarker.visible = Boolean(record);
+      els.hoverCard.classList.remove("is-visible");
+      if (!record) {
+        return;
+      }
+      state.world.hoverMarker.position.copy(record.position);
+      const scale = record.confidence === "Reviewed" ? 1.45 : 1.15;
+      state.world.hoverMarker.scale.setScalar(scale);
+      state.hoverTimer = window.setTimeout(() => {
+        if (state.hovered !== record) return;
+        els.hoverFormula.textContent = record.formula;
+        els.hoverMeta.textContent = `${FAMILY_INFO[record.family].label} · O = ${record.oxygenCount} · ${record.confidence === "Reviewed" ? "đã thẩm định" : "suy ra bằng luật"}`;
+        els.hoverCard.classList.add("is-visible");
+        positionTooltip(state.lastPointer);
+      }, 800);
+    }
+
+    function positionTooltip(event) {
+      const gap = 14;
+      const card = els.hoverCard;
+      const cardWidth = card.offsetWidth || 250;
+      const cardHeight = card.offsetHeight || 80;
+      const left = Math.min(window.innerWidth - cardWidth - gap, event.clientX + gap);
+      const top = Math.min(window.innerHeight - cardHeight - gap, event.clientY + gap);
+      card.style.left = `${Math.max(gap, left)}px`;
+      card.style.top = `${Math.max(gap, top)}px`;
+    }
+
+    function selectRecord(record, focusCamera = false) {
+      if (!record) {
+        clearSelection();
+        return;
+      }
+      state.selected = record;
+      const world = state.world;
+      world.selectionMarker.visible = true;
+      world.selectionMarker.position.copy(record.position);
+      world.selectionMarker.scale.setScalar(record.confidence === "Reviewed" ? 1.35 : 1.05);
+      world.selectionStem.geometry.dispose();
+      world.selectionStem.geometry = new THREE.BufferGeometry().setFromPoints([
+        new THREE.Vector3(record.position.x, 0, record.position.z),
+        record.position.clone()
+      ]);
+      world.selectionStem.visible = true;
+      renderInspector(record);
+      els.status.textContent = `${record.formula} · ${record.coordinate} · nhấp điểm khác để so sánh`;
+
+      if (focusCamera) {
+        const offset = world.camera.position.clone().sub(world.controls.target).normalize().multiplyScalar(8.5);
+        world.controls.target.copy(record.position);
+        world.camera.position.copy(record.position).add(offset);
+        world.controls.update();
+      }
+    }
+
+    function clearSelection() {
+      state.selected = null;
+      if (state.world) {
+        state.world.selectionMarker.visible = false;
+        state.world.selectionStem.visible = false;
+      }
+      els.inspectorEmpty.hidden = false;
+      els.compoundDetails.hidden = true;
+    }
+
+    function renderInspector(record) {
+      els.inspectorEmpty.hidden = true;
+      els.compoundDetails.hidden = false;
+      detailFields.formula.textContent = record.formula;
+      detailFields.name.textContent = record.name;
+      detailFields.family.textContent = FAMILY_INFO[record.family].label;
+      detailFields.coordinate.textContent = `X ${record.matrixCoordinate.x} · Y ${record.matrixCoordinate.y} · Z ${record.matrixCoordinate.z}`;
+      detailFields.ions.textContent = `${record.cationName} + ${record.anionName}`;
+      detailFields.ratio.textContent = `${record.cationCount} : ${record.anionCount}`;
+      detailFields.mass.textContent = `${record.molarMass.toFixed(3)} g·mol⁻¹`;
+      detailFields.phase.textContent = record.phase;
+      detailFields.solubility.textContent = record.solubility;
+      detailFields.colour.replaceChildren();
+      const swatch = document.createElement("span");
+      swatch.className = "sample-color";
+      swatch.style.setProperty("--sample-color", record.colour);
+      swatch.setAttribute("aria-hidden", "true");
+      detailFields.colour.append(swatch, document.createTextNode(record.colour));
+      detailFields.confidence.textContent = record.confidence === "Reviewed" ? "Reviewed · dữ liệu thẩm định" : "RuleDerived · suy ra bằng luật";
+      detailFields.hazards.replaceChildren();
+      if (record.hazards.length === 0) {
+        const tag = document.createElement("span");
+        tag.className = "hazard-tag hazard-tag--none";
+        tag.textContent = "không có cờ nguy cơ bổ sung";
+        detailFields.hazards.append(tag);
+      } else {
+        for (const hazard of record.hazards) {
+          const tag = document.createElement("span");
+          tag.className = "hazard-tag";
+          tag.textContent = repairText(hazard);
+          detailFields.hazards.append(tag);
+        }
+      }
+      detailFields.appearance.textContent = record.appearance;
+      detailFields.notes.textContent = record.notes;
+    }
+
+    function updateAxisLabels() {
+      if (!state.world) return;
+      const labels = [
+        [els.axisX, new THREE.Vector3(20.4, 0.05, 13.1)],
+        [els.axisY, new THREE.Vector3(-19.8, 0.05, -13.2)],
+        [els.axisZ, new THREE.Vector3(-19.8, 16.9, 13.1)]
+      ];
+      const rect = els.viewport.getBoundingClientRect();
+      for (const [element, point] of labels) {
+        const projected = point.clone().project(state.world.camera);
+        const x = (projected.x * 0.5 + 0.5) * rect.width;
+        const y = (-projected.y * 0.5 + 0.5) * rect.height;
+        element.style.left = `${x}px`;
+        element.style.top = `${y}px`;
+        element.hidden = projected.z > 1;
+      }
+    }
+
+    function setCameraView(view) {
+      const world = state.world;
+      const target = state.selected?.position || DEFAULT_TARGET;
+      world.controls.target.copy(target);
+      if (view === "top") {
+        world.camera.position.copy(target).add(new THREE.Vector3(0, 42, 0.01));
+      } else if (view === "front") {
+        world.camera.position.copy(target).add(new THREE.Vector3(0, 8, 38));
+      } else {
+        world.camera.position.copy(DEFAULT_CAMERA);
+        world.controls.target.copy(DEFAULT_TARGET);
+      }
+      world.controls.update();
+      document.querySelectorAll("[data-view]").forEach(button => {
+        button.setAttribute("aria-pressed", String(button.dataset.view === view));
+      });
+    }
+
+    function openPanel(name) {
+      const panel = name === "filters" ? els.filterPanel : els.inspectorPanel;
+      closePanels();
+      panel.classList.add("is-open");
+      els.panelScrim.classList.add("is-visible");
+      panel.querySelector(".panel__close")?.focus();
+    }
+
+    function closePanels() {
+      els.filterPanel.classList.remove("is-open");
+      els.inspectorPanel.classList.remove("is-open");
+      els.panelScrim.classList.remove("is-visible");
+    }
+
+    function openSearch() {
+      if (!els.searchDialog.open) els.searchDialog.showModal();
+      els.searchInput.value = "";
+      updateSearchResults("");
+      requestAnimationFrame(() => els.searchInput.focus());
+    }
+
+    function updateSearchResults(query) {
+      const normalized = normalizeSearch(query).trim();
+      const tokens = normalized.split(/\s+/).filter(Boolean);
+      state.searchMatches = state.records
+        .filter(record => {
+          if (tokens.length === 0) return record.confidence === "Reviewed";
+          const haystack = normalizeSearch(`${record.formula} ${record.name} ${record.coordinate} ${record.family} ${record.phase} ${record.solubility} ${record.hazards.join(" ")}`);
+          return tokens.every(token => haystack.includes(token));
+        })
+        .sort((left, right) => {
+          if (left.confidence !== right.confidence) return left.confidence === "Reviewed" ? -1 : 1;
+          return left.formula.localeCompare(right.formula, "vi");
+        })
+        .slice(0, 18);
+      state.searchIndex = Math.min(state.searchIndex, Math.max(0, state.searchMatches.length - 1));
+      renderSearchResults();
+    }
+
+    function renderSearchResults() {
+      els.searchResults.replaceChildren();
+      if (state.searchMatches.length === 0) {
+        const empty = document.createElement("div");
+        empty.className = "search-empty";
+        empty.textContent = "Không tìm thấy điểm phù hợp. Thử công thức, tên ion, pha hoặc cờ nguy cơ.";
+        els.searchResults.append(empty);
+        return;
+      }
+      state.searchMatches.forEach((record, index) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = `result-button${index === state.searchIndex ? " is-active" : ""}`;
+        button.setAttribute("role", "option");
+        button.setAttribute("aria-selected", String(index === state.searchIndex));
+        button.dataset.index = String(index);
+        const formula = document.createElement("span");
+        formula.className = "result-button__formula";
+        formula.textContent = record.formula;
+        const name = document.createElement("span");
+        name.className = "result-button__name";
+        name.textContent = record.name;
+        const meta = document.createElement("span");
+        meta.className = "result-button__meta";
+        meta.textContent = record.confidence === "Reviewed" ? "reviewed" : `O=${record.oxygenCount}`;
+        button.append(formula, name, meta);
+        button.addEventListener("click", () => chooseSearchResult(index));
+        els.searchResults.append(button);
+      });
+    }
+
+    function chooseSearchResult(index) {
+      const record = state.searchMatches[index];
+      if (!record) return;
+      if (!record.visible) {
+        state.activeFamilies.add(record.family);
+        state.activeConfidence.add(record.confidence);
+        els.hazardOnly.checked = false;
+        const familyInput = document.querySelector(`input[name="family"][value="${record.family}"]`);
+        const confidenceInput = document.querySelector(`input[name="confidence"][value="${record.confidence}"]`);
+        if (familyInput) familyInput.checked = true;
+        if (confidenceInput) confidenceInput.checked = true;
+        updateInstances();
+      }
+      selectRecord(record, true);
+      els.searchDialog.close();
+      if (window.matchMedia("(max-width: 59.99rem)").matches) openPanel("inspector");
+    }
+
+    function bindEvents() {
+      const canvas = state.world.renderer.domElement;
+      canvas.addEventListener("pointerdown", event => {
+        state.pointerDown = { x: event.clientX, y: event.clientY };
+      });
+      canvas.addEventListener("pointermove", event => {
+        const record = pickRecord(event.clientX, event.clientY);
+        setHovered(record, event);
+        canvas.style.cursor = record ? "pointer" : "grab";
+      });
+      canvas.addEventListener("pointerleave", () => setHovered(null, { clientX: 0, clientY: 0 }));
+      canvas.addEventListener("pointerup", event => {
+        if (!state.pointerDown) return;
+        const distance = Math.hypot(event.clientX - state.pointerDown.x, event.clientY - state.pointerDown.y);
+        state.pointerDown = null;
+        if (distance <= 5) selectRecord(pickRecord(event.clientX, event.clientY));
+      });
+
+      els.familyFilters.addEventListener("change", event => {
+        if (!(event.target instanceof HTMLInputElement)) return;
+        event.target.checked ? state.activeFamilies.add(event.target.value) : state.activeFamilies.delete(event.target.value);
+        updateInstances();
+      });
+      document.querySelectorAll('input[name="confidence"]').forEach(input => {
+        input.addEventListener("change", () => {
+          input.checked ? state.activeConfidence.add(input.value) : state.activeConfidence.delete(input.value);
+          updateInstances();
+        });
+      });
+      els.hazardOnly.addEventListener("change", updateInstances);
+      els.showGrid.addEventListener("change", () => {
+        state.world.gridGroup.visible = els.showGrid.checked;
+        state.world.rejectedGroup.visible = els.showGrid.checked && els.showRejected.checked;
+      });
+      els.showRejected.addEventListener("change", () => {
+        state.world.rejectedGroup.visible = els.showRejected.checked && els.showGrid.checked;
+      });
+      els.selectAllFamilies.addEventListener("click", () => {
+        state.activeFamilies = new Set(Object.keys(FAMILY_INFO));
+        state.activeConfidence = new Set(["Reviewed", "RuleDerived"]);
+        document.querySelectorAll('input[name="family"], input[name="confidence"]').forEach(input => {
+          input.checked = true;
+        });
+        els.hazardOnly.checked = false;
+        updateInstances();
+      });
+
+      document.querySelectorAll("[data-view]").forEach(button => {
+        button.addEventListener("click", () => setCameraView(button.dataset.view));
+      });
+      document.querySelector("#resetCamera").addEventListener("click", () => setCameraView("perspective"));
+      document.querySelectorAll("[data-mobile-panel]").forEach(button => {
+        button.addEventListener("click", () => openPanel(button.dataset.mobilePanel));
+      });
+      document.querySelectorAll("[data-close-panel]").forEach(button => button.addEventListener("click", closePanels));
+      els.panelScrim.addEventListener("click", closePanels);
+
+      document.querySelector("#openSearch").addEventListener("click", openSearch);
+      document.querySelector("#openSearchCompact").addEventListener("click", openSearch);
+      document.addEventListener("keydown", event => {
+        if ((event.ctrlKey || event.metaKey) && event.key.toLocaleLowerCase() === "k") {
+          event.preventDefault();
+          openSearch();
+        }
+      });
+      els.searchInput.addEventListener("input", () => {
+        state.searchIndex = 0;
+        updateSearchResults(els.searchInput.value);
+      });
+      els.searchInput.addEventListener("keydown", event => {
+        if (event.key === "ArrowDown") {
+          event.preventDefault();
+          state.searchIndex = Math.min(state.searchIndex + 1, state.searchMatches.length - 1);
+          renderSearchResults();
+        } else if (event.key === "ArrowUp") {
+          event.preventDefault();
+          state.searchIndex = Math.max(state.searchIndex - 1, 0);
+          renderSearchResults();
+        } else if (event.key === "Enter") {
+          event.preventDefault();
+          chooseSearchResult(state.searchIndex);
+        }
+      });
+      els.searchDialog.addEventListener("click", event => {
+        if (event.target !== els.searchDialog) return;
+        const rect = els.searchDialog.getBoundingClientRect();
+        const inside = event.clientX >= rect.left && event.clientX <= rect.right
+          && event.clientY >= rect.top && event.clientY <= rect.bottom;
+        if (!inside) els.searchDialog.close();
+      });
+    }
+
+    function animate() {
+      const world = state.world;
+      world.controls.update();
+      updateAxisLabels();
+      world.renderer.render(world.scene, world.camera);
+      requestAnimationFrame(animate);
+    }
+
+    async function init() {
+      try {
+        const response = await fetch(DATA_URL);
+        if (!response.ok) throw new Error(`HTTP ${response.status} khi đọc ${DATA_URL}`);
+        const raw = await response.json();
+        state.document = raw;
+        const generated = generateRecords(raw);
+        state.records = generated.records;
+        state.recordByCoordinate = new Map(state.records.map(record => [record.coordinate, record]));
+
+        buildFamilyFilters();
+        state.world = createWorld(raw, generated);
+        state.families = state.world.families;
+        updateInstances();
+        bindEvents();
+
+        const uniqueFormulaCount = new Set(state.records.map(record => record.formula)).size;
+        const reviewedCount = state.records.filter(record => record.confidence === "Reviewed").length;
+        els.reviewedCount.textContent = reviewedCount;
+        els.derivedCount.textContent = state.records.length - reviewedCount;
+        els.rejectedCount.textContent = raw.exclusions.length;
+        els.brandMeta.textContent = `${state.records.length} điểm · ${uniqueFormulaCount} công thức · schema ${raw.schemaVersion}`;
+
+        if (state.records.length !== EXPECTED_ACCEPTED || uniqueFormulaCount !== EXPECTED_UNIQUE) {
+          els.status.textContent = `Cảnh báo dữ liệu: nhận ${state.records.length}/${uniqueFormulaCount}, kỳ vọng ${EXPECTED_ACCEPTED}/${EXPECTED_UNIQUE}.`;
+          document.body.dataset.loadState = "error";
+        } else {
+          document.body.dataset.loadState = "success";
+        }
+
+        els.loading.hidden = true;
+        window.__CHEM_MATRIX_DEBUG__ = {
+          ready: true,
+          accepted: state.records.length,
+          uniqueFormulas: uniqueFormulaCount,
+          reviewed: reviewedCount,
+          rejected: raw.exclusions.length,
+          sampleRecord: {
+            formula: state.records[0].formula,
+            colour: state.records[0].colour
+          },
+          sampleInstanceColour: (() => {
+            const sample = new THREE.Color();
+            const firstMesh = state.world.families.values().next().value;
+            firstMesh.getColorAt(0, sample);
+            return `#${sample.getHexString()}`;
+          })(),
+          sampleMaterialColour: `#${state.world.families.values().next().value.material.color.getHexString()}`,
+          renderer: state.world.renderer.info,
+          cameraPosition: () => state.world.camera.position.toArray().map(value => Number(value.toFixed(3))),
+          select: coordinate => {
+            const record = state.recordByCoordinate.get(coordinate);
+            if (record) selectRecord(record, true);
+            return Boolean(record);
+          }
+        };
+        animate();
+      } catch (error) {
+        console.error(error);
+        document.body.dataset.loadState = "error";
+        els.loading.querySelector(".loading-screen__mark").hidden = true;
+        els.loading.querySelector("h2").textContent = "Không thể mở ma trận";
+        els.loadingMessage.innerHTML = "";
+        const explanation = document.createElement("span");
+        explanation.textContent = "Trang cần chạy qua static server để đọc JSON và nạp Three.js. Tại thư mục gốc repo, chạy ";
+        const command = document.createElement("code");
+        command.textContent = "python -m http.server 4173";
+        const tail = document.createElement("span");
+        tail.textContent = ", rồi mở /docs/chemistry/compound-matrix-3d.html.";
+        els.loadingMessage.append(explanation, command, tail);
+        els.status.textContent = `Lỗi khởi tạo: ${error.message}`;
+        window.__CHEM_MATRIX_DEBUG__ = { ready: false, error: error.message };
+      }
+    }
+
+    init();
+  </script>
+</body>
+</html>
