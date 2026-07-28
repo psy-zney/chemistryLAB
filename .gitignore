@@ -35,3 +35,24 @@ ehthumbs.db
 skills-lock.json
 Plan/
 Step/
+
+# Generated raw logs
+# Preserve significant outcomes in docs/logs/*.json and docs/logs/*.md.
+*.log
+
+# Structured reports are source artifacts and remain commit-eligible.
+!docs/logs/
+!docs/logs/**/*.json
+!docs/logs/**/*.md
+!NativeChemistryLab/BuildReports/
+!NativeChemistryLab/BuildReports/**/*.json
+
+# Local automation caches and disposable captures
+.playwright-cli/
+.pnpm-store/
+**/.utmp/
+output/
+node_modules/
+dist/
+coverage/
+.vite/

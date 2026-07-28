@@ -1,0 +1,199 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-07-28T23:55:46+07:00",
+  "timezone": "Asia/Saigon",
+  "purpose": "Curated replacement for transient Unity, build, capture, smoke-test and development-server raw logs.",
+  "retention_policy": {
+    "raw_logs": "ignored and deleted after significant outcomes are summarized",
+    "machine_readable_history": "docs/logs/validation-history.json",
+    "human_readable_history": "docs/logs/validation-history.md",
+    "screenshots_and_release_archives": "retained outside Git unless explicitly promoted"
+  },
+  "inventory": {
+    "raw_log_count": 41,
+    "raw_bytes": 14000762,
+    "disposition": "deleted_after_summary",
+    "sources": [
+      { "path": "LAB-animated/vite-dev.log", "bytes": 906, "class": "dev-server" },
+      { "path": "LAB-animated/vite-dev.err.log", "bytes": 0, "class": "dev-server" },
+      { "path": "Logs/upm.log", "bytes": 963, "class": "unity-package-manager" },
+      { "path": "Logs/Packages-Update.log", "bytes": 1491, "class": "unity-package-manager" },
+      { "path": "Logs/Editor.log", "bytes": 2617084, "class": "unity-editor" },
+      { "path": "Logs/Editor-prev.log", "bytes": 446134, "class": "unity-editor" },
+      { "path": "Logs/catalogue-validation.log", "bytes": 2486, "class": "validation" },
+      { "path": "Logs/AssetImportWorkerHW2-prev.log", "bytes": 2924546, "class": "unity-import-cache" },
+      { "path": "Logs/AssetImportWorkerHW1-prev.log", "bytes": 2935072, "class": "unity-import-cache" },
+      { "path": "Logs/AssetImportWorkerHW0-prev.log", "bytes": 3495375, "class": "unity-import-cache" },
+      { "path": "output/unity-native/smoke.log", "bytes": 2656, "class": "desktop-smoke" },
+      { "path": "output/unity-native/smoke-v2.log", "bytes": 1696, "class": "desktop-smoke" },
+      { "path": "output/unity-native/smoke-shipping.log", "bytes": 1740, "class": "desktop-smoke" },
+      { "path": "output/unity-native/smoke-audio.log", "bytes": 1710, "class": "desktop-smoke" },
+      { "path": "output/unity-native/isolated-build.log", "bytes": 157961, "class": "desktop-build" },
+      { "path": "output/unity-native/isolated-build-shipping.log", "bytes": 159276, "class": "desktop-build" },
+      { "path": "output/unity-native/isolated-build-release.log", "bytes": 159216, "class": "desktop-build" },
+      { "path": "output/unity-native/isolated-build-final.log", "bytes": 159019, "class": "desktop-build" },
+      { "path": "output/unity-native/isolated-build-audio.log", "bytes": 162861, "class": "desktop-build" },
+      { "path": "output/unity-native/capture.log", "bytes": 1746, "class": "desktop-capture" },
+      { "path": "output/unity-native/capture-windowed.log", "bytes": 1389, "class": "desktop-capture" },
+      { "path": "output/unity-native/capture-visible.log", "bytes": 1742, "class": "desktop-capture" },
+      { "path": "output/unity-native/capture-periodic.log", "bytes": 1743, "class": "desktop-capture" },
+      { "path": "output/unity-native/capture-pause-audio.log", "bytes": 1656, "class": "desktop-capture" },
+      { "path": "output/unity-native/capture-pause-audio-visible.log", "bytes": 1742, "class": "desktop-capture" },
+      { "path": "output/unity-native/capture-debug-visible.log", "bytes": 1744, "class": "desktop-capture" },
+      { "path": "output/unity-native/build.log", "bytes": 67982, "class": "root-project-build" },
+      { "path": "output/playwright/vite.out.log", "bytes": 0, "class": "dev-server" },
+      { "path": "output/playwright/vite.err.log", "bytes": 0, "class": "dev-server" },
+      { "path": "NativeChemistryLab/Logs/upm.log", "bytes": 1147, "class": "unity-package-manager" },
+      { "path": "NativeChemistryLab/Logs/shadercompiler-UnityShaderCompiler.exe-0.log", "bytes": 211, "class": "unity-compiler-cache" },
+      { "path": "NativeChemistryLab/Logs/AssetImportWorkerHW0.log", "bytes": 10725, "class": "unity-import-cache" },
+      { "path": "NativeChemistryLab/Logs/AssetImportWorkerHW0-prev.log", "bytes": 10730, "class": "unity-import-cache" },
+      { "path": "ChemistryLabGame/Logs/upm.log", "bytes": 1308, "class": "unity-package-manager" },
+      { "path": "ChemistryLabGame/Logs/Packages-Update.log", "bytes": 2315, "class": "unity-package-manager" },
+      { "path": "ChemistryLabGame/Logs/AssetImportWorkerHW0.log", "bytes": 8417, "class": "unity-import-cache" },
+      { "path": "ChemistryLabGame/Logs/AssetImportWorkerHW0-prev.log", "bytes": 12338, "class": "unity-import-cache" },
+      { "path": "ChemistryLabGame/Builds/Android/unity-build.log", "bytes": 558099, "class": "android-build" },
+      { "path": "ChemistryLabGame/Builds/iOS/unity-ios-build.log", "bytes": 30900, "class": "ios-build" },
+      { "path": "ChemistryLabGame/build/outputs/logs/unity---stop-build.log", "bytes": 38, "class": "gradle-cleanup" },
+      { "path": "ChemistryLabGame/.utmp/RelWithDebInfo/p5p2g1s4/armeabi-v7a/CMakeFiles/CMakeOutput.log", "bytes": 54598, "class": "native-toolchain-cache" }
+    ]
+  },
+  "important_results": {
+    "native_desktop_lab": {
+      "unity_version": "6000.5.3f1",
+      "platform": "Windows Standalone x64",
+      "final_status": "pass",
+      "build": {
+        "result": "pass",
+        "warnings": 0,
+        "reported_size_bytes": 94030828,
+        "executable": "NativeChemistryLab/Builds/ChemistryLab3D/ChemistryLab3D.exe"
+      },
+      "reaction_matrix": {
+        "result": "pass",
+        "reactions": 38,
+        "fume_hood_rules": 11,
+        "effect_classes": 4,
+        "validated_audio_signal_classes": 4,
+        "reactant_orders_tested": ["forward", "reverse"]
+      },
+      "smoke_test": {
+        "result": "pass",
+        "chemicals": 40,
+        "reactions": 38,
+        "elements": 52,
+        "estimated_product_grams": 3.673,
+        "runtime_audio_clips": 14,
+        "pause_buttons": 3,
+        "camera_fov_degrees": 66.0
+      },
+      "visual_captures": [
+        { "view": "desktop", "result": "pass", "path": "output/unity-native/desktop-visual.png" },
+        { "view": "periodic-table", "result": "pass", "path": "output/unity-native/periodic-visual.png" },
+        { "view": "pause-audio-ui", "result": "pass", "path": "output/unity-native/pause-audio-ui.png" },
+        { "view": "runtime-debug", "result": "pass", "path": "output/unity-native/runtime-debug-ui.png" }
+      ],
+      "release_archive": {
+        "path": "NativeChemistryLab/Builds/ChemistryLab3D-Windows.zip",
+        "bytes": 35175997,
+        "entries": 158,
+        "sha256": "E33970D5823E1FD413723F08BC35B76BFE33AF2DEA72B95020010EDD3DA67E45"
+      }
+    },
+    "root_unity_project": {
+      "unity_version": "6000.5.3f1",
+      "status": "pass",
+      "compiler_errors": 0,
+      "compiler_warnings": 0,
+      "resolved_compile_blockers": [
+        {
+          "file": "Assets/_Game/Scripts/Presentation/MainLabPresenter.cs",
+          "line": 313,
+          "code": "CS1061",
+          "detail": "Legacy presenter expected Reaction.NameKey; it now uses the stable reaction Id."
+        },
+        {
+          "file": "Assets/_Game/Scripts/Presentation/MainLabPresenter.cs",
+          "line": 313,
+          "code": "CS1061",
+          "detail": "Legacy presenter expected Reaction.FormulaEquation; it now uses EquationDisplay."
+        }
+      ],
+      "catalogue_validation": {
+        "result": "pass",
+        "process_exit_code": 0,
+        "chemicals": 13,
+        "reactions": 5,
+        "participants": 16,
+        "report": "docs/logs/root-catalogue-validation.json"
+      },
+      "note": "The compatibility mapping and TextMeshPro wrapping API were corrected before the clean validation run."
+    },
+    "legacy_mobile_project": {
+      "android": {
+        "result": "pass",
+        "build_type": "release APK",
+        "duration_ms": 42909,
+        "unity_exit_code": 0,
+        "size_bytes": 32599297,
+        "report": "docs/logs/mobile-android-build-report.json",
+        "diagnostic": "A stale Burst JIT cache DLL failed to load; Unity recovered and the player build succeeded."
+      },
+      "ios": {
+        "result": "blocked",
+        "unity_exit_code": 1,
+        "detail": "iOS Build Support was not installed; export also requires macOS."
+      }
+    },
+    "development_tools": {
+      "vite_logs": "No retained diagnostic value; two files were empty.",
+      "lab_animated_production_build": "pass; Vite 6.3.5 transformed 2035 modules",
+      "unity_import_logs": "Transient package/import/cache activity only.",
+      "native_toolchain_logs": "Transient CMake and Gradle cleanup output only."
+    }
+  },
+  "resolved_failures": [
+    {
+      "stage": "native smoke test",
+      "symptom": "ArgumentNullException while creating a Material because the shader was unavailable under a null graphics device.",
+      "resolution": "Added a runtime material resource and rebuilt; later smoke tests passed."
+    },
+    {
+      "stage": "desktop visual capture",
+      "symptom": "Screenshot capture failed in non-visible or batch rendering modes.",
+      "resolution": "Used a visible D3D11 window for deterministic capture; all four retained views passed."
+    },
+    {
+      "stage": "audio-enabled build",
+      "symptom": "One obsolete API warning for FindFirstObjectByType.",
+      "resolution": "Replaced it with FindAnyObjectByType; shipping build completed with zero warnings."
+    },
+    {
+      "stage": "root Unity catalogue validation",
+      "symptom": "The presentation layer referenced legacy reaction members NameKey and FormulaEquation.",
+      "resolution": "Mapped display data to Reaction.Id and Reaction.EquationDisplay; the project then compiled and validated the catalogue."
+    },
+    {
+      "stage": "root Unity warning cleanup",
+      "symptom": "TextMeshPro enableWordWrapping produced one obsolete API warning.",
+      "resolution": "Replaced it with TextWrappingModes.Normal; the final validation completed with zero compiler warnings."
+    }
+  ],
+  "git_context": {
+    "branch": "main",
+    "desktop_feature_commits": [
+      "d0d6e5a",
+      "950e3db",
+      "fe724ca",
+      "9b0c8a8",
+      "7663ed4",
+      "fc6a9da"
+    ],
+    "repository_scope_commits": {
+      "root_unity_catalogue_and_presentation": "24cf2ec",
+      "mobile_build_targets": "8aef83a",
+      "animated_reference_prototype": "fd213c5",
+      "economy_and_progression_docs": "b0406f6"
+    },
+    "raw_logs_tracked_before_cleanup": 0
+  }
+}

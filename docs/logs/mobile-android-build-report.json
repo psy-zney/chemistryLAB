@@ -1,0 +1,20 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAtUtc": "2026-07-28T16:55:46.4283236Z",
+  "unityVersion": "6000.5.3f1",
+  "result": "succeeded",
+  "platform": "Android",
+  "buildType": "release APK",
+  "output": "ChemistryLabGame/Builds/Android/ChemistryLabMobile.apk",
+  "sizeBytes": 32599297,
+  "durationMs": 42909,
+  "compilerErrors": 0,
+  "compilerWarnings": 0,
+  "diagnostics": [
+    {
+      "component": "Burst cache",
+      "severity": "non-fatal",
+      "detail": "A cached JIT DLL could not be loaded; Unity recovered and completed the player build successfully."
+    }
+  ]
+}
