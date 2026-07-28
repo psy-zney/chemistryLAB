@@ -78,6 +78,9 @@ Live viewer:
 
 `https://psy-zney.github.io/chemistryLAB/docs/chemistry/compound-matrix-3d.html`
 
+Maintainers must enable Pages once in GitHub:
+`Settings -> Pages -> Build and deployment -> Source -> GitHub Actions`.
+
 ```powershell
 python -m http.server 4173
 ```

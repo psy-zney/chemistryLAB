@@ -39,6 +39,11 @@ For GitHub readers, open the live interactive viewer:
 
 `https://psy-zney.github.io/chemistryLAB/docs/chemistry/compound-matrix-3d.html`
 
+Repository maintainers must enable Pages once in GitHub:
+`Settings -> Pages -> Build and deployment -> Source -> GitHub Actions`.
+After that, the `Deploy docs to GitHub Pages` workflow publishes the viewer on
+each relevant push to `main`.
+
 When working from a local clone, open
 [`docs/chemistry/compound-matrix-3d.html`](docs/chemistry/compound-matrix-3d.html)
 through a static server:
