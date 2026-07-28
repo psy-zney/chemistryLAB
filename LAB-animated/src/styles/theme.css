@@ -1,0 +1,274 @@
+/* Hallmark · macrostructure: One-point Diorama · tone: clean toon laboratory · anchor hue: cyan
+ * enrichment: tier-B hand-built SVG + CSS perspective · studied: yes · DNA-source: image (user reference)
+ * pre-emit critique: P5 H5 E5 S5 R4 V5
+ */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  --font-size: 16px;
+  --font-display: 'Fredoka', system-ui, sans-serif;
+  --font-body: 'Nunito', system-ui, sans-serif;
+
+  /* Chemistry Lab cartoon palette */
+  --lab-blue: #00A8E8;
+  --lab-blue-deep: #3A86FF;
+  --lab-stroke: #1E293B;
+  --dollar-green: #2ECC71;
+  --diamond-purple: #9B59B6;
+  --diamond-aurora: #00D2D3;
+  --danger-red: #E74C3C;
+
+  --background: #F1F5F9;
+  --foreground: #1E293B;
+  --card: #ffffff;
+  --card-foreground: #1E293B;
+  --popover: #ffffff;
+  --popover-foreground: #1E293B;
+  --primary: #00A8E8;
+  --primary-foreground: #ffffff;
+  --secondary: #E0F2FE;
+  --secondary-foreground: #1E293B;
+  --muted: #E2E8F0;
+  --muted-foreground: #64748B;
+  --accent: #3A86FF;
+  --accent-foreground: #ffffff;
+  --destructive: #E74C3C;
+  --destructive-foreground: #ffffff;
+  --border: #1E293B;
+  --input: transparent;
+  --input-background: #F1F5F9;
+  --switch-background: #cbced4;
+  --font-weight-medium: 600;
+  --font-weight-normal: 400;
+  --ring: #00A8E8;
+  --chart-1: oklch(0.646 0.222 41.116);
+  --chart-2: oklch(0.6 0.118 184.704);
+  --chart-3: oklch(0.398 0.07 227.392);
+  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-5: oklch(0.769 0.188 70.08);
+  --radius: 0.625rem;
+  --sidebar: oklch(0.985 0 0);
+  --sidebar-foreground: oklch(0.145 0 0);
+  --sidebar-primary: #030213;
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.97 0 0);
+  --sidebar-accent-foreground: oklch(0.205 0 0);
+  --sidebar-border: oklch(0.922 0 0);
+  --sidebar-ring: oklch(0.708 0 0);
+}
+
+.dark {
+  --background: oklch(0.145 0 0);
+  --foreground: oklch(0.985 0 0);
+  --card: oklch(0.145 0 0);
+  --card-foreground: oklch(0.985 0 0);
+  --popover: oklch(0.145 0 0);
+  --popover-foreground: oklch(0.985 0 0);
+  --primary: oklch(0.985 0 0);
+  --primary-foreground: oklch(0.205 0 0);
+  --secondary: oklch(0.269 0 0);
+  --secondary-foreground: oklch(0.985 0 0);
+  --muted: oklch(0.269 0 0);
+  --muted-foreground: oklch(0.708 0 0);
+  --accent: oklch(0.269 0 0);
+  --accent-foreground: oklch(0.985 0 0);
+  --destructive: oklch(0.396 0.141 25.723);
+  --destructive-foreground: oklch(0.637 0.237 25.331);
+  --border: oklch(0.269 0 0);
+  --input: oklch(0.269 0 0);
+  --ring: oklch(0.439 0 0);
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --chart-1: oklch(0.488 0.243 264.376);
+  --chart-2: oklch(0.696 0.17 162.48);
+  --chart-3: oklch(0.769 0.188 70.08);
+  --chart-4: oklch(0.627 0.265 303.9);
+  --chart-5: oklch(0.645 0.246 16.439);
+  --sidebar: oklch(0.205 0 0);
+  --sidebar-foreground: oklch(0.985 0 0);
+  --sidebar-primary: oklch(0.488 0.243 264.376);
+  --sidebar-primary-foreground: oklch(0.985 0 0);
+  --sidebar-accent: oklch(0.269 0 0);
+  --sidebar-accent-foreground: oklch(0.985 0 0);
+  --sidebar-border: oklch(0.269 0 0);
+  --sidebar-ring: oklch(0.439 0 0);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-input-background: var(--input-background);
+  --color-switch-background: var(--switch-background);
+  --color-ring: var(--ring);
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-body);
+  }
+
+  h1, h2, h3, h4, button {
+    font-family: var(--font-display);
+  }
+
+  /* Flat cartoon drop shadow helper */
+  .cartoon-shadow {
+    box-shadow: 0 4px 0 0 rgba(30, 41, 59, 0.15);
+  }
+  .cartoon-stroke {
+    border: 3px solid var(--lab-stroke);
+  }
+
+  /* Hide scrollbars until scrolling */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+  *:hover {
+    scrollbar-color: rgba(30,41,59,0.3) transparent;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-thumb { background: transparent; border-radius: 8px; }
+  *:hover::-webkit-scrollbar-thumb { background: rgba(30,41,59,0.25); }
+
+  /**
+  * Default typography styles for HTML elements (h1-h4, p, label, button, input).
+  * These are in @layer base, so Tailwind utility classes (like text-sm, text-lg) automatically override them.
+  */
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+  }
+}
+
+/* Layered 3D-style lobby: individual walls, cabinets, sink, scientist, bench and glassware. */
+html, body, #root { min-height: 100%; overflow-x: clip; }
+button { -webkit-tap-highlight-color: transparent; }
+button:focus-visible { outline: 3px solid var(--color-lab-cyan); outline-offset: 3px; }
+
+.lobby-page { min-height: 100vh; position: relative; overflow: clip; background: linear-gradient(180deg, var(--color-lab-white), var(--color-lab-floor)); isolation: isolate; }
+.lab-diorama { position: absolute; inset: 0; min-height: 640px; overflow: hidden; perspective: 1200px; transform-style: preserve-3d; user-select: none; }
+.diorama-motion-layer { position: absolute; inset: 0; pointer-events: none; }
+.diorama-backwall { position: absolute; inset: 0 7% 46%; background: radial-gradient(ellipse at 50% 32%, var(--color-lab-foam), var(--color-lab-wall) 62%, var(--color-lab-wall-deep)); box-shadow: inset 0 -28px 28px color-mix(in srgb, var(--color-lab-slate) 12%, transparent), inset 28px 0 42px color-mix(in srgb, var(--color-lab-slate) 9%, transparent), inset -28px 0 42px color-mix(in srgb, var(--color-lab-slate) 9%, transparent); }
+.diorama-backwall::before, .diorama-backwall::after { content: ""; position: absolute; top: 0; width: 8%; height: 100%; background: linear-gradient(90deg, var(--color-lab-wall-deep), transparent); }
+.diorama-backwall::before { left: 0; } .diorama-backwall::after { right: 0; transform: scaleX(-1); }
+.diorama-right-light { position: absolute; inset: 0 0 25% auto; width: 34%; background: linear-gradient(115deg, transparent 18%, color-mix(in srgb, var(--color-lab-cyan) 17%, transparent) 66%, transparent); opacity: .8; mix-blend-mode: screen; animation: cyan-breathe 6s var(--ease-in-out) infinite alternate; pointer-events: none; }
+.diorama-floor { position: absolute; inset: 48% 0 0; background: linear-gradient(180deg, var(--color-lab-wall-deep), var(--color-lab-floor) 10%, var(--color-lab-white)); clip-path: polygon(7% 0, 93% 0, 100% 100%, 0 100%); box-shadow: inset 0 22px 28px color-mix(in srgb, var(--color-lab-slate) 15%, transparent); }
+.diorama-floor-grid { width: 100%; height: 100%; display: block; }
+.diorama-sink-wrap { position: absolute; z-index: 4; left: 50%; top: 10%; transform: translateX(-50%) scale(.88); transform-origin: top center; }
+.sink-station { position: relative; width: 310px; height: 156px; border: 0; background: transparent; cursor: pointer; pointer-events: auto; transition: transform var(--dur-base) var(--ease-out), filter var(--dur-base) var(--ease-out); }
+.sink-station:hover { transform: translateY(-2px); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--color-lab-cyan) 60%, transparent)); }
+.sink-station::before { content: ""; position: absolute; inset: 57px 0 0; border: 4px solid var(--color-lab-slate); border-radius: 18px 18px 10px 10px; background: linear-gradient(180deg, var(--color-lab-foam), var(--color-lab-metal)); box-shadow: 0 8px 0 color-mix(in srgb, var(--color-lab-slate) 22%, transparent); }
+.sink-body { position: absolute; left: 16px; right: 16px; top: 70px; height: 73px; border: 4px solid var(--color-lab-slate); border-radius: 8px 8px 16px 16px; background: linear-gradient(180deg, var(--color-lab-metal), var(--color-lab-wall-deep)); }
+.sink-basin { position: absolute; left: 50%; top: 9px; width: 176px; height: 42px; transform: translateX(-50%); border: 4px solid var(--color-lab-slate); border-radius: 12px; background: linear-gradient(180deg, var(--color-lab-slate), var(--color-lab-metal-dark)); box-shadow: inset 0 8px 8px color-mix(in srgb, var(--color-lab-slate) 38%, transparent); }
+.sink-faucet { position: absolute; z-index: 2; left: 50%; top: 5px; height: 61px; width: 28px; transform: translateX(-50%); border: 4px solid var(--color-lab-slate); border-bottom: 0; border-radius: 20px 20px 0 0; background: linear-gradient(90deg, var(--color-lab-foam), var(--color-lab-metal)); }
+.sink-faucet-neck { position: absolute; z-index: 3; left: calc(50% + 7px); top: 49px; width: 34px; height: 15px; border: 4px solid var(--color-lab-slate); border-left: 0; border-radius: 0 12px 12px 0; background: var(--color-lab-metal); }
+.sink-rack { position: absolute; z-index: 3; top: 15px; right: 30px; width: 108px; height: 42px; border-bottom: 6px solid var(--color-lab-slate); display: flex; align-items: end; justify-content: space-around; }
+.sink-rack i { display: block; width: 12px; height: 38px; border: 3px solid var(--color-lab-slate); border-radius: 5px 5px 2px 2px; background: color-mix(in srgb, var(--color-lab-foam) 82%, var(--color-lab-cyan)); }
+.sink-water { position: absolute; z-index: 4; left: 50%; top: 55px; width: 10px; height: 67px; transform: translateX(-50%); border-radius: 0 0 100% 100%; background: linear-gradient(90deg, var(--color-lab-foam), var(--color-lab-cyan), var(--color-lab-foam)); animation: water-run 1.35s var(--ease-in-out) both; }
+.cabinet-wrap { position: absolute; z-index: 6; bottom: 11%; transform-style: preserve-3d; }
+.cabinet-wrap--left { left: 8%; } .cabinet-wrap--right { right: 8%; }
+.frosted-cabinet { position: relative; width: 180px; height: 350px; transform-style: preserve-3d; transition: transform var(--dur-base) var(--ease-out); }
+.frosted-cabinet--left { transform: rotateY(28deg); transform-origin: left center; } .frosted-cabinet--right { transform: rotateY(-28deg); transform-origin: right center; }
+.frosted-cabinet:hover { transform: translateZ(14px) rotateY(20deg); } .frosted-cabinet--right:hover { transform: translateZ(14px) rotateY(-20deg); }
+.cabinet-ambient { position: absolute; z-index: -1; inset: 18px -16px -26px; border-radius: 24px; background: color-mix(in srgb, var(--color-lab-slate) 25%, transparent); filter: blur(14px); }
+.cabinet-frame { position: absolute; inset: 0; padding: 12px; border: 5px solid var(--color-lab-slate); border-radius: 18px 18px 8px 8px; background: linear-gradient(120deg, var(--color-lab-foam), var(--color-lab-metal)); box-shadow: 8px 12px 0 color-mix(in srgb, var(--color-lab-slate) 16%, transparent), inset 0 0 0 4px color-mix(in srgb, var(--color-lab-foam) 50%, transparent); }
+.cabinet-door { position: relative; height: 100%; overflow: hidden; border: 4px solid var(--color-lab-slate); border-radius: 10px 10px 3px 3px; background: linear-gradient(110deg, color-mix(in srgb, var(--color-lab-cyan) 24%, var(--color-lab-foam)), color-mix(in srgb, var(--color-lab-cyan) 39%, transparent)); backdrop-filter: blur(2px); }
+.cabinet-shelf { height: 33.333%; border-bottom: 4px solid color-mix(in srgb, var(--color-lab-slate) 60%, transparent); padding: 11px 14px 8px; display: flex; align-items: end; justify-content: space-around; background: linear-gradient(180deg, transparent 79%, color-mix(in srgb, var(--color-lab-slate) 24%, transparent) 80%); }
+.cabinet-shelf:last-child { border-bottom: 0; }
+.cabinet-bottle { --bottle-color: var(--color-lab-cyan); display: block; position: relative; width: 35px; height: 48px; border: 3px solid var(--color-lab-slate); border-radius: 8px 8px 12px 12px; background: linear-gradient(90deg, color-mix(in srgb, var(--bottle-color) 90%, var(--color-lab-foam)), var(--bottle-color)); box-shadow: 0 0 14px color-mix(in srgb, var(--bottle-color) 80%, transparent); animation: cabinet-glow 3.8s var(--ease-in-out) infinite alternate; }
+.cabinet-bottle--tall { height: 61px; } .cabinet-bottle i { position: absolute; top: -15px; left: 50%; width: 15px; height: 16px; transform: translateX(-50%); border: 3px solid var(--color-lab-slate); border-bottom: 0; border-radius: 5px 5px 0 0; background: color-mix(in srgb, var(--color-lab-foam) 70%, var(--bottle-color)); }
+.cabinet-bottle:nth-child(2) { animation-delay: -1.4s; } .cabinet-shimmer { position: absolute; inset: -40% auto -40% -46%; width: 30%; transform: rotate(16deg); background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--color-lab-foam) 68%, transparent), transparent); animation: cabinet-shimmer 8s var(--ease-in-out) infinite; pointer-events: none; }
+.cabinet-handle { position: absolute; z-index: 2; right: 2px; top: 46%; width: 16px; height: 61px; border: 3px solid var(--color-lab-slate); border-radius: 7px; background: linear-gradient(90deg, var(--color-lab-metal), var(--color-lab-foam)); }
+.cabinet-feet { position: absolute; bottom: -22px; width: 18px; height: 24px; border: 4px solid var(--color-lab-slate); border-top: 0; background: var(--color-lab-metal-dark); }.cabinet-feet--a { left: 20px; }.cabinet-feet--b { right: 20px; }
+.diorama-scientist { position: absolute; z-index: 9; left: 50%; bottom: 21%; width: 330px; transform: translateX(-50%); filter: drop-shadow(0 11px 10px color-mix(in srgb, var(--color-lab-slate) 22%, transparent)); pointer-events: none; }.diorama-scientist--entering { animation: scientist-greet .58s var(--ease-out) both; }
+.chibi--animated { animation: chibi-breathe 3.8s var(--ease-in-out) infinite alternate; transform-origin: 50% 100%; }.chibi--animated .chibi-eye { transform-origin: center; animation: chibi-blink 6.2s var(--ease-in-out) infinite; }.chibi--animated .chibi-goggle-shine { animation: goggle-glint 4s var(--ease-in-out) infinite; }.chibi--wave .chibi-wave-arm { transform-origin: 148px 175px; animation: chibi-wave .52s var(--ease-in-out) 2; }
+.diorama-workbench { position: absolute; z-index: 11; left: 50%; bottom: 5.5%; width: min(66vw, 860px); min-width: 580px; transform: translateX(-50%) translateZ(26px); }
+.main-workbench { position: relative; height: 256px; }.bench-contact-shadow { position: absolute; z-index: -1; left: 8%; right: 8%; bottom: -10px; height: 38px; border-radius: 50%; background: color-mix(in srgb, var(--color-lab-slate) 30%, transparent); filter: blur(14px); animation: shadow-breathe 4s var(--ease-in-out) infinite alternate; }.bench-top { position: absolute; z-index: 4; inset: 14px 0 auto; height: 117px; border: 5px solid var(--color-lab-slate); border-radius: 26px 26px 15px 15px; background: linear-gradient(160deg, var(--color-lab-foam), var(--color-lab-bench) 58%, var(--color-lab-bench-edge)); box-shadow: inset 0 8px 18px color-mix(in srgb, var(--color-lab-foam) 85%, transparent); }.bench-front { position: absolute; z-index: 3; inset: 116px 32px 0; border: 5px solid var(--color-lab-slate); border-radius: 0 0 20px 20px; background: linear-gradient(180deg, var(--color-lab-bench), var(--color-lab-wall-deep)); box-shadow: inset 0 -9px 12px color-mix(in srgb, var(--color-lab-slate) 9%, transparent); }.bench-inset { position: absolute; inset: 28px 64px 26px; border: 4px solid color-mix(in srgb, var(--color-lab-slate) 28%, transparent); border-radius: 17px; }.bench-leg { position: absolute; z-index: 5; bottom: -4px; width: 48px; height: 130px; border: 5px solid var(--color-lab-slate); background: linear-gradient(90deg, var(--color-lab-slate), var(--color-lab-metal-dark)); }.bench-leg--left { left: 27px; border-radius: 0 0 15px 15px; }.bench-leg--right { right: 27px; border-radius: 0 0 15px 15px; }
+.bench-items { position: absolute; z-index: 6; inset: auto 6% 92px; display: flex; align-items: end; justify-content: space-between; }.glass-lift { position: relative; cursor: default; transform-origin: bottom center; }.glass-shadow { position: absolute; left: 50%; bottom: 4px; width: 72%; height: 12px; transform: translateX(-50%); border-radius: 50%; background: color-mix(in srgb, var(--color-lab-slate) 29%, transparent); filter: blur(5px); transition: transform var(--dur-base) var(--ease-out); }.glass-lift:hover .glass-shadow { transform: translateX(-50%) scale(.76); }.glass-glow { position: absolute; z-index: -1; inset: 35% 12% 5%; opacity: 0; border-radius: 50%; filter: blur(18px); }.glass-glow--active { opacity: .42; animation: chemical-glow 3.4s var(--ease-in-out) infinite alternate; }.erlenmeyer-flask { width: 144px; }.round-flask { width: 160px; }.test-tube-rack { width: 155px; }
+.lobby-hud { position: relative; z-index: 30; display: flex; align-items: flex-start; justify-content: space-between; gap: var(--space-3); padding: var(--space-4); pointer-events: none; }.lobby-hud > * { pointer-events: auto; }.lab-logo { display: inline-flex; align-items: center; gap: var(--space-2); padding: 10px 17px; border: 3px solid var(--color-lab-slate); border-radius: var(--radius-md); background: color-mix(in srgb, var(--color-lab-foam) 90%, transparent); box-shadow: 0 5px 0 color-mix(in srgb, var(--color-lab-slate) 16%, transparent); font-family: var(--font-display); font-size: clamp(15px, 1.7vw, 21px); font-weight: 700; letter-spacing: .02em; }.currency-row { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: var(--space-2); }.settings-button { width: 42px; height: 42px; display: grid; place-items: center; border: 3px solid var(--color-lab-slate); border-radius: 50%; background: var(--color-lab-foam); box-shadow: 0 4px 0 color-mix(in srgb, var(--color-lab-slate) 15%, transparent); transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out); }.settings-button:hover { transform: translateY(-2px) rotate(18deg); }.lobby-nav { position: absolute; z-index: 30; top: 106px; left: var(--space-4); display: flex; flex-direction: column; gap: var(--space-2); }.lobby-nav-button { display: inline-flex; align-items: center; gap: 9px; width: max-content; min-width: 132px; padding: 10px 15px; border: 3px solid var(--color-lab-slate); border-radius: 999px; background: color-mix(in srgb, var(--color-lab-foam) 93%, transparent); box-shadow: 0 4px 0 color-mix(in srgb, var(--color-lab-slate) 16%, transparent); color: var(--color-lab-slate); font-family: var(--font-display); font-weight: 600; transition: transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out); }.lobby-nav-button:hover { transform: translateX(4px) translateY(-1px); background: var(--color-lab-foam); box-shadow: 0 6px 0 color-mix(in srgb, var(--color-lab-slate) 19%, transparent); }.lobby-nav-button:active { transform: translateY(2px); box-shadow: 0 2px 0 color-mix(in srgb, var(--color-lab-slate) 19%, transparent); }.lobby-enter { position: absolute; z-index: 30; right: var(--space-6); bottom: var(--space-6); }.lobby-enter-button { min-height: 56px; padding-inline: 27px !important; font-size: clamp(17px, 2vw, 23px) !important; }.lab-button-glow { animation: enter-lab-pulse 2.6s var(--ease-in-out) infinite; }.lobby-toast, .labview-clean-toast { position: fixed; z-index: 70; left: 50%; bottom: 26px; transform: translate(-50%, 20px); padding: 10px 16px; border: 3px solid var(--color-lab-slate); border-radius: 999px; background: var(--color-lab-foam); box-shadow: 0 5px 0 color-mix(in srgb, var(--color-lab-slate) 17%, transparent); font-family: var(--font-display); font-weight: 600; opacity: 0; pointer-events: none; transition: opacity var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out); }.lobby-toast[data-visible="true"] { opacity: 1; transform: translate(-50%, 0); }
+.labview-rinse { position: absolute; z-index: 3; left: 50%; top: -5px; width: 11px; height: 170px; transform: translateX(-50%); transform-origin: top; border-radius: 0 0 10px 10px; background: linear-gradient(90deg, var(--color-lab-foam), var(--color-lab-cyan), var(--color-lab-foam)); pointer-events: none; }
+@keyframes cyan-breathe { to { opacity: .45; } } @keyframes cabinet-glow { to { filter: brightness(1.22); box-shadow: 0 0 23px color-mix(in srgb, var(--bottle-color) 88%, transparent); } } @keyframes cabinet-shimmer { 0%, 62% { transform: translateX(0) rotate(16deg); opacity: 0; } 74% { opacity: .65; } 100% { transform: translateX(720%) rotate(16deg); opacity: 0; } } @keyframes water-run { 0% { opacity: 0; transform: translateX(-50%) scaleY(.2); } 18%, 82% { opacity: .9; transform: translateX(-50%) scaleY(1); } 100% { opacity: 0; transform: translateX(-50%) scaleY(.6); } } @keyframes chibi-breathe { to { transform: translateY(-3px) scale(1.008); } } @keyframes chibi-blink { 0%, 88%, 100% { transform: scaleY(1); } 91%, 94% { transform: scaleY(.13); } } @keyframes goggle-glint { 0%, 60%, 100% { opacity: .3; transform: translateX(-2px); } 72% { opacity: 1; transform: translateX(3px); } } @keyframes chibi-wave { 50% { transform: rotate(17deg); } } @keyframes scientist-greet { 50% { transform: translateX(-50%) translateY(-7px) scale(1.035); } } @keyframes shadow-breathe { to { transform: scaleX(.94); opacity: .85; } } @keyframes chemical-glow { to { opacity: .6; transform: scale(1.08); } } @keyframes enter-lab-pulse { 50% { box-shadow: 0 0 0 6px color-mix(in srgb, var(--color-lab-cyan) 18%, transparent), 0 7px 0 color-mix(in srgb, var(--color-lab-slate) 17%, transparent); } }
+@media (max-width: 1100px) { .cabinet-wrap--left { left: 2%; }.cabinet-wrap--right { right: 2%; }.frosted-cabinet { transform: scale(.84) rotateY(24deg); }.frosted-cabinet--right { transform: scale(.84) rotateY(-24deg); }.diorama-workbench { width: min(70vw, 760px); }.diorama-scientist { bottom: 20%; transform: translateX(-50%) scale(.9); }.diorama-sink-wrap { transform: translateX(-50%) scale(.75); } }
+@media (max-width: 760px) { .lobby-page { min-height: 100svh; }.lab-diorama { min-height: 590px; }.diorama-backwall { inset-inline: 0; }.diorama-floor { inset-block-start: 46%; }.cabinet-wrap { bottom: 18%; opacity: .72; }.frosted-cabinet { transform: scale(.53) rotateY(20deg); }.frosted-cabinet--right { transform: scale(.53) rotateY(-20deg); }.cabinet-wrap--left { left: -37px; }.cabinet-wrap--right { right: -37px; }.diorama-sink-wrap { top: 11%; transform: translateX(-50%) scale(.57); }.diorama-scientist { bottom: 23%; transform: translateX(-50%) scale(.68); }.diorama-workbench { width: 580px; min-width: 580px; bottom: 7%; transform: translateX(-50%) scale(.65); transform-origin: bottom center; }.lobby-hud { padding: 10px; }.lab-logo { padding: 8px 11px; font-size: 14px; }.currency-row { max-width: 54%; gap: 4px; }.currency-row .cartoon-stroke { padding: 5px 8px; }.currency-row .size-6 { width: 20px; height: 20px; }.settings-button { width: 34px; height: 34px; }.lobby-nav { top: auto; bottom: 10px; left: 50%; width: calc(100% - 116px); transform: translateX(-50%); flex-direction: row; justify-content: space-around; padding: 7px; border: 3px solid var(--color-lab-slate); border-radius: 999px; background: color-mix(in srgb, var(--color-lab-foam) 88%, transparent); box-shadow: 0 4px 0 color-mix(in srgb, var(--color-lab-slate) 15%, transparent); }.lobby-nav-button { min-width: auto; padding: 7px; border: 0; box-shadow: none; background: transparent; }.lobby-nav-button:hover { transform: translateY(-2px); background: color-mix(in srgb, var(--color-lab-cyan) 16%, var(--color-lab-foam)); }.lobby-nav-button span { display: none; }.lobby-enter { right: 10px; bottom: 11px; }.lobby-enter-button { min-height: 46px; padding-inline: 12px !important; font-size: 14px !important; }.lobby-toast { bottom: 71px; font-size: 13px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }.lab-diorama { perspective: none; }.diorama-right-light { opacity: .45; }.frosted-cabinet:hover, .frosted-cabinet--right:hover, .lobby-nav-button:hover, .settings-button:hover { transform: none; }.glass-lift:hover .glass-shadow { transform: translateX(-50%); } }
