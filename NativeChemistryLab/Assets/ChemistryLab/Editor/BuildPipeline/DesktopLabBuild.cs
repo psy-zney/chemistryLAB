@@ -104,6 +104,9 @@ namespace ChemistryLab.Desktop.Editor
         {
             DesktopChemistryDatabase.ValidateOrThrow();
             HighSchoolPeriodicTable.ValidateOrThrow();
+            DynamicReactionEngine.ValidateOrThrow();
+            AirborneHazardCatalog.ValidateOrThrow();
+            LabSafetySystem.ValidateOrThrow();
             DesktopLabAudio.ValidateSignalGenerationOrThrow();
 
             var mission = ReactionSimulator.Evaluate(
@@ -129,12 +132,32 @@ namespace ChemistryLab.Desktop.Editor
                 },
                 LabStation.Workbench,
                 24f);
-            if (hoodRule.Status != ReactionStatus.Blocked)
+            if (hoodRule.Status != ReactionStatus.Reaction
+                || !hoodRule.SafetyViolation
+                || hoodRule.Hazard == null
+                || hoodRule.Hazard.Severity != HazardSeverity.Critical)
             {
                 throw new InvalidOperationException("Fume-hood safety validation failed.");
             }
 
+            var generated = ReactionSimulator.Evaluate(
+                new[]
+                {
+                    new VesselAddition("nitric-acid", 10d),
+                    new VesselAddition("calcium-hydroxide", 10d)
+                },
+                LabStation.Workbench,
+                24f);
+            if (generated.Status != ReactionStatus.Reaction
+                || !generated.GeneratedByRule
+                || !string.Equals(generated.RuleFamily, "acid-base", StringComparison.Ordinal)
+                || generated.Equation.IndexOf("Ca(NO₃)₂", StringComparison.Ordinal) < 0)
+            {
+                throw new InvalidOperationException("Dynamic reaction fallback validation failed.");
+            }
+
             var hoodReactionCount = 0;
+            var dynamicResolvedPairs = ValidateDynamicMatrix();
             var effects = new System.Collections.Generic.HashSet<ReactionEffect>();
             foreach (var reaction in DesktopChemistryDatabase.AllReactions)
             {
@@ -168,13 +191,14 @@ namespace ChemistryLab.Desktop.Editor
                 if (reaction.RequiresFumeHood)
                 {
                     hoodReactionCount++;
-                    var blocked = ReactionSimulator.Evaluate(additions, LabStation.Workbench, 24f);
-                    if (blocked.Status != ReactionStatus.Blocked
-                        || blocked.Reaction == null
-                        || !string.Equals(blocked.Reaction.Id, reaction.Id, StringComparison.Ordinal))
+                    var unsafeOutcome = ReactionSimulator.Evaluate(additions, LabStation.Workbench, 24f);
+                    if (unsafeOutcome.Status != ReactionStatus.Reaction
+                        || !unsafeOutcome.SafetyViolation
+                        || unsafeOutcome.Reaction == null
+                        || !string.Equals(unsafeOutcome.Reaction.Id, reaction.Id, StringComparison.Ordinal))
                     {
                         throw new InvalidOperationException(
-                            "Fume-hood rule did not block reaction: " + reaction.Id);
+                            "Fume-hood rule did not flag an unsafe reaction: " + reaction.Id);
                     }
                 }
             }
@@ -191,17 +215,22 @@ namespace ChemistryLab.Desktop.Editor
                 "DESKTOP_LAB_REACTION_MATRIX_PASS total="
                 + DesktopChemistryDatabase.AllReactions.Count
                 + " hoodRules=" + hoodReactionCount
+                + " dynamicFamilies=" + DynamicReactionEngine.RuleFamilyCount
+                + " dynamicPairs=" + dynamicResolvedPairs
                 + " effects=" + effects.Count
-                + " audioSignals=4");
+                + " audioSignals=5");
 
             return new ValidationSummary
             {
                 elements = HighSchoolPeriodicTable.All.Count,
                 chemicals = DesktopChemistryDatabase.AllChemicals.Count,
                 reactions = DesktopChemistryDatabase.AllReactions.Count,
+                dynamicSpecies = DynamicReactionEngine.SupportedSpeciesCount,
+                dynamicRuleFamilies = DynamicReactionEngine.RuleFamilyCount,
+                dynamicResolvedPairs = dynamicResolvedPairs,
                 fumeHoodRules = hoodReactionCount,
                 effectClasses = effects.Count,
-                proceduralAudioSignalClasses = 4,
+                proceduralAudioSignalClasses = 5,
                 reactantOrdersPerReaction = 2
             };
         }
@@ -226,6 +255,52 @@ namespace ChemistryLab.Desktop.Editor
                 throw new InvalidOperationException(
                     "Reaction matrix validation failed: " + expected.Id + " · " + order);
             }
+        }
+
+        private static int ValidateDynamicMatrix()
+        {
+            var chemicals = DesktopChemistryDatabase.AllChemicals;
+            var resolved = 0;
+            for (var left = 0; left < chemicals.Count - 1; left++)
+            {
+                for (var right = left + 1; right < chemicals.Count; right++)
+                {
+                    var mixture = new System.Collections.Generic.Dictionary<string, double>(
+                        StringComparer.Ordinal)
+                    {
+                        { chemicals[left].Id, 10d },
+                        { chemicals[right].Id, 10d }
+                    };
+                    ReactionDefinition generated;
+                    string family;
+                    if (!DynamicReactionEngine.TryResolve(mixture, out generated, out family))
+                    {
+                        continue;
+                    }
+
+                    if (generated == null
+                        || string.IsNullOrWhiteSpace(family)
+                        || generated.CoefficientA <= 0d
+                        || generated.CoefficientB <= 0d
+                        || generated.ProductMolarMass <= 0d
+                        || string.IsNullOrWhiteSpace(generated.Equation))
+                    {
+                        throw new InvalidOperationException(
+                            "Invalid dynamic reaction for "
+                            + chemicals[left].Id + " + " + chemicals[right].Id);
+                    }
+
+                    resolved++;
+                }
+            }
+
+            if (resolved < 100)
+            {
+                throw new InvalidOperationException(
+                    "Dynamic reaction coverage is unexpectedly low: " + resolved + " pairs.");
+            }
+
+            return resolved;
         }
 
         private static void EnsureRuntimeMaterial()
@@ -316,6 +391,9 @@ namespace ChemistryLab.Desktop.Editor
             public int elements;
             public int chemicals;
             public int reactions;
+            public int dynamicSpecies;
+            public int dynamicRuleFamilies;
+            public int dynamicResolvedPairs;
             public int fumeHoodRules;
             public int effectClasses;
             public int proceduralAudioSignalClasses;

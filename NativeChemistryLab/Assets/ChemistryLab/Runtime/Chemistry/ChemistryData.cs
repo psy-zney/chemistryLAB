@@ -271,10 +271,15 @@ namespace ChemistryLab.Desktop
     {
         public ReactionStatus Status;
         public ReactionDefinition Reaction;
+        public bool GeneratedByRule;
+        public string RuleFamily;
         public string Title;
         public string Equation;
         public string Message;
         public string Safety;
+        public bool SafetyViolation;
+        public AirborneHazard Hazard;
+        public double ReleasedGasGrams;
         public string LimitingChemicalId;
         public double TheoreticalProductGrams;
         public double EstimatedProductGrams;
@@ -647,6 +652,8 @@ namespace ChemistryLab.Desktop
             }
 
             ReactionDefinition match = null;
+            var generatedByRule = false;
+            string ruleFamily = null;
             var rules = DesktopChemistryDatabase.AllReactions;
             for (var index = 0; index < rules.Count; index++)
             {
@@ -660,27 +667,20 @@ namespace ChemistryLab.Desktop
 
             if (match == null)
             {
-                idle.Status = ReactionStatus.NoMatch;
-                idle.Title = "Chưa nhận diện phản ứng";
-                idle.Message = "Hỗn hợp hiện tại không khớp phản ứng đã kiểm chứng trong dữ liệu.";
-                idle.Safety = "Không gia nhiệt hỗn hợp chưa xác định.";
-                return idle;
+                generatedByRule = DynamicReactionEngine.TryResolve(
+                    gramsById,
+                    out match,
+                    out ruleFamily);
             }
 
-            if (match.RequiresFumeHood && station != LabStation.FumeHood)
+            if (match == null)
             {
-                return new ReactionOutcome
-                {
-                    Status = ReactionStatus.Blocked,
-                    Reaction = match,
-                    Title = "Thao tác đã khóa",
-                    Equation = match.Equation,
-                    Message = "Phản ứng có thể giải phóng khí hoặc hơi. Hãy dùng cốc trong tủ hút.",
-                    Safety = "Di chuyển tới tủ hút trước khi nạp chất thứ hai.",
-                    TemperatureC = baselineTemperatureC,
-                    DisplayColour = LabTheme.Warning,
-                    Effect = ReactionEffect.None
-                };
+                idle.Status = ReactionStatus.NoMatch;
+                idle.Title = "Không có động lực phản ứng";
+                idle.Message =
+                    "Không tìm thấy phản ứng mẫu hoặc luật ion/axit–bazơ/thế kim loại phù hợp ở điều kiện hiện tại.";
+                idle.Safety = "Hỗn hợp vẫn được giữ lại; không gia nhiệt nếu chưa có luật nhiệt phân.";
+                return idle;
             }
 
             var chemicalA = DesktopChemistryDatabase.GetChemical(match.ReactantA);
@@ -692,18 +692,32 @@ namespace ChemistryLab.Desktop
             var extent = Math.Min(extentA, extentB);
             var limiting = extentA <= extentB ? chemicalA : chemicalB;
             var theoreticalMass = extent * match.ProductMolarMass;
+            var estimatedMass = theoreticalMass * match.YieldFraction;
+            var hazard = match.Effect == ReactionEffect.Gas
+                ? AirborneHazardCatalog.Find(match.ProductFormula)
+                : null;
+            var safetyViolation = match.RequiresFumeHood && station != LabStation.FumeHood;
 
             return new ReactionOutcome
             {
                 Status = ReactionStatus.Reaction,
                 Reaction = match,
+                GeneratedByRule = generatedByRule,
+                RuleFamily = ruleFamily,
                 Title = match.Name,
                 Equation = match.Equation,
-                Message = match.Observation,
-                Safety = match.Disposal,
+                Message = safetyViolation
+                    ? match.Observation + " Phản ứng vẫn xảy ra ngoài tủ hút."
+                    : match.Observation,
+                Safety = safetyViolation
+                    ? "VI PHẠM AN TOÀN: " + match.Disposal
+                    : match.Disposal,
+                SafetyViolation = safetyViolation,
+                Hazard = hazard,
+                ReleasedGasGrams = hazard == null ? 0d : estimatedMass,
                 LimitingChemicalId = limiting.Id,
                 TheoreticalProductGrams = theoreticalMass,
-                EstimatedProductGrams = theoreticalMass * match.YieldFraction,
+                EstimatedProductGrams = estimatedMass,
                 TemperatureC = baselineTemperatureC + match.TemperatureDelta,
                 DisplayColour = match.ProductColour,
                 Effect = match.Effect

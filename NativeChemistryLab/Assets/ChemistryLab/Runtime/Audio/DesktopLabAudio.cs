@@ -63,7 +63,7 @@ namespace ChemistryLab.Desktop
             ApplyMute();
             musicSource.Play();
             ambienceSource.Play();
-            Ready = clips.Count == 14;
+            Ready = clips.Count == 15;
         }
 
         private void Update()
@@ -124,6 +124,11 @@ namespace ChemistryLab.Desktop
             PlayUi("error", 0.48f);
         }
 
+        public void PlayHazardAlarm()
+        {
+            PlayUi("hazard-alarm", 0.72f);
+        }
+
         public void PlaySamplePickup()
         {
             PlayUi("pickup", 0.42f);
@@ -179,7 +184,8 @@ namespace ChemistryLab.Desktop
                 GenerateMusic(0.4f),
                 GenerateAmbience(0.4f),
                 GenerateUiClick(),
-                GenerateReactionGas()
+                GenerateReactionGas(),
+                GenerateHazardAlarm()
             };
 
             foreach (var samples in waveforms)
@@ -213,6 +219,7 @@ namespace ChemistryLab.Desktop
             AddClip("ui-hover", GenerateChime(880f, 0.055f, 0.16f));
             AddClip("ui-click", GenerateUiClick());
             AddClip("error", GenerateError());
+            AddClip("hazard-alarm", GenerateHazardAlarm());
             AddClip("pickup", GeneratePickup());
             AddClip("pour", GeneratePour());
             AddClip("wash", GenerateWash());
@@ -361,6 +368,22 @@ namespace ChemistryLab.Desktop
                 var envelope = Mathf.Exp(-t * 9f);
                 var frequency = t < 0.1f ? 230f : 185f;
                 samples[index] = SoftClip(Mathf.Sin(2f * Mathf.PI * frequency * t) * envelope * 0.36f);
+            }
+
+            return samples;
+        }
+
+        private static float[] GenerateHazardAlarm()
+        {
+            var samples = NewBuffer(0.72f);
+            for (var index = 0; index < samples.Length; index++)
+            {
+                var t = index / (float)SampleRate;
+                var pulse = (int)(t / 0.12f) % 2 == 0 ? 1f : 0.18f;
+                var envelope = Mathf.Sin(Mathf.PI * Mathf.Clamp01(t / 0.72f));
+                var tone = Mathf.Sin(2f * Mathf.PI * 880f * t)
+                    + 0.38f * Mathf.Sin(2f * Mathf.PI * 1760f * t);
+                samples[index] = SoftClip(tone * pulse * envelope * 0.34f);
             }
 
             return samples;
