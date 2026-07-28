@@ -1,0 +1,56 @@
+{
+  "schemaVersion": "1.0",
+  "engine": "DynamicReactionEngine",
+  "catalogue": {
+    "elements": 52,
+    "chemicals": 40,
+    "curatedReactions": 38,
+    "dynamicSpecies": 40,
+    "dynamicRuleFamilies": 9,
+    "dynamicResolvedPairs": 155,
+    "possibleTwoChemicalPairs": 780
+  },
+  "resolutionPriority": [
+    "curated-reaction",
+    "dynamic-rule",
+    "no-reaction-at-current-condition"
+  ],
+  "ruleFamilies": [
+    "acid-base",
+    "acid-carbonate",
+    "acid-bicarbonate",
+    "acid-sulfide",
+    "ammonium-base",
+    "precipitation",
+    "metal-displacement",
+    "metal-acid",
+    "basic-oxide-acid"
+  ],
+  "airborneHazards": [
+    "CO2",
+    "H2",
+    "O2",
+    "NH3",
+    "H2S",
+    "Cl2",
+    "NO2",
+    "SO2"
+  ],
+  "controls": {
+    "respirator": "F6",
+    "gasIsolationTrap": "F7",
+    "respiratorPriceCredits": 250,
+    "startingCredits": 1200
+  },
+  "captureEfficiency": {
+    "fumeHood": 0.9,
+    "fumeHoodWithGasTrap": 0.995
+  },
+  "consequences": [
+    "health-loss",
+    "treatment-cost",
+    "decontamination-cost",
+    "emergency-evacuation"
+  ],
+  "disclaimer": "Health and credit values are educational gameplay scales, not medical exposure limits."
+}

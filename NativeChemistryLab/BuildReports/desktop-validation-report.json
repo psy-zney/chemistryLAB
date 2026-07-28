@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-28T17:04:43.7270380Z",
+    "generatedAtUtc": "2026-07-28T17:31:54.9760554Z",
     "unityVersion": "6000.5.3f1",
     "phase": "validation",
     "result": "succeeded",
@@ -14,9 +14,12 @@
         "elements": 52,
         "chemicals": 40,
         "reactions": 38,
+        "dynamicSpecies": 40,
+        "dynamicRuleFamilies": 9,
+        "dynamicResolvedPairs": 155,
         "fumeHoodRules": 11,
         "effectClasses": 4,
-        "proceduralAudioSignalClasses": 4,
+        "proceduralAudioSignalClasses": 5,
         "reactantOrdersPerReaction": 2
     }
 }
