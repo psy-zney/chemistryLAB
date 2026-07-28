@@ -1,0 +1,129 @@
+{
+  "schemaVersion": "1.0",
+  "scope": "educational-gameplay-model",
+  "resolutionOrder": [
+    "curated-reaction",
+    "reviewed-redox-rule",
+    "dynamic-ionic-rule",
+    "condition-gate",
+    "limiting-reagent-and-yield",
+    "safety-consequence",
+    "optional-product-collection"
+  ],
+  "vesselState": {
+    "temperatureC": {
+      "minimum": -20,
+      "maximum": 250,
+      "step": 25
+    },
+    "volumeLitres": {
+      "minimum": 0.01,
+      "maximum": 2.0,
+      "dilutionStep": 0.05
+    },
+    "derived": [
+      "chemical-molarity",
+      "total-molarity",
+      "acid-base-equivalent-pH",
+      "rate-class",
+      "completion-seconds",
+      "condition-yield-multiplier"
+    ]
+  },
+  "conditionProfiles": 7,
+  "redoxRules": [
+    {
+      "id": "redox-permanganate-peroxide",
+      "medium": "acidic",
+      "electronTransfer": 10,
+      "primaryProduct": "O2"
+    },
+    {
+      "id": "redox-permanganate-chloride",
+      "medium": "strongly-acidic",
+      "electronTransfer": 10,
+      "primaryProduct": "Cl2"
+    },
+    {
+      "id": "redox-permanganate-iodide",
+      "medium": "acidic",
+      "electronTransfer": 10,
+      "primaryProduct": "I2"
+    },
+    {
+      "id": "redox-peroxide-iodide",
+      "medium": "acidic",
+      "electronTransfer": 2,
+      "primaryProduct": "I2"
+    },
+    {
+      "id": "redox-copper-nitric-dilute",
+      "branch": "nitric-acid-below-8M",
+      "electronTransfer": 6,
+      "primaryProduct": "NO"
+    },
+    {
+      "id": "redox-copper-nitric-concentrated",
+      "branch": "nitric-acid-at-least-8M",
+      "electronTransfer": 2,
+      "primaryProduct": "NO2"
+    },
+    {
+      "id": "redox-copper-sulfuric",
+      "conditions": [
+        "temperature-at-least-70C",
+        "sulfuric-acid-at-least-3M",
+        "pH-at-most-1.5"
+      ],
+      "electronTransfer": 2,
+      "primaryProduct": "SO2"
+    },
+    {
+      "id": "redox-permanganate-iron-two",
+      "medium": "acidic",
+      "electronTransfer": 5,
+      "primaryProduct": "Fe2(SO4)3"
+    }
+  ],
+  "inventory": {
+    "file": "chemistry-inventory.json",
+    "location": "Application.persistentDataPath",
+    "massAccounted": true,
+    "gasCollectionRequires": [
+      "fume-hood",
+      "connected-gas-trap"
+    ],
+    "fields": [
+      "batchId",
+      "chemicalId",
+      "name",
+      "formula",
+      "phase",
+      "molarMass",
+      "availableGrams",
+      "purityFraction",
+      "colour",
+      "appearance",
+      "hazardText",
+      "sourceReactionId",
+      "sourceEquation",
+      "createdUtc"
+    ]
+  },
+  "validated": {
+    "unityVersion": "6000.5.3f1",
+    "generatedAtUtc": "2026-07-28T18:52:38.8734384Z",
+    "conditionProfiles": 7,
+    "redoxRules": 8,
+    "dynamicRuleFamilies": 9,
+    "dynamicResolvedPairs": 155,
+    "warnings": 0,
+    "errors": 0
+  },
+  "limitations": [
+    "educational-trend-model-not-laboratory-operating-guidance",
+    "primary-product-inventory-does-not-yet-track-every-coproduct",
+    "activity-coefficients-and-pressure-are-not-yet-modelled",
+    "kinetics-values-are-gameplay-estimates"
+  ]
+}

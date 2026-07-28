@@ -14,6 +14,9 @@ The game is built as an educational simulation, not as real laboratory operating
 - Data-driven compound-generation matrix with 27 high-school element nodes, 46 common ions, 565 accepted coordinates representing 541 unique formulas, 45 reviewed property overrides, and explicit rejection rules for unstable combinations.
 - Dynamic reaction engine that keeps curated reactions authoritative, then derives additional valid reactions from ion/species rules and asks the compound matrix for charge-balanced formulas, solubility, color, hazards, and confidence.
 - 9 dynamic reaction rule families covering acid/base, carbonate, bicarbonate, sulfide, ammonium/base, precipitation, metal displacement, metal/acid, and basic oxide/acid reactions.
+- Reaction-condition engine with independent vessel temperature and volume, molar concentration, acid/base-equivalent pH, catalyst requirements, rate classes, completion-time estimates, condition-dependent yield, and explicit blocked outcomes.
+- 8 oxidation-reduction rules validated by electron least-common-multiple balancing, including acidic permanganate chemistry and concentration-dependent `Cu + HNO3` products.
+- Persistent synthesized-product inventory. Every collected batch records mass, purity, phase, color, hazards, and source equation in JSON; reused material is mass-accounted and generated ionic products re-enter the dynamic reaction engine.
 - Safety system for toxic, corrosive, flammable, oxidising, and asphyxiant gas outcomes. Unsafe reactions are allowed to happen, but the player pays health and credit consequences if they do not use the fume hood, respirator, or gas trap correctly.
 - Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, pause menu, diagnostics, audio toggles, and accessibility reduced-motion mode.
 - Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
@@ -63,7 +66,10 @@ The runtime uses regular Unity `MonoBehaviour` components at the scene edge, whi
 
 - `DesktopLabGame` is the composition root. It validates data, creates the HUD, builds the procedural 3D room, owns selected chemical state, owns vessel state, and calls audio/VFX/safety systems.
 - `LabInteractable` is an abstract base class for world objects. `ChemicalBottleInteractable`, `VesselInteractable`, `SinkInteractable`, `AnalysisInteractable`, and `ElementTileInteractable` override the prompt and interaction behavior.
-- `ReactionSimulator` evaluates vessel contents. It checks curated reactions first, then calls `DynamicReactionEngine` only when no curated match exists.
+- `ReactionSimulator` evaluates vessel contents. It checks curated reactions, redox rules, then dynamic ionic rules; `ReactionConditionEngine` decides whether the matched reaction can run and scales its kinetics/yield.
+- `ReactionEnvironment` owns temperature and volume for each physical vessel, so heating and dilution persist independently of the ingredient list.
+- `RedoxReactionEngine` selects reviewed redox branches and verifies the shared electron count with a greatest-common-divisor/least-common-multiple algorithm.
+- `SynthesizedInventory` and `RuntimeChemicalRegistry` turn an outcome into a mass-accounted reusable batch, persist it as JSON, and register matrix-backed products as new dynamic species.
 - `CompoundGenerationMatrix` models the enriched X/Y/Z idea: cation or metal, nonmetal or anion family, oxygen count, and explicit oxidation state. It charge-balances candidate compounds, estimates physical/safety classes, applies reviewed overrides, and rejects known unstable combinations.
 - `DynamicReactionEngine` models species, reaction families, activity series, and bounded stoichiometry balancing. It consumes compound-matrix results instead of maintaining a second formula/solubility truth source.
 - `LabSafetySystem` converts hazardous reaction outcomes into player consequences: health loss, credit loss, incident history, and emergency evacuation.
@@ -83,6 +89,10 @@ E             Interact with focused object
 F             Open or close the inspector
 [ / ]         Decrease or increase selected sample mass
 Q             Put away the selected sample
+Page Up/Down  Heat or cool the active vessel by 25 °C
+F8            Add 50 mL solvent / dilute the active vessel
+C             Collect the current product as a reusable batch
+I             Cycle synthesized batches in inventory
 F3            Toggle runtime diagnostics
 F6            Buy/equip/remove respirator
 F7            Connect/disconnect gas isolation trap
@@ -113,6 +123,8 @@ Chemicals:              40
 Curated reactions:      38
 Dynamic species:        40
 Dynamic rule families:  9
+Condition profiles:      7
+Redox rules:             8
 Dynamic resolved pairs: 155 / 780
 Matrix elements:        27
 Matrix ions:            46
@@ -133,5 +145,7 @@ Structured reports:
 - `NativeChemistryLab/BuildReports/desktop-smoke-report.json`
 - `docs/chemistry/compound-generation-matrix.md`
 - `docs/chemistry/compound-generation-matrix.json`
+- `docs/chemistry/reaction-condition-engine.md`
+- `docs/chemistry/reaction-condition-engine.json`
 
 Raw Unity logs are temporary and ignored. Important logs should be converted to JSON or Markdown before being committed.

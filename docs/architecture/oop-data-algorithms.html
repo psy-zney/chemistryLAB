@@ -235,6 +235,8 @@
         <div><strong>40</strong> chemicals</div>
         <div><strong>38</strong> curated reactions</div>
         <div><strong>9</strong> dynamic rule families</div>
+        <div><strong>7</strong> condition profiles</div>
+        <div><strong>8</strong> redox rules</div>
         <div><strong>155</strong> generated valid pairs</div>
         <div><strong>565</strong> accepted coordinates</div>
         <div><strong>541</strong> unique formulas</div>
@@ -267,7 +269,7 @@
         <div class="step">
           <b>4</b>
           <h3>Chemistry is evaluated</h3>
-          <p><code>ReactionSimulator</code> checks curated reactions first, then asks <code>DynamicReactionEngine</code> for rule-based fallback and <code>CompoundGenerationMatrix</code> for validated products.</p>
+          <p><code>ReactionSimulator</code> checks curated, redox, then dynamic rules. <code>ReactionConditionEngine</code> gates the match using temperature, concentration, pH, and catalyst.</p>
         </div>
         <div class="step">
           <b>5</b>
@@ -435,6 +437,30 @@
           <span class="tag">mass balance</span>
         </div>
         <div class="card">
+          <h3>Reaction Conditions and Kinetics</h3>
+          <p>
+            <code>ReactionConditionEngine</code> converts mass to molarity, computes net acid/base-equivalent pH, applies temperature and concentration trends, verifies catalysts, and returns a rate class, completion time, and yield multiplier. Failed hard constraints return <code>Blocked</code> without consuming the vessel.
+          </p>
+          <span class="tag">pH / molarity</span>
+          <span class="tag">condition gate</span>
+        </div>
+        <div class="card">
+          <h3>Redox Electron Balance</h3>
+          <p>
+            <code>RedoxReactionEngine</code> stores electron loss and gain for two half-reactions. Euclid's GCD algorithm produces their least common multiple, which validates the shared electron count and supports acid/concentration product branches.
+          </p>
+          <span class="tag">GCD / LCM</span>
+          <span class="tag">half-reactions</span>
+        </div>
+        <div class="card">
+          <h3>Persistent Product Mass</h3>
+          <p>
+            <code>SynthesizedInventory</code> serializes batches to JSON. Loading reconstructs runtime chemical definitions; reusing a batch subtracts the requested mass and removes an empty batch. Matrix-backed products register as dynamic species.
+          </p>
+          <span class="tag">JSON persistence</span>
+          <span class="tag">mass accounting</span>
+        </div>
+        <div class="card">
           <h3>Formula Construction</h3>
           <p>
             <code>CompoundGenerationMatrix</code> combines cations and anions by charge using a greatest-common-divisor reduction. Polyatomic ions are parenthesized when count is greater than one, then reviewed overrides and exclusions are applied.
@@ -517,6 +543,12 @@ Curated reaction exists?
   `-- no
       |
       v
+      RedoxReactionEngine
+        |-- balance electron LCM
+        |-- select acid / concentration branch
+        `-- otherwise continue
+              |
+              v
       DynamicReactionEngine
         |-- acid + base
         |-- acid + carbonate / bicarbonate
@@ -536,7 +568,20 @@ Curated reaction exists?
         `-- explicit rejection for unstable candidates
               |
               v
-      generated ReactionDefinition or NoMatch</code></pre>
+      matched ReactionDefinition or NoMatch
+              |
+              v
+      ReactionConditionEngine
+        |-- temperature / volume / molarity / pH
+        |-- catalyst / rate / estimated time
+        |-- failed constraint -> Blocked
+        `-- valid -> stoichiometry + yield
+              |
+              v
+      SynthesizedInventory (optional collection)
+        |-- reusable batch + purity + hazards
+        |-- JSON persistence
+        `-- subtract mass when reused</code></pre>
     </section>
 
     <section>
@@ -616,6 +661,18 @@ Curated reaction exists?
           <tr>
             <td><code>Runtime/Chemistry/DynamicReactionEngine.cs</code></td>
             <td>Species model, reaction-family dispatch, stoichiometry balancing, and activity series.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Chemistry/ReactionConditions.cs</code></td>
+            <td>Per-vessel temperature/volume, molarity and pH estimation, catalyst gates, rate class, time, and yield trends.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Chemistry/RedoxReactionEngine.cs</code></td>
+            <td>Reviewed oxidation-reduction branches and electron GCD/LCM validation.</td>
+          </tr>
+          <tr>
+            <td><code>Runtime/Chemistry/SynthesizedInventory.cs</code></td>
+            <td>Runtime chemical registry, reusable product batches, exact mass consumption, and persistent JSON storage.</td>
           </tr>
           <tr>
             <td><code>Runtime/Chemistry/CompoundGenerationMatrix.cs</code></td>

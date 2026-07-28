@@ -53,6 +53,10 @@ E             Interact
 F             Inspector
 [ / ]         Adjust sample mass
 Q             Clear selected sample
+Page Up/Down  Heat/cool the active vessel by 25 °C
+F8            Add 50 mL solvent
+C             Collect product into persistent inventory
+I             Cycle synthesized product batches
 F3            Diagnostics
 F6            Buy/equip/remove respirator
 F7            Connect/disconnect gas trap
@@ -67,12 +71,17 @@ Esc           Pause
 - 40 chemicals with physical properties, colors, hazards, handling notes, and 3D material settings.
 - 38 curated reactions.
 - 9 dynamic reaction rule families.
+- 7 explicit reaction-condition profiles plus condition/rate evaluation for every mixture.
+- 8 oxidation-reduction rules with electron-balance validation.
 - 155 valid dynamic two-chemical pairs from the 780-pair catalogue matrix.
 - 27 compound-matrix elements and 46 reusable ions.
 - 565 accepted charge-balanced coordinates representing 541 unique formulas,
   including 45 reviewed property overrides.
 - Generated physical classes for phase, solubility, appearance/color, hazards, confidence, and validation notes.
-- Gas hazard profiles for `CO2`, `H2`, `O2`, `NH3`, `H2S`, `Cl2`, `NO2`, and `SO2`.
+- Gas hazard profiles for `CO2`, `H2`, `O2`, `NH3`, `H2S`, `Cl2`, `NO`, `NO2`, and `SO2`.
+- Per-vessel temperature, volume, concentration, pH, catalyst, rate, time, yield, and purity state.
+- Reusable synthesized batches persisted to `chemistry-inventory.json` under Unity's
+  `Application.persistentDataPath`; consuming a batch subtracts its available mass.
 
 The data-driven matrix is stored at:
 
@@ -81,6 +90,10 @@ Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json
 ```
 
 `CompoundGenerationMatrix` validates this file at startup and during batch validation. Curated reactions remain authoritative; generated compounds support the fallback engine and are labelled `Reviewed` or `RuleDerived` in the HUD.
+
+Resolution order is: curated reaction → reviewed redox rule → dynamic ionic rule →
+condition gate → stoichiometry/yield → safety consequence → optional product collection.
+Gas products can only be collected in the fume hood with the isolation trap connected.
 
 The simulation is educational. Gameplay values for damage, exposure, and cost are not medical or industrial safety limits.
 

@@ -50,6 +50,20 @@ Compound-generation matrix validation:
 - Existing dynamic reaction coverage remained **155 / 780** catalogue pairs
   after formula, solubility, colour and hazard integration.
 
+Reaction-condition/redox/inventory validation:
+
+- Result: **pass**, Unity warnings: **0**, errors: **0**.
+- **7** explicit condition profiles and condition metrics for all mixtures.
+- **8** reviewed redox rules passed electron GCD/LCM validation.
+- MnO₂ is required for the reviewed H₂O₂ decomposition and is excluded from
+  limiting-reagent consumption.
+- Cold Cu/H₂SO₄ returned `Blocked`; hot concentrated Cu/H₂SO₄ produced SO₂.
+- HNO₃ concentration selected NO (dilute) or NO₂ (concentrated).
+- JSON inventory collection, exact mass subtraction, and runtime-product
+  registration passed.
+- Windows build passed with **94,142,272 bytes**, then the built player smoke
+  test passed and the D3D12 diagnostics screenshot passed.
+
 Shipping smoke test:
 
 | Check | Result |
@@ -57,7 +71,7 @@ Shipping smoke test:
 | Chemicals | 40 |
 | Reactions | 38 |
 | High-school elements | 52 |
-| Mission product estimate | 3.673 g |
+| Mission product estimate | 3.229 g |
 | Generated compounds | 565 |
 | Unique generated formulas | 541 |
 | Reviewed generated compounds | 45 |

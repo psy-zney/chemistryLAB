@@ -62,13 +62,15 @@
   ],
   "resolutionPriority": [
     "curated-reaction",
+    "reviewed-redox-rule",
     "dynamic-reaction-family",
     "compound-generation-matrix",
+    "temperature-concentration-pH-catalyst-condition-gate",
     "property-and-safety-classification",
     "no-reaction-at-current-condition"
   ],
   "latestUnityValidation": {
-    "generatedAtUtc": "2026-07-28T18:16:34.7923023Z",
+    "generatedAtUtc": "2026-07-28T18:52:38.8734384Z",
     "unityVersion": "6000.5.3f1",
     "result": "succeeded",
     "warnings": 0,
@@ -76,10 +78,11 @@
     "dynamicResolvedPairs": 155
   },
   "limitations": [
-    "thermodynamics-and-kinetics-not-yet-derived",
-    "temperature-pressure-concentration-and-solvent-conditions-not-yet-generalized",
+    "thermodynamic-equilibrium-and-activity-coefficients-not-yet-derived",
+    "pressure-and-solvent-identity-not-yet-generalized",
+    "hard-condition-profiles-currently-cover-seven-reviewed-reactions",
     "coordination-complexes-and-hydrates-not-yet-generated",
-    "multi-step-redox-not-yet-generalized",
+    "redox-currently-uses-eight-reviewed-half-reaction-rules",
     "organic-mechanisms-out-of-current-scope",
     "some-generated-formulas-are-empirical-high-school-representations"
   ]

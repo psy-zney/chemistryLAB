@@ -132,9 +132,11 @@ Thứ tự giải vẫn bảo toàn độ tin cậy:
 
 ```text
 38 phản ứng mẫu đã duyệt
-  -> 9 họ luật DynamicReactionEngine
+  -> 8 luật oxi hóa–khử đã cân bằng electron
+      -> 9 họ luật DynamicReactionEngine
       -> CompoundGenerationMatrix tạo/kiểm định sản phẩm
-          -> tính chất, màu, độ tan, cờ nguy hại
+          -> tầng điều kiện nhiệt độ, nồng độ, pH, xúc tác
+              -> tính chất, màu, độ tan, cờ nguy hại
               -> HUD, VFX, hướng dẫn thải bỏ và LabSafetySystem
 ```
 
@@ -155,6 +157,10 @@ Unity batch validation kiểm tra:
   `SO3`;
 - tổng độ phủ tối thiểu 450 hợp chất và 20 ngoại lệ đã duyệt;
 - 155 cặp phản ứng động hiện có vẫn giải được;
+- 7 profile điều kiện và 8 luật oxi hóa–khử cân bằng electron;
+- phản ứng Cu/H₂SO₄ bị chặn khi lạnh nhưng chạy khi axit đặc, nóng;
+- nhánh HNO₃ loãng/đặc lần lượt tạo NO/NO₂;
+- kho sản phẩm trừ đúng khối lượng khi dùng lại;
 - 38 phản ứng mẫu, an toàn tủ hút, âm thanh và bốn lớp hiệu ứng vẫn đạt.
 
 Kết quả mới nhất: Unity `6000.5.3f1`, `0` cảnh báo, `0` lỗi.
@@ -162,12 +168,14 @@ Kết quả mới nhất: Unity `6000.5.3f1`, `0` cảnh báo, `0` lỗi.
 ## Giới hạn có chủ ý
 
 541 công thức không đồng nghĩa 541 chất đều bền, tinh khiết hoặc điều chế được
-trong mọi điều kiện. Phiên bản này chưa tự suy ra:
+trong mọi điều kiện. Phiên bản này đã mô hình hóa xu hướng nhiệt độ, nồng độ,
+pH, xúc tác và động học, nhưng chưa tự suy ra đầy đủ:
 
-- động học, năng lượng hoạt hóa và cân bằng nhiệt động;
-- ảnh hưởng định lượng của nhiệt độ, áp suất, nồng độ, pH và dung môi;
+- năng lượng hoạt hóa thực nghiệm và cân bằng nhiệt động;
+- áp suất, hệ số hoạt độ và bản chất dung môi;
+- profile điều kiện cứng ngoài 7 trường hợp đã duyệt;
 - phức chất phối trí, dạng hydrat và cấu trúc tinh thể;
-- phản ứng oxi hóa–khử nhiều bán phản ứng;
+- oxi hóa–khử ngoài 8 luật bán phản ứng đã duyệt;
 - cơ chế hữu cơ;
 - công thức phân tử đầy đủ khi công thức thực nghiệm chưa đủ, ví dụ `P4O10`.
 
