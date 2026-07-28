@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-28T18:16:34.7923023Z",
+    "generatedAtUtc": "2026-07-28T18:52:38.8734384Z",
     "unityVersion": "6000.5.3f1",
     "phase": "validation",
     "result": "succeeded",
@@ -16,6 +16,8 @@
         "reactions": 38,
         "dynamicSpecies": 40,
         "dynamicRuleFamilies": 9,
+        "conditionProfiles": 7,
+        "redoxRules": 8,
         "dynamicResolvedPairs": 155,
         "generatedCompounds": 565,
         "uniqueGeneratedFormulas": 541,

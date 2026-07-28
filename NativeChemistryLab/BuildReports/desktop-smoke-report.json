@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-28T18:17:08.3094616Z",
+    "generatedAtUtc": "2026-07-28T19:00:32.9651627Z",
     "unityVersion": "6000.5.3f1",
     "result": "succeeded",
     "failure": "",
@@ -10,7 +10,7 @@
     "generatedCompounds": 565,
     "uniqueGeneratedFormulas": 541,
     "reviewedGeneratedCompounds": 45,
-    "estimatedProductGrams": 3.672995024326997,
+    "estimatedProductGrams": 3.228857551585865,
     "runtimeAudioClips": 15,
     "pauseButtons": 3,
     "cameraFovDegrees": 66.0,

@@ -110,6 +110,9 @@ namespace ChemistryLab.Desktop.Editor
             CompoundGenerationMatrix.ValidateOrThrow();
             DynamicReactionEngine.ValidateOrThrow();
             AirborneHazardCatalog.ValidateOrThrow();
+            ReactionConditionEngine.ValidateOrThrow();
+            RedoxReactionEngine.ValidateOrThrow();
+            SynthesizedInventory.ValidateOrThrow();
             LabSafetySystem.ValidateOrThrow();
             DesktopLabAudio.ValidateSignalGenerationOrThrow();
 
@@ -185,6 +188,30 @@ namespace ChemistryLab.Desktop.Editor
                     "Generated compound safety integration validation failed.");
             }
 
+            var hotSulfuricAdditions = new[]
+            {
+                new VesselAddition("copper", 6.3546d),
+                new VesselAddition("sulfuric-acid", 98.079d)
+            };
+            var coldSulfuric = ReactionSimulator.Evaluate(
+                hotSulfuricAdditions,
+                LabStation.FumeHood,
+                new ReactionEnvironment(24f, .100d));
+            var hotSulfuric = ReactionSimulator.Evaluate(
+                hotSulfuricAdditions,
+                LabStation.FumeHood,
+                new ReactionEnvironment(90f, .100d));
+            if (coldSulfuric.Status != ReactionStatus.Blocked
+                || hotSulfuric.Status != ReactionStatus.Reaction
+                || !hotSulfuric.IsRedox
+                || hotSulfuric.ElectronTransferCount != 2
+                || hotSulfuric.Hazard == null
+                || !hotSulfuric.CanCollectProduct)
+            {
+                throw new InvalidOperationException(
+                    "Temperature/concentration/redox condition validation failed.");
+            }
+
             var hoodReactionCount = 0;
             var dynamicResolvedPairs = ValidateDynamicMatrix();
             var effects = new System.Collections.Generic.HashSet<ReactionEffect>();
@@ -258,6 +285,8 @@ namespace ChemistryLab.Desktop.Editor
                 reactions = DesktopChemistryDatabase.AllReactions.Count,
                 dynamicSpecies = DynamicReactionEngine.SupportedSpeciesCount,
                 dynamicRuleFamilies = DynamicReactionEngine.RuleFamilyCount,
+                conditionProfiles = ReactionConditionEngine.ProfileCount,
+                redoxRules = RedoxReactionEngine.RuleCount,
                 dynamicResolvedPairs = dynamicResolvedPairs,
                 generatedCompounds = CompoundGenerationMatrix.AcceptedCompoundCount,
                 uniqueGeneratedFormulas = CompoundGenerationMatrix.UniqueFormulaCount,
@@ -429,6 +458,8 @@ namespace ChemistryLab.Desktop.Editor
             public int reactions;
             public int dynamicSpecies;
             public int dynamicRuleFamilies;
+            public int conditionProfiles;
+            public int redoxRules;
             public int dynamicResolvedPairs;
             public int generatedCompounds;
             public int uniqueGeneratedFormulas;
