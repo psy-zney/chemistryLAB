@@ -69,10 +69,14 @@ Esc           Pause
 
 The current X/Y/Z chemistry graph has an interactive Three.js documentation
 view. The preview below is captured from the live WebGL scene; click it to open
-the source page, or serve the repository locally to rotate, zoom, filter, search,
-and inspect all generated coordinates.
+the GitHub Pages viewer, or serve the repository locally to rotate, zoom, filter,
+search, and inspect all generated coordinates.
 
-[![Interactive Three.js chemistry matrix](../docs/chemistry/compound-matrix-3d-preview.png)](../docs/chemistry/compound-matrix-3d.html)
+[![Interactive Three.js chemistry matrix](../docs/chemistry/compound-matrix-3d-preview.png)](https://psy-zney.github.io/chemistryLAB/docs/chemistry/compound-matrix-3d.html)
+
+Live viewer:
+
+`https://psy-zney.github.io/chemistryLAB/docs/chemistry/compound-matrix-3d.html`
 
 ```powershell
 python -m http.server 4173

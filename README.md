@@ -1,5 +1,7 @@
 # Chemistry Lab 3D
 
+[![Deploy docs to GitHub Pages](https://github.com/psy-zney/chemistryLAB/actions/workflows/deploy-docs-pages.yml/badge.svg)](https://github.com/psy-zney/chemistryLAB/actions/workflows/deploy-docs-pages.yml)
+
 Chemistry Lab 3D is a native Unity/C# desktop game. It is not a web build. The current production project is `NativeChemistryLab`, a Windows-focused first-person chemistry laboratory where the player walks around a 3D room, picks chemicals, loads vessels, observes reactions, and sees safety consequences when hazardous gases are handled incorrectly.
 
 The game is built as an educational simulation, not as real laboratory operating guidance.
@@ -24,7 +26,7 @@ The game is built as an educational simulation, not as real laboratory operating
 
 ## Current Chemistry Matrix — 3D Graph
 
-[![Actual Three.js view of the current chemistry compound matrix](docs/chemistry/compound-matrix-3d-preview.png)](docs/chemistry/compound-matrix-3d.html)
+[![Actual Three.js view of the current chemistry compound matrix](docs/chemistry/compound-matrix-3d-preview.png)](https://psy-zney.github.io/chemistryLAB/docs/chemistry/compound-matrix-3d.html)
 
 This is a real Three.js data explorer, not a decorative illustration. It rebuilds
 the same charge-balanced space as the Unity `CompoundGenerationMatrix`: **565
@@ -33,8 +35,13 @@ exclusions**. Drag to orbit, use the mouse wheel to zoom, click a node to inspec
 its physical properties and hazards, or press `Ctrl K` to find a formula such as
 `CuSO4`.
 
-Open [`docs/chemistry/compound-matrix-3d.html`](docs/chemistry/compound-matrix-3d.html)
-through a local static server:
+For GitHub readers, open the live interactive viewer:
+
+`https://psy-zney.github.io/chemistryLAB/docs/chemistry/compound-matrix-3d.html`
+
+When working from a local clone, open
+[`docs/chemistry/compound-matrix-3d.html`](docs/chemistry/compound-matrix-3d.html)
+through a static server:
 
 ```powershell
 python -m http.server 4173
