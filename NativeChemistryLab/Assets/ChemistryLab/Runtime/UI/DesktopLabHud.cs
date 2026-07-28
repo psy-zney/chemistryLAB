@@ -178,7 +178,11 @@ namespace ChemistryLab.Desktop
             promptText.transform.parent.gameObject.SetActive(!string.IsNullOrWhiteSpace(prompt));
         }
 
-        public void SetSelectedChemical(ChemicalDefinition chemical, float amountGrams)
+        public void SetSelectedChemical(
+            ChemicalDefinition chemical,
+            float amountGrams,
+            SynthesizedBatch batch = null,
+            int inventoryCount = 0)
         {
             if (selectedFormulaText == null)
             {
@@ -191,7 +195,9 @@ namespace ChemistryLab.Desktop
                 selectedFormulaText.text = "—";
                 selectedNameText.text = "Chưa cầm mẫu";
                 selectedDetailsText.text =
-                    "Đến tủ hóa chất, đặt tâm ngắm lên một chai và nhấn E.";
+                    "Đến tủ hóa chất, đặt tâm ngắm lên một chai và nhấn E.\n\n"
+                    + "KHO ĐIỀU CHẾ\n" + inventoryCount
+                    + " lô · nhấn I để chọn lô đã lưu.";
                 return;
             }
 
@@ -210,7 +216,14 @@ namespace ChemistryLab.Desktop
                 + "TÍNH PHẢN ỨNG\n" + chemical.ReactivitySummary + "\n\n"
                 + "CẢNH BÁO\n" + chemical.Hazards + "\n\n"
                 + "THAO TÁC\n" + chemical.Handling + "\n\n"
-                + "ỨNG DỤNG\n" + chemical.Use;
+                + "ỨNG DỤNG\n" + chemical.Use
+                + "\n\nKHO ĐIỀU CHẾ\n"
+                + (batch == null
+                    ? inventoryCount + " lô · nhấn I để chọn lô đã lưu."
+                    : "Lô " + batch.BatchId.Substring(0, Mathf.Min(8, batch.BatchId.Length))
+                      + " · còn " + batch.AvailableGrams.ToString("0.000") + " g"
+                      + " · tinh khiết " + (batch.PurityFraction * 100f).ToString("0.0") + "%\n"
+                      + "Nguồn: " + batch.SourceEquation);
         }
 
         public void SetSelectedElement(PeriodicElementDefinition element)
@@ -265,7 +278,7 @@ namespace ChemistryLab.Desktop
                 for (var index = 0; index < additions.Count; index++)
                 {
                     var addition = additions[index];
-                    var definition = DesktopChemistryDatabase.GetChemical(addition.ChemicalId);
+                    var definition = RuntimeChemicalRegistry.GetChemical(addition.ChemicalId);
                     builder.Append(index + 1);
                     builder.Append(". ");
                     builder.Append(definition == null ? addition.ChemicalId : definition.Formula);
@@ -283,13 +296,32 @@ namespace ChemistryLab.Desktop
                 }
             }
 
+            builder.Append("\nĐIỀU KIỆN HIỆN TẠI\n");
+            builder.Append(outcome.ConditionSummary);
+            builder.Append("\nXÚC TÁC\n");
+            builder.Append(outcome.CatalystSummary);
+
             if (outcome.Status == ReactionStatus.Reaction)
             {
-                var limiting = DesktopChemistryDatabase.GetChemical(outcome.LimitingChemicalId);
+                var limiting = RuntimeChemicalRegistry.GetChemical(outcome.LimitingChemicalId);
                 builder.Append("\nNGUỒN MÔ PHỎNG\n");
                 builder.Append(outcome.GeneratedByRule
                     ? "Luật suy diễn · " + outcome.RuleFamily
                     : "Phản ứng mẫu đã duyệt");
+                if (outcome.IsRedox)
+                {
+                    builder.Append("\n\nOXI HÓA–KHỬ\n");
+                    builder.Append(outcome.ElectronTransferCount);
+                    builder.Append(" e⁻ trao đổi sau khi quy đồng hai bán phản ứng");
+                }
+
+                builder.Append("\n\nĐỘNG HỌC ƯỚC TÍNH\n");
+                builder.Append(outcome.RateClass);
+                builder.Append(" · hệ số ");
+                builder.Append(outcome.RateMultiplier.ToString("0.00"));
+                builder.Append("× · ");
+                builder.Append(outcome.EstimatedCompletionSeconds.ToString("0.0"));
+                builder.Append(" s");
                 if (outcome.GeneratedByRule)
                 {
                     builder.Append("\n\nĐỘ TIN CẬY SẢN PHẨM\n");
@@ -309,7 +341,13 @@ namespace ChemistryLab.Desktop
                 builder.Append(outcome.TheoreticalProductGrams.ToString("0.000"));
                 builder.Append(" g\n\nƯỚC TÍNH THU ĐƯỢC\n");
                 builder.Append(outcome.EstimatedProductGrams.ToString("0.000"));
-                builder.Append(" g\n\nQUAN SÁT\n");
+                builder.Append(" g\n\nĐỘ TINH KHIẾT LÔ\n");
+                builder.Append((outcome.ProductPurity * 100f).ToString("0.0"));
+                builder.Append("%\n\nTHU SẢN PHẨM\n");
+                builder.Append(outcome.Effect == ReactionEffect.Gas
+                    ? "C · cần tủ hút + bình cách ly F7"
+                    : "C hoặc bỏ mẫu đang cầm rồi nhấn E tại cốc");
+                builder.Append("\n\nQUAN SÁT\n");
                 builder.Append(outcome.Message);
                 if (outcome.Hazard != null)
                 {
@@ -638,7 +676,7 @@ namespace ChemistryLab.Desktop
             CreateText(
                 "Movement Controls",
                 footer.transform,
-                "WASD  DI CHUYỂN    E  TƯƠNG TÁC    F  DỮ LIỆU    F6  MẶT NẠ    F7  CÁCH LY    ESC  TẠM DỪNG",
+                "WASD  DI CHUYỂN   E  TƯƠNG TÁC   PG↑/↓  NHIỆT   F8  PHA LOÃNG   C  THU   I  KHO   ESC  DỪNG",
                 bodyFont,
                 13,
                 FontStyle.Bold,
@@ -955,6 +993,8 @@ namespace ChemistryLab.Desktop
                 "Con trỏ đã được mở để dùng menu.\n\n"
                 + "WASD — di chuyển    E — tương tác    F — dữ liệu\n"
                 + "[ / ] — định lượng    F3 — debug    F9 — âm thanh\n"
+                + "Page Up / Down — gia nhiệt / làm nguội    F8 — pha loãng\n"
+                + "C — thu sản phẩm    I — chọn lô đã lưu\n"
                 + "F10 — giảm chuyển động    ESC — tiếp tục",
                 bodyFont,
                 16,

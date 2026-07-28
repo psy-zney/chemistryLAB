@@ -109,11 +109,27 @@ namespace ChemistryLab.Desktop
             builder.Append("STATE    ")
                 .Append(outcome == null ? "—" : outcome.Status + " · " + Compact(outcome.Title, 22))
                 .Append('\n');
+            builder.Append("CONDITION ")
+                .Append(outcome == null
+                    ? "—"
+                    : outcome.TemperatureC.ToString("0.0") + "°C · pH "
+                      + outcome.EstimatedPH.ToString("0.00") + " · "
+                      + outcome.TotalConcentrationMolar.ToString("0.000") + " M")
+                .Append('\n');
+            builder.Append("KINETICS ")
+                .Append(outcome == null
+                    ? "—"
+                    : outcome.RateClass + " · " + outcome.RateMultiplier.ToString("0.00") + "×")
+                .Append('\n');
+            builder.Append("INVENTORY ").Append(game.SynthesizedBatchCount)
+                .Append(" lô · ").Append(RuntimeChemicalRegistry.RuntimeChemicalCount)
+                .Append(" chất runtime\n");
             builder.Append("DATA     ")
                 .Append(HighSchoolPeriodicTable.All.Count).Append(" nguyên tố · ")
                 .Append(DesktopChemistryDatabase.AllChemicals.Count).Append(" chất · ")
                 .Append(DesktopChemistryDatabase.AllReactions.Count).Append(" mẫu · ")
-                .Append(DynamicReactionEngine.RuleFamilyCount).Append(" luật\n");
+                .Append(DynamicReactionEngine.RuleFamilyCount).Append(" luật · ")
+                .Append(RedoxReactionEngine.RuleCount).Append(" redox\n");
             builder.Append("MATRIX   ")
                 .Append(CompoundGenerationMatrix.AcceptedCompoundCount).Append(" tọa độ · ")
                 .Append(CompoundGenerationMatrix.UniqueFormulaCount).Append(" công thức · ")

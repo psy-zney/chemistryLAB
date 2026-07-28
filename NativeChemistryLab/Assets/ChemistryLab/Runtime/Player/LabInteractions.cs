@@ -61,6 +61,11 @@ namespace ChemistryLab.Desktop
             {
                 if (Game == null || Game.SelectedChemical == null)
                 {
+                    if (Game != null && Game.CanCollectProduct(Station))
+                    {
+                        return "E · Thu và lưu sản phẩm vào kho";
+                    }
+
                     return "E · Cốc phản ứng — cần chọn hóa chất";
                 }
 
@@ -73,7 +78,32 @@ namespace ChemistryLab.Desktop
         {
             if (Game != null)
             {
-                Game.AddSelectedToVessel(Station);
+                if (Game.SelectedChemical == null && Game.CanCollectProduct(Station))
+                {
+                    Game.CollectProduct(Station);
+                }
+                else
+                {
+                    Game.AddSelectedToVessel(Station);
+                }
+            }
+        }
+    }
+
+    public sealed class ThermalControlInteractable : LabInteractable
+    {
+        public LabStation Station { get; set; }
+
+        public override string Prompt
+        {
+            get { return "E · Gia nhiệt bình thêm 25 °C"; }
+        }
+
+        public override void Interact()
+        {
+            if (Game != null)
+            {
+                Game.AdjustVesselTemperature(Station, 25f);
             }
         }
     }
@@ -258,6 +288,31 @@ namespace ChemistryLab.Desktop
                 AnimateHands(0f, 0f);
                 UpdateCameraMotion();
                 return;
+            }
+
+            if (Input.GetKeyDown(KeyCode.PageUp))
+            {
+                game.AdjustVesselTemperature(25f);
+            }
+
+            if (Input.GetKeyDown(KeyCode.PageDown))
+            {
+                game.AdjustVesselTemperature(-25f);
+            }
+
+            if (Input.GetKeyDown(KeyCode.F8))
+            {
+                game.DiluteCurrentVessel();
+            }
+
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                game.CollectProduct(game.CurrentVesselStation);
+            }
+
+            if (Input.GetKeyDown(KeyCode.I))
+            {
+                game.CycleSynthesizedBatch();
             }
 
             UpdateLook();

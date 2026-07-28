@@ -13,6 +13,8 @@ namespace ChemistryLab.Desktop
 
         private readonly Dictionary<LabStation, List<VesselAddition>> vesselAdditions =
             new Dictionary<LabStation, List<VesselAddition>>();
+        private readonly Dictionary<LabStation, ReactionEnvironment> vesselEnvironments =
+            new Dictionary<LabStation, ReactionEnvironment>();
         private readonly Dictionary<LabStation, VesselVisual> vesselVisuals =
             new Dictionary<LabStation, VesselVisual>();
 
@@ -26,6 +28,8 @@ namespace ChemistryLab.Desktop
         private DesktopLabAudio audioSystem;
         private DesktopLabDiagnostics diagnostics;
         private ChemicalDefinition selectedChemical;
+        private string selectedBatchId;
+        private SynthesizedInventory synthesizedInventory;
         private float selectedAmountGrams = 10f;
         private LabStation currentZone = LabStation.Workbench;
         private LabStation currentVesselStation = LabStation.Workbench;
@@ -84,6 +88,22 @@ namespace ChemistryLab.Desktop
             get { return currentVesselStation; }
         }
 
+        public int SynthesizedBatchCount
+        {
+            get { return synthesizedInventory == null ? 0 : synthesizedInventory.Count; }
+        }
+
+        public ReactionEnvironment CurrentEnvironment
+        {
+            get
+            {
+                ReactionEnvironment environment;
+                return vesselEnvironments.TryGetValue(currentVesselStation, out environment)
+                    ? environment
+                    : null;
+            }
+        }
+
         public int GetVesselAdditionCount(LabStation station)
         {
             List<VesselAddition> additions;
@@ -97,6 +117,9 @@ namespace ChemistryLab.Desktop
             CompoundGenerationMatrix.ValidateOrThrow();
             DynamicReactionEngine.ValidateOrThrow();
             AirborneHazardCatalog.ValidateOrThrow();
+            ReactionConditionEngine.ValidateOrThrow();
+            RedoxReactionEngine.ValidateOrThrow();
+            SynthesizedInventory.ValidateOrThrow();
             LabSafetySystem.ValidateOrThrow();
             DesktopLabAudio.ValidateSignalGenerationOrThrow();
             Application.targetFrameRate = 120;
@@ -105,8 +128,15 @@ namespace ChemistryLab.Desktop
 
             vesselAdditions[LabStation.Workbench] = new List<VesselAddition>();
             vesselAdditions[LabStation.FumeHood] = new List<VesselAddition>();
+            vesselEnvironments[LabStation.Workbench] =
+                new ReactionEnvironment(BaselineTemperatureC, .100d);
+            vesselEnvironments[LabStation.FumeHood] =
+                new ReactionEnvironment(BaselineTemperatureC, .100d);
 
             labSafety = new LabSafetySystem();
+            RuntimeChemicalRegistry.ClearRuntime();
+            synthesizedInventory = new SynthesizedInventory();
+            synthesizedInventory.Load();
             CreateHud();
             BuildWorld();
             BuildAudio();
@@ -114,7 +144,7 @@ namespace ChemistryLab.Desktop
             BuildDiagnostics();
             RefreshOutcome(LabStation.Workbench);
 
-            hud.SetSelectedChemical(null, selectedAmountGrams);
+            hud.SetSelectedChemical(null, selectedAmountGrams, null, SynthesizedBatchCount);
             hud.SetMission("Tạo kết tủa xanh Cu(OH)₂", false);
             hud.SetZone(ZoneLabel(currentZone));
             hud.SetAudioState(audioSystem != null && !audioSystem.IsMuted);
@@ -135,7 +165,7 @@ namespace ChemistryLab.Desktop
 
         public void SelectChemical(string chemicalId)
         {
-            var next = DesktopChemistryDatabase.GetChemical(chemicalId);
+            var next = RuntimeChemicalRegistry.GetChemical(chemicalId);
             if (next == null)
             {
                 hud.ShowTransient("Không tìm thấy dữ liệu hóa chất: " + chemicalId, true);
@@ -144,8 +174,13 @@ namespace ChemistryLab.Desktop
             }
 
             selectedChemical = next;
+            selectedBatchId = null;
             UpdateHeldSample();
-            hud.SetSelectedChemical(selectedChemical, selectedAmountGrams);
+            hud.SetSelectedChemical(
+                selectedChemical,
+                selectedAmountGrams,
+                null,
+                SynthesizedBatchCount);
             hud.ShowChemicalSection();
             ToggleInspector(true);
             var hazard = ChemicalHazardClassifier.Classify(next);
@@ -165,8 +200,9 @@ namespace ChemistryLab.Desktop
         public void ClearSelectedChemical()
         {
             selectedChemical = null;
+            selectedBatchId = null;
             UpdateHeldSample();
-            hud.SetSelectedChemical(null, selectedAmountGrams);
+            hud.SetSelectedChemical(null, selectedAmountGrams, null, SynthesizedBatchCount);
             hud.ShowTransient("Đã cất mẫu đang cầm.");
             audioSystem.PlayUiClick();
         }
@@ -174,7 +210,11 @@ namespace ChemistryLab.Desktop
         public void AdjustSelectedAmount(float deltaGrams)
         {
             selectedAmountGrams = Mathf.Clamp(selectedAmountGrams + deltaGrams, 1f, 25f);
-            hud.SetSelectedChemical(selectedChemical, selectedAmountGrams);
+            hud.SetSelectedChemical(
+                selectedChemical,
+                selectedAmountGrams,
+                GetSelectedBatch(),
+                SynthesizedBatchCount);
             audioSystem.PlayUiClick();
         }
 
@@ -195,15 +235,52 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
+            var additionGrams = selectedAmountGrams;
+            var sourceBatch = GetSelectedBatch();
+            if (sourceBatch != null)
+            {
+                additionGrams = (float)Math.Min(additionGrams, sourceBatch.AvailableGrams);
+                if (additionGrams <= .0001f)
+                {
+                    hud.ShowTransient("Lô sản phẩm này đã hết.", true);
+                    audioSystem.PlayError();
+                    return;
+                }
+            }
+
+            ReactionEnvironment environment;
+            if (!vesselEnvironments.TryGetValue(station, out environment))
+            {
+                environment = new ReactionEnvironment(BaselineTemperatureC, .100d);
+                vesselEnvironments[station] = environment;
+            }
+
             var candidate = new List<VesselAddition>(additions)
             {
-                new VesselAddition(selectedChemical.Id, selectedAmountGrams)
+                new VesselAddition(selectedChemical.Id, additionGrams)
             };
-            var nextOutcome = ReactionSimulator.Evaluate(candidate, station, BaselineTemperatureC);
+            var nextOutcome = ReactionSimulator.Evaluate(candidate, station, environment);
             currentVesselStation = station;
             currentOutcome = nextOutcome;
 
             additions.Add(candidate[candidate.Count - 1]);
+            if (sourceBatch != null)
+            {
+                double consumed;
+                synthesizedInventory.TryConsume(sourceBatch.BatchId, additionGrams, out consumed);
+                if (synthesizedInventory.Find(sourceBatch.BatchId) == null)
+                {
+                    selectedBatchId = null;
+                    selectedChemical = null;
+                    UpdateHeldSample();
+                }
+
+                hud.SetSelectedChemical(
+                    selectedChemical,
+                    selectedAmountGrams,
+                    GetSelectedBatch(),
+                    SynthesizedBatchCount);
+            }
             UpdateVesselVisual(station, additions, nextOutcome);
             audioSystem.PlayPour(GetVesselPosition(station));
             hud.SetVessel(additions, nextOutcome, station);
@@ -239,9 +316,170 @@ namespace ChemistryLab.Desktop
             else
             {
                 hud.ShowTransient(
-                    "Đã nạp " + selectedAmountGrams.ToString("0.#")
-                    + " g " + selectedChemical.Formula + ".");
+                    "Đã nạp " + additionGrams.ToString("0.#")
+                    + " g " + (selectedChemical == null ? "sản phẩm từ kho" : selectedChemical.Formula) + ".",
+                    nextOutcome.Status == ReactionStatus.Blocked);
             }
+        }
+
+        public bool CanCollectProduct(LabStation station)
+        {
+            List<VesselAddition> additions;
+            ReactionEnvironment environment;
+            if (!vesselAdditions.TryGetValue(station, out additions)
+                || !vesselEnvironments.TryGetValue(station, out environment))
+            {
+                return false;
+            }
+
+            var outcome = ReactionSimulator.Evaluate(additions, station, environment);
+            return outcome.Status == ReactionStatus.Reaction && outcome.CanCollectProduct;
+        }
+
+        public void CollectProduct(LabStation station)
+        {
+            List<VesselAddition> additions;
+            ReactionEnvironment environment;
+            if (!vesselAdditions.TryGetValue(station, out additions)
+                || !vesselEnvironments.TryGetValue(station, out environment))
+            {
+                hud.ShowTransient("Không tìm thấy bình phản ứng để thu sản phẩm.", true);
+                audioSystem.PlayError();
+                return;
+            }
+
+            var outcome = ReactionSimulator.Evaluate(additions, station, environment);
+            if (outcome.Status != ReactionStatus.Reaction || !outcome.CanCollectProduct)
+            {
+                hud.ShowTransient("Chưa có sản phẩm đủ điều kiện để thu hồi.", true);
+                audioSystem.PlayError();
+                return;
+            }
+
+            if (outcome.Effect == ReactionEffect.Gas
+                && (station != LabStation.FumeHood
+                    || labSafety == null
+                    || !labSafety.GasTrapConnected))
+            {
+                hud.ShowTransient(
+                    "Sản phẩm khí chỉ được thu trong tủ hút khi bình cách ly đã nối (F7).",
+                    true);
+                audioSystem.PlayHazardAlarm();
+                return;
+            }
+
+            var batch = synthesizedInventory.AddProduct(outcome);
+            if (batch == null)
+            {
+                hud.ShowTransient("Không thể tạo lô sản phẩm từ kết quả hiện tại.", true);
+                audioSystem.PlayError();
+                return;
+            }
+
+            additions.Clear();
+            environment.Reset(BaselineTemperatureC, .100d);
+            selectedBatchId = batch.BatchId;
+            selectedChemical = RuntimeChemicalRegistry.GetChemical(batch.ChemicalId);
+            currentVesselStation = station;
+            UpdateHeldSample();
+            RefreshVesselVisual(station);
+            RefreshOutcome(station);
+            hud.SetSelectedChemical(
+                selectedChemical,
+                selectedAmountGrams,
+                batch,
+                SynthesizedBatchCount);
+            hud.ShowChemicalSection();
+            ToggleInspector(true);
+            hud.ShowTransient(
+                "Đã lưu lô " + batch.Formula + " · "
+                + batch.AvailableGrams.ToString("0.000") + " g · độ tinh khiết "
+                + (batch.PurityFraction * 100f).ToString("0.0") + "%.");
+            audioSystem.PlaySamplePickup();
+        }
+
+        public void AdjustVesselTemperature(float deltaC)
+        {
+            ReactionEnvironment environment;
+            if (!vesselEnvironments.TryGetValue(currentVesselStation, out environment))
+            {
+                return;
+            }
+
+            environment.ChangeTemperature(deltaC);
+            RefreshVesselVisual(currentVesselStation);
+            RefreshOutcome(currentVesselStation);
+            hud.ShowVesselSection();
+            hud.ShowTransient(
+                (deltaC >= 0f ? "Đã gia nhiệt · " : "Đã làm nguội · ")
+                + environment.TemperatureC.ToString("0.#") + " °C.");
+            audioSystem.PlayUiClick();
+        }
+
+        public void AdjustVesselTemperature(LabStation station, float deltaC)
+        {
+            currentVesselStation = station;
+            AdjustVesselTemperature(deltaC);
+        }
+
+        public void DiluteCurrentVessel(double addedMillilitres = 50d)
+        {
+            ReactionEnvironment environment;
+            if (!vesselEnvironments.TryGetValue(currentVesselStation, out environment))
+            {
+                return;
+            }
+
+            environment.Dilute(Math.Max(0d, addedMillilitres) / 1000d);
+            RefreshVesselVisual(currentVesselStation);
+            RefreshOutcome(currentVesselStation);
+            hud.ShowVesselSection();
+            hud.ShowTransient(
+                "Đã thêm dung môi · thể tích "
+                + (environment.VolumeLitres * 1000d).ToString("0") + " mL.");
+            audioSystem.PlayPour(GetVesselPosition(currentVesselStation));
+        }
+
+        public void CycleSynthesizedBatch()
+        {
+            if (synthesizedInventory == null || synthesizedInventory.Count == 0)
+            {
+                hud.ShowTransient("Kho sản phẩm điều chế đang trống.", true);
+                audioSystem.PlayError();
+                return;
+            }
+
+            var nextIndex = 0;
+            if (!string.IsNullOrWhiteSpace(selectedBatchId))
+            {
+                for (var index = 0; index < synthesizedInventory.Count; index++)
+                {
+                    if (string.Equals(
+                            synthesizedInventory.Batches[index].BatchId,
+                            selectedBatchId,
+                            StringComparison.Ordinal))
+                    {
+                        nextIndex = (index + 1) % synthesizedInventory.Count;
+                        break;
+                    }
+                }
+            }
+
+            var batch = synthesizedInventory.Batches[nextIndex];
+            selectedBatchId = batch.BatchId;
+            selectedChemical = RuntimeChemicalRegistry.GetChemical(batch.ChemicalId);
+            UpdateHeldSample();
+            hud.SetSelectedChemical(
+                selectedChemical,
+                selectedAmountGrams,
+                batch,
+                SynthesizedBatchCount);
+            hud.ShowChemicalSection();
+            ToggleInspector(true);
+            hud.ShowTransient(
+                "Kho " + (nextIndex + 1) + "/" + synthesizedInventory.Count + " · "
+                + batch.Formula + " · còn " + batch.AvailableGrams.ToString("0.000") + " g.");
+            audioSystem.PlaySamplePickup();
         }
 
         public void WashVessels()
@@ -249,6 +487,11 @@ namespace ChemistryLab.Desktop
             foreach (var pair in vesselAdditions)
             {
                 pair.Value.Clear();
+                ReactionEnvironment environment;
+                if (vesselEnvironments.TryGetValue(pair.Key, out environment))
+                {
+                    environment.Reset(BaselineTemperatureC, .100d);
+                }
                 RefreshVesselVisual(pair.Key);
             }
 
@@ -1048,6 +1291,9 @@ namespace ChemistryLab.Desktop
             var plate = new GameObject("Hotplate").transform;
             plate.SetParent(parent, false);
             plate.position = position;
+            var collider = plate.gameObject.AddComponent<BoxCollider>();
+            collider.size = new Vector3(1.1f, .36f, .82f);
+            collider.center = new Vector3(0f, .08f, 0f);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Hotplate Body",
@@ -1064,6 +1310,9 @@ namespace ChemistryLab.Desktop
                 new Vector3(0.36f, 0.025f, 0.36f),
                 GetMaterial("SteelDark", LabTheme.SteelDark, 0.84f, 0.62f),
                 false);
+            var interactable = plate.gameObject.AddComponent<ThermalControlInteractable>();
+            interactable.Station = LabStation.Workbench;
+            interactable.Initialise(this);
         }
 
         private void BuildVessel(Transform parent, LabStation station, Vector3 worldPosition)
@@ -1235,6 +1484,13 @@ namespace ChemistryLab.Desktop
             return arm;
         }
 
+        private SynthesizedBatch GetSelectedBatch()
+        {
+            return synthesizedInventory == null || string.IsNullOrWhiteSpace(selectedBatchId)
+                ? null
+                : synthesizedInventory.Find(selectedBatchId);
+        }
+
         private void UpdateHeldSample()
         {
             if (heldSampleRoot == null)
@@ -1354,12 +1610,14 @@ namespace ChemistryLab.Desktop
         private void RefreshOutcome(LabStation station)
         {
             List<VesselAddition> additions;
-            if (!vesselAdditions.TryGetValue(station, out additions))
+            ReactionEnvironment environment;
+            if (!vesselAdditions.TryGetValue(station, out additions)
+                || !vesselEnvironments.TryGetValue(station, out environment))
             {
                 return;
             }
 
-            currentOutcome = ReactionSimulator.Evaluate(additions, station, BaselineTemperatureC);
+            currentOutcome = ReactionSimulator.Evaluate(additions, station, environment);
             currentVesselStation = station;
             hud.SetVessel(additions, currentOutcome, station);
             hud.SetTemperature(currentOutcome.TemperatureC);
@@ -1370,12 +1628,14 @@ namespace ChemistryLab.Desktop
         private void RefreshVesselVisual(LabStation station)
         {
             List<VesselAddition> additions;
-            if (!vesselAdditions.TryGetValue(station, out additions))
+            ReactionEnvironment environment;
+            if (!vesselAdditions.TryGetValue(station, out additions)
+                || !vesselEnvironments.TryGetValue(station, out environment))
             {
                 return;
             }
 
-            var outcome = ReactionSimulator.Evaluate(additions, station, BaselineTemperatureC);
+            var outcome = ReactionSimulator.Evaluate(additions, station, environment);
             UpdateVesselVisual(station, additions, outcome);
         }
 
@@ -1397,7 +1657,7 @@ namespace ChemistryLab.Desktop
             }
             else if (additions != null && additions.Count > 0)
             {
-                var last = DesktopChemistryDatabase.GetChemical(additions[additions.Count - 1].ChemicalId);
+                var last = RuntimeChemicalRegistry.GetChemical(additions[additions.Count - 1].ChemicalId);
                 colour = last == null ? LabTheme.Glass : last.ModelColour;
             }
             else
