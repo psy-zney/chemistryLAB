@@ -131,6 +131,99 @@ namespace ChemistryLab.Desktop
             get { return 9; }
         }
 
+        public static bool RegisterGeneratedSpecies(
+            string chemicalId,
+            GeneratedCompoundDefinition generated)
+        {
+            if (string.IsNullOrWhiteSpace(chemicalId)
+                || generated == null
+                || !generated.IsAccepted)
+            {
+                return false;
+            }
+
+            if (SpeciesById.ContainsKey(chemicalId))
+            {
+                return true;
+            }
+
+            ChemistryIonDefinition matrixCation;
+            ChemistryIonDefinition matrixAnion;
+            var hasCation = CompoundGenerationMatrix.TryGetIon(
+                generated.CationId,
+                out matrixCation);
+            var hasAnion = CompoundGenerationMatrix.TryGetIon(
+                generated.AnionId,
+                out matrixAnion);
+            var cation = hasCation
+                ? new Ion(
+                    matrixCation.Id,
+                    matrixCation.Formula,
+                    Math.Abs(matrixCation.Charge),
+                    matrixCation.MolarMass,
+                    generated.Colour)
+                : null;
+            var anion = hasAnion
+                ? new Ion(
+                    matrixAnion.Id,
+                    matrixAnion.Formula,
+                    Math.Abs(matrixAnion.Charge),
+                    matrixAnion.MolarMass,
+                    generated.Colour)
+                : null;
+            var kind = SpeciesKind.Inert;
+            var acidicHydrogens = 0;
+            var hydroxides = 0;
+
+            switch (generated.Family)
+            {
+                case GeneratedCompoundFamily.Acid:
+                    kind = SpeciesKind.Acid;
+                    acidicHydrogens = Math.Max(1, generated.CationCount);
+                    cation = null;
+                    break;
+                case GeneratedCompoundFamily.Hydroxide:
+                    kind = SpeciesKind.Base;
+                    hydroxides = Math.Max(1, generated.AnionCount);
+                    anion = null;
+                    break;
+                case GeneratedCompoundFamily.MetalOxide:
+                    kind = SpeciesKind.BasicOxide;
+                    anion = null;
+                    break;
+                case GeneratedCompoundFamily.BinarySalt:
+                case GeneratedCompoundFamily.OxySalt:
+                case GeneratedCompoundFamily.AmmoniumSalt:
+                    kind = ClassifyGeneratedSalt(generated);
+                    break;
+            }
+
+            SpeciesById.Add(
+                chemicalId,
+                new Species(
+                    chemicalId,
+                    generated.Formula,
+                    kind,
+                    cation,
+                    anion,
+                    acidicHydrogens,
+                    hydroxides,
+                    0,
+                    false));
+            return true;
+        }
+
+        public static bool UnregisterGeneratedSpecies(string chemicalId)
+        {
+            if (string.IsNullOrWhiteSpace(chemicalId)
+                || DesktopChemistryDatabase.GetChemical(chemicalId) != null)
+            {
+                return false;
+            }
+
+            return SpeciesById.Remove(chemicalId);
+        }
+
         public static bool TryResolve(
             IReadOnlyDictionary<string, double> gramsById,
             out ReactionDefinition reaction,
@@ -173,10 +266,10 @@ namespace ChemistryLab.Desktop
         {
             CompoundGenerationMatrix.ValidateOrThrow();
 
-            if (SpeciesById.Count != DesktopChemistryDatabase.AllChemicals.Count)
+            if (SpeciesById.Count < DesktopChemistryDatabase.AllChemicals.Count)
             {
                 throw new InvalidOperationException(
-                    "Dynamic reaction species coverage does not match the chemical catalogue. species="
+                    "Dynamic reaction species coverage is smaller than the chemical catalogue. species="
                     + SpeciesById.Count + " chemicals=" + DesktopChemistryDatabase.AllChemicals.Count);
             }
 
@@ -709,6 +802,31 @@ namespace ChemistryLab.Desktop
                 || species.Kind == SpeciesKind.Bicarbonate
                 || species.Kind == SpeciesKind.Sulfide
                 || species.Kind == SpeciesKind.AmmoniumSalt;
+        }
+
+        private static SpeciesKind ClassifyGeneratedSalt(GeneratedCompoundDefinition generated)
+        {
+            if (string.Equals(generated.CationId, "ammonium", StringComparison.Ordinal))
+            {
+                return SpeciesKind.AmmoniumSalt;
+            }
+
+            if (string.Equals(generated.AnionId, "carbonate", StringComparison.Ordinal))
+            {
+                return SpeciesKind.Carbonate;
+            }
+
+            if (string.Equals(generated.AnionId, "bicarbonate", StringComparison.Ordinal))
+            {
+                return SpeciesKind.Bicarbonate;
+            }
+
+            if (string.Equals(generated.AnionId, "sulfide", StringComparison.Ordinal))
+            {
+                return SpeciesKind.Sulfide;
+            }
+
+            return SpeciesKind.Salt;
         }
 
         private static bool IsInsoluble(FormulaUnit salt)

@@ -110,7 +110,7 @@ namespace ChemistryLab.Desktop
 
         public static void ValidateOrThrow()
         {
-            var required = new[] { "H2S", "NH3", "CO2", "H2", "O2", "CL2", "NO2", "SO2" };
+            var required = new[] { "H2S", "NH3", "CO2", "H2", "O2", "CL2", "NO", "NO2", "SO2" };
             for (var index = 0; index < required.Length; index++)
             {
                 if (!ByFormula.ContainsKey(required[index]))
@@ -166,6 +166,13 @@ namespace ChemistryLab.Desktop
                         "Cl₂", "Clo", AirborneHazardKind.CorrosiveToxic,
                         HazardSeverity.Critical, .90f,
                         "Cl₂ độc, ăn mòn và gây tổn thương phổi.")
+                },
+                {
+                    "NO",
+                    new AirborneHazard(
+                        "NO", "Nitơ monoxit", AirborneHazardKind.Toxic,
+                        HazardSeverity.Dangerous, .82f,
+                        "NO độc và nhanh chóng tạo NO₂ độc màu nâu khi tiếp xúc với không khí.")
                 },
                 {
                     "NO2",

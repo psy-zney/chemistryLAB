@@ -273,6 +273,8 @@ namespace ChemistryLab.Desktop
         public ReactionDefinition Reaction;
         public bool GeneratedByRule;
         public string RuleFamily;
+        public bool IsRedox;
+        public int ElectronTransferCount;
         public CompoundConfidence ProductConfidence;
         public ChemicalHazardFlags ProductHazards;
         public string GeneratedPropertyBasis;
@@ -286,6 +288,16 @@ namespace ChemistryLab.Desktop
         public string LimitingChemicalId;
         public double TheoreticalProductGrams;
         public double EstimatedProductGrams;
+        public double EstimatedPH;
+        public double TotalConcentrationMolar;
+        public double VolumeLitres;
+        public ReactionRateClass RateClass;
+        public float RateMultiplier;
+        public float EstimatedCompletionSeconds;
+        public float ProductPurity;
+        public bool CanCollectProduct;
+        public string CatalystSummary;
+        public string ConditionSummary;
         public float TemperatureC;
         public Color DisplayColour;
         public ReactionEffect Effect;
@@ -626,6 +638,19 @@ namespace ChemistryLab.Desktop
             LabStation station,
             float baselineTemperatureC)
         {
+            return Evaluate(
+                additions,
+                station,
+                new ReactionEnvironment(baselineTemperatureC, .100d));
+        }
+
+        public static ReactionOutcome Evaluate(
+            IReadOnlyList<VesselAddition> additions,
+            LabStation station,
+            ReactionEnvironment environment)
+        {
+            environment = environment ?? new ReactionEnvironment(24f, .100d);
+            var baselineTemperatureC = environment.TemperatureC;
             var idle = new ReactionOutcome
             {
                 Status = additions == null || additions.Count == 0 ? ReactionStatus.Idle : ReactionStatus.Waiting,
@@ -635,12 +660,17 @@ namespace ChemistryLab.Desktop
                     ? "Chọn một chai trong tủ hóa chất rồi nạp vào cốc."
                     : "Nạp thêm chất phù hợp để mô phỏng phản ứng.",
                 Safety = "PPE: kính, áo choàng và găng nitrile.",
+                EstimatedPH = 7d,
+                VolumeLitres = environment.VolumeLitres,
+                CatalystSummary = "Không yêu cầu xúc tác",
+                ConditionSummary = environment.TemperatureC.ToString("0.#") + " °C · "
+                    + (environment.VolumeLitres * 1000d).ToString("0") + " mL · pH 7.00",
                 TemperatureC = baselineTemperatureC,
                 DisplayColour = LabTheme.Glass,
                 Effect = ReactionEffect.None
             };
 
-            if (additions == null || additions.Count < 2)
+            if (additions == null || additions.Count == 0)
             {
                 return idle;
             }
@@ -654,9 +684,18 @@ namespace ChemistryLab.Desktop
                 gramsById[addition.ChemicalId] = current + Math.Max(0d, addition.Grams);
             }
 
+            if (additions.Count < 2)
+            {
+                var singleMixture = ReactionConditionEngine.Assess(null, gramsById, environment);
+                ApplyConditionFields(idle, singleMixture, environment);
+                return idle;
+            }
+
             ReactionDefinition match = null;
             var generatedByRule = false;
             string ruleFamily = null;
+            var isRedox = false;
+            var electronTransferCount = 0;
             var rules = DesktopChemistryDatabase.AllReactions;
             for (var index = 0; index < rules.Count; index++)
             {
@@ -666,6 +705,17 @@ namespace ChemistryLab.Desktop
                     match = rule;
                     break;
                 }
+            }
+
+            if (match == null)
+            {
+                generatedByRule = RedoxReactionEngine.TryResolve(
+                    gramsById,
+                    environment,
+                    out match,
+                    out ruleFamily,
+                    out electronTransferCount);
+                isRedox = generatedByRule;
             }
 
             if (match == null)
@@ -683,40 +733,84 @@ namespace ChemistryLab.Desktop
                 idle.Message =
                     "Không tìm thấy phản ứng mẫu hoặc luật ion/axit–bazơ/thế kim loại phù hợp ở điều kiện hiện tại.";
                 idle.Safety = "Hỗn hợp vẫn được giữ lại; không gia nhiệt nếu chưa có luật nhiệt phân.";
+                var mixture = ReactionConditionEngine.Assess(null, gramsById, environment);
+                ApplyConditionFields(idle, mixture, environment);
                 return idle;
             }
 
-            var chemicalA = DesktopChemistryDatabase.GetChemical(match.ReactantA);
-            var chemicalB = DesktopChemistryDatabase.GetChemical(match.ReactantB);
+            var conditions = ReactionConditionEngine.Assess(match, gramsById, environment);
+            if (!conditions.ConditionsMet)
+            {
+                idle.Status = ReactionStatus.Blocked;
+                idle.Reaction = match;
+                idle.GeneratedByRule = generatedByRule;
+                idle.RuleFamily = ruleFamily;
+                idle.IsRedox = isRedox;
+                idle.ElectronTransferCount = electronTransferCount;
+                idle.Title = match.Name + " · CHƯA ĐỦ ĐIỀU KIỆN";
+                idle.Equation = match.Equation;
+                idle.Message = conditions.BlockingReason;
+                idle.Safety = "Điều chỉnh nhiệt độ, nồng độ, pH hoặc xúc tác rồi đánh giá lại.";
+                idle.DisplayColour = match.ProductColour;
+                ApplyConditionFields(idle, conditions, environment);
+                return idle;
+            }
+
+            var chemicalA = RuntimeChemicalRegistry.GetChemical(match.ReactantA);
+            var chemicalB = RuntimeChemicalRegistry.GetChemical(match.ReactantB);
+            if (chemicalA == null || chemicalB == null)
+            {
+                idle.Status = ReactionStatus.NoMatch;
+                idle.Title = "Thiếu dữ liệu chất phản ứng";
+                idle.Message = "Không thể tính số mol vì một chất chưa có khối lượng mol hợp lệ.";
+                ApplyConditionFields(idle, conditions, environment);
+                return idle;
+            }
             var molesA = gramsById[match.ReactantA] / chemicalA.MolarMass;
             var molesB = gramsById[match.ReactantB] / chemicalB.MolarMass;
             var extentA = molesA / match.CoefficientA;
             var extentB = molesB / match.CoefficientB;
-            var extent = Math.Min(extentA, extentB);
-            var limiting = extentA <= extentB ? chemicalA : chemicalB;
+            var catalystA = ReactionConditionEngine.IsCatalystParticipant(match, match.ReactantA);
+            var catalystB = ReactionConditionEngine.IsCatalystParticipant(match, match.ReactantB);
+            var extent = catalystA
+                ? extentB
+                : catalystB
+                    ? extentA
+                    : Math.Min(extentA, extentB);
+            var limiting = catalystA
+                ? chemicalB
+                : catalystB
+                    ? chemicalA
+                    : extentA <= extentB ? chemicalA : chemicalB;
             var theoreticalMass = extent * match.ProductMolarMass;
-            var estimatedMass = theoreticalMass * match.YieldFraction;
+            var estimatedMass = theoreticalMass * match.YieldFraction * conditions.YieldMultiplier;
             var hazard = match.Effect == ReactionEffect.Gas
                 ? AirborneHazardCatalog.Find(match.ProductFormula)
                 : null;
             var safetyViolation = match.RequiresFumeHood && station != LabStation.FumeHood;
             GeneratedCompoundDefinition generatedProduct = null;
-            var hasGeneratedProduct = generatedByRule
-                && CompoundGenerationMatrix.TryFindByFormula(
+            var hasGeneratedProduct = CompoundGenerationMatrix.TryFindByFormula(
                     match.ProductFormula,
                     out generatedProduct);
+            var purity = Mathf.Clamp(
+                .72f + conditions.YieldMultiplier * .23f
+                - (generatedByRule && !hasGeneratedProduct ? .06f : 0f),
+                .50f,
+                .99f);
 
-            return new ReactionOutcome
+            var outcome = new ReactionOutcome
             {
                 Status = ReactionStatus.Reaction,
                 Reaction = match,
                 GeneratedByRule = generatedByRule,
                 RuleFamily = ruleFamily,
-                ProductConfidence = generatedByRule
-                    ? hasGeneratedProduct
-                        ? generatedProduct.Confidence
-                        : CompoundConfidence.RuleDerived
-                    : CompoundConfidence.Reviewed,
+                IsRedox = isRedox,
+                ElectronTransferCount = electronTransferCount,
+                ProductConfidence = hasGeneratedProduct
+                    ? generatedProduct.Confidence
+                    : generatedByRule
+                        ? CompoundConfidence.RuleDerived
+                        : CompoundConfidence.Reviewed,
                 ProductHazards = hasGeneratedProduct
                     ? generatedProduct.Hazards
                     : ChemicalHazardFlags.None,
@@ -741,10 +835,34 @@ namespace ChemistryLab.Desktop
                 LimitingChemicalId = limiting.Id,
                 TheoreticalProductGrams = theoreticalMass,
                 EstimatedProductGrams = estimatedMass,
+                ProductPurity = purity,
+                CanCollectProduct = estimatedMass > .0001d,
                 TemperatureC = baselineTemperatureC + match.TemperatureDelta,
                 DisplayColour = match.ProductColour,
                 Effect = match.Effect
             };
+            ApplyConditionFields(outcome, conditions, environment);
+            return outcome;
+        }
+
+        private static void ApplyConditionFields(
+            ReactionOutcome outcome,
+            ReactionConditionAssessment conditions,
+            ReactionEnvironment environment)
+        {
+            if (outcome == null || conditions == null)
+            {
+                return;
+            }
+
+            outcome.EstimatedPH = conditions.PH;
+            outcome.TotalConcentrationMolar = conditions.TotalConcentrationMolar;
+            outcome.VolumeLitres = environment.VolumeLitres;
+            outcome.RateClass = conditions.RateClass;
+            outcome.RateMultiplier = conditions.RateMultiplier;
+            outcome.EstimatedCompletionSeconds = conditions.EstimatedCompletionSeconds;
+            outcome.CatalystSummary = conditions.CatalystSummary;
+            outcome.ConditionSummary = conditions.Summary;
         }
     }
 
