@@ -24,9 +24,26 @@ The game is built as an educational simulation, not as real laboratory operating
 
 ## Current Chemistry Matrix — 3D Graph
 
-![Isometric 3D graph of the current chemistry compound matrix](docs/chemistry/compound-matrix-3d.svg)
+[![Actual Three.js view of the current chemistry compound matrix](docs/chemistry/compound-matrix-3d-preview.png)](docs/chemistry/compound-matrix-3d.html)
 
-The diagram projects the current enriched chemistry space into three axes:
+This is a real Three.js data explorer, not a decorative illustration. It rebuilds
+the same charge-balanced space as the Unity `CompoundGenerationMatrix`: **565
+accepted coordinates, 541 unique formulas, 45 reviewed records, and 9 explicit
+exclusions**. Drag to orbit, use the mouse wheel to zoom, click a node to inspect
+its physical properties and hazards, or press `Ctrl K` to find a formula such as
+`CuSO4`.
+
+Open [`docs/chemistry/compound-matrix-3d.html`](docs/chemistry/compound-matrix-3d.html)
+through a local static server:
+
+```powershell
+python -m http.server 4173
+```
+
+Then visit
+`http://127.0.0.1:4173/docs/chemistry/compound-matrix-3d.html`.
+
+The explorer projects the current enriched chemistry space into three axes:
 
 | Axis | Runtime meaning | Examples shown |
 | --- | --- | --- |
@@ -36,15 +53,14 @@ The diagram projects the current enriched chemistry space into three axes:
 
 A coordinate is not just a cell in a literal array. It carries ion charge,
 oxidation state, formula coefficients, molar mass, phase, solubility, color,
-hazards, confidence, and validation notes. The plotted nodes are representative
-landmarks; the JSON-backed graph currently contains **565 accepted coordinates
-and 541 unique formulas**. The left side of the figure shows the actual resolver
-order used by the game: curated reactions → redox rules → dynamic families →
-compound matrix → condition engine → reusable product batch.
+hazards, confidence, and validation notes. Node color comes from the chemistry
+JSON, node geometry identifies the compound family, and reviewed nodes are
+larger than rule-derived nodes. Family, confidence, hazard-only, grid, and
+rejected-coordinate filters can be combined without changing the source data.
 
 This is a chemical relationship map, not a molecular-geometry or orbital model.
-The source SVG is available at
-[`docs/chemistry/compound-matrix-3d.svg`](docs/chemistry/compound-matrix-3d.svg).
+Three.js is used only for this interactive documentation view; the production
+game remains the native Unity/C# desktop project.
 
 ## Main Project
 
@@ -162,14 +178,16 @@ Warnings:               0
 Errors:                 0
 ```
 
-Structured reports:
+Structured reports and documentation artifacts:
 
 - `NativeChemistryLab/BuildReports/desktop-validation-report.json`
 - `NativeChemistryLab/BuildReports/desktop-build-report.json`
 - `NativeChemistryLab/BuildReports/desktop-smoke-report.json`
 - `docs/chemistry/compound-generation-matrix.md`
 - `docs/chemistry/compound-generation-matrix.json`
-- `docs/chemistry/compound-matrix-3d.svg`
+- `docs/chemistry/compound-matrix-3d.html`
+- `docs/chemistry/compound-matrix-3d.tokens.css`
+- `docs/chemistry/compound-matrix-3d-preview.png`
 - `docs/chemistry/reaction-condition-engine.md`
 - `docs/chemistry/reaction-condition-engine.json`
 

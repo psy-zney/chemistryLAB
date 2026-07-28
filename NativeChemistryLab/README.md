@@ -67,9 +67,20 @@ Esc           Pause
 
 ## Simulation Scope
 
-The current X/Y/Z chemistry graph is rendered in the repository README:
+The current X/Y/Z chemistry graph has an interactive Three.js documentation
+view. The preview below is captured from the live WebGL scene; click it to open
+the source page, or serve the repository locally to rotate, zoom, filter, search,
+and inspect all generated coordinates.
 
-![Current isometric chemistry matrix](../docs/chemistry/compound-matrix-3d.svg)
+[![Interactive Three.js chemistry matrix](../docs/chemistry/compound-matrix-3d-preview.png)](../docs/chemistry/compound-matrix-3d.html)
+
+```powershell
+python -m http.server 4173
+```
+
+Open
+`http://127.0.0.1:4173/docs/chemistry/compound-matrix-3d.html`.
+This documentation viewer does not replace the Unity/C# desktop runtime.
 
 - 52 high-school-relevant elements.
 - 40 chemicals with physical properties, colors, hazards, handling notes, and 3D material settings.
