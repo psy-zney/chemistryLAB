@@ -8,7 +8,9 @@ The game is built as an educational simulation, not as real laboratory operating
 
 ![First-person 3D chemistry laboratory with starter chemicals](docs/gameplay/desktop-lab-3d.png)
 
-[Open the first-run onboarding screen](docs/gameplay/desktop-lab-onboarding.png).
+[Open the first-run onboarding screen](docs/gameplay/desktop-lab-onboarding.png),
+[main menu](docs/gameplay/desktop-lab-main-menu.png), or
+[settings screen](docs/gameplay/desktop-lab-settings.png).
 
 ## Current Feature Set
 
@@ -24,7 +26,7 @@ The game is built as an educational simulation, not as real laboratory operating
 - 8 oxidation-reduction rules validated by electron least-common-multiple balancing, including acidic permanganate chemistry and concentration-dependent `Cu + HNO3` products.
 - Persistent synthesized-product inventory. Every collected batch records mass, purity, phase, color, hazards, and source equation in JSON; reused material is mass-accounted and generated ionic products re-enter the dynamic reaction engine.
 - Safety system for toxic, corrosive, flammable, oxidising, and asphyxiant gas outcomes. Unsafe reactions are allowed to happen, but the player pays health and credit consequences if they do not use the fume hood, respirator, or gas trap correctly.
-- Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, pause menu, diagnostics, audio toggles, and accessibility reduced-motion mode.
+- Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, main menu, ESC pause menu, diagnostics, and a persistent settings screen for audio, reduced motion, and window mode.
 - First-run onboarding with a visible help button and a four-bottle starter tray containing water, copper sulfate, sodium hydroxide, and hydrochloric acid.
 - Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
 - JSON build, validation, and smoke-test reports under `BuildReports/`.
@@ -96,7 +98,7 @@ chemistryLAB/
 |   |   |   |-- Diagnostics/         Runtime F3 diagnostics panel
 |   |   |   |-- Player/              First-person controller and interactable objects
 |   |   |   |-- Safety/              Hazard classifier, gas catalog, player consequence model
-|   |   |   `-- UI/                  HUD, inspector, pause menu, buttons, transient messages
+|   |   |   `-- UI/                  HUD, main/pause/settings menus, inspector, buttons
 |   |   `-- Scenes/                  DesktopChemistryLab Unity scene
 |   `-- _Game/                       Earlier 2D Unity architecture prototype
 |-- BuildReports/                    Committed structured JSON reports
@@ -131,7 +133,7 @@ The runtime uses regular Unity `MonoBehaviour` components at the scene edge, whi
 - `CompoundGenerationMatrix` models the enriched X/Y/Z idea: cation or metal, nonmetal or anion family, oxygen count, and explicit oxidation state. It charge-balances candidate compounds, estimates physical/safety classes, applies reviewed overrides, and rejects known unstable combinations.
 - `DynamicReactionEngine` models species, reaction families, activity series, and bounded stoichiometry balancing. It consumes compound-matrix results instead of maintaining a second formula/solubility truth source.
 - `LabSafetySystem` converts hazardous reaction outcomes into player consequences: health loss, credit loss, incident history, and emergency evacuation.
-- `DesktopLabHud` renders the in-game information layer and exposes UI buttons for pause, audio, respirator, gas trap, and inspector state.
+- `DesktopLabHud` renders the in-game information layer and owns the main, pause, and settings menu states. Settings can return to the menu that opened them; audio and reduced-motion preferences persist through `PlayerPrefs`.
 
 A more visual explanation of OOP, data structures, algorithms, and runtime flow is available at:
 
@@ -156,8 +158,12 @@ F6            Buy/equip/remove respirator
 F7            Connect/disconnect gas isolation trap
 F9            Toggle all audio
 F10           Toggle reduced motion
-Esc           Open help/pause or resume
+Esc           Open pause; return from Settings; resume from pause
 ```
+
+The game opens on its main menu. During play, press `Esc` for Resume, Settings,
+or Back to Main Menu. Settings provides audio, reduced-motion, and
+fullscreen/windowed controls and saves them for the next launch.
 
 ## Build Output
 

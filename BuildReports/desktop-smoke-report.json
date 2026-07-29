@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-29T15:18:22.4790907Z",
+    "generatedAtUtc": "2026-07-29T15:53:54.2777907Z",
     "unityVersion": "6000.5.3f1",
     "result": "succeeded",
     "failure": "",
@@ -13,6 +13,8 @@
     "estimatedProductGrams": 3.228857551585865,
     "runtimeAudioClips": 15,
     "pauseButtons": 3,
+    "menuButtons": 10,
+    "menuFlowVerified": true,
     "starterChemicals": 4,
     "cameraFovDegrees": 66.0,
     "graphicsDevice": "Null Device"

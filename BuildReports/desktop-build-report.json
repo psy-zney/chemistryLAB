@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-29T15:18:07.9873439Z",
+    "generatedAtUtc": "2026-07-29T15:51:57.8894349Z",
     "unityVersion": "6000.5.3f1",
     "phase": "windows-player",
     "result": "succeeded",
@@ -9,7 +9,7 @@
     "output": "Builds/ChemistryLab3D/ChemistryLab3D.exe",
     "warnings": 485,
     "errors": 0,
-    "sizeBytes": 139590853,
+    "sizeBytes": 139595973,
     "validation": {
         "elements": 52,
         "chemicals": 40,
