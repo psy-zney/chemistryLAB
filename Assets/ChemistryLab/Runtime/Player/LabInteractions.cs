@@ -234,6 +234,7 @@ namespace ChemistryLab.Desktop
             if (Input.GetKeyDown(KeyCode.Escape))
             {
                 game.HandleEscape();
+                return;
             }
 
             if (Input.GetKeyDown(KeyCode.F))
@@ -323,8 +324,8 @@ namespace ChemistryLab.Desktop
 
         private void UpdateLook()
         {
-            var mouseX = Input.GetAxis("Mouse X") * LookSensitivity;
-            var mouseY = Input.GetAxis("Mouse Y") * LookSensitivity;
+            var mouseX = Input.GetAxisRaw("Mouse X") * LookSensitivity;
+            var mouseY = Input.GetAxisRaw("Mouse Y") * LookSensitivity;
 
             transform.Rotate(Vector3.up, mouseX, Space.Self);
             pitch = Mathf.Clamp(pitch - mouseY, -78f, 78f);
@@ -491,7 +492,7 @@ namespace ChemistryLab.Desktop
 
         private void OnApplicationFocus(bool hasFocus)
         {
-            if (!hasFocus)
+            if (!hasFocus && !paused)
             {
                 SetPaused(true);
             }

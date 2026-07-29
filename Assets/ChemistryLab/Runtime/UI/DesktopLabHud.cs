@@ -106,6 +106,18 @@ namespace ChemistryLab.Desktop
             get { return pauseOverlay != null && pauseOverlay.activeSelf; }
         }
 
+        public bool PointerInputReady
+        {
+            get
+            {
+                var eventSystem = UnityEngine.Object.FindAnyObjectByType<EventSystem>();
+                return rootCanvas != null
+                    && rootCanvas.GetComponent<GraphicRaycaster>() != null
+                    && eventSystem != null
+                    && eventSystem.GetComponent<BaseInputModule>() != null;
+            }
+        }
+
         public bool RuntimeUiReady
         {
             get
@@ -121,8 +133,82 @@ namespace ChemistryLab.Desktop
                     && playerSafetyText != null
                     && PauseButtonCount == 3
                     && MenuButtonCount == 10
-                    && UnityEngine.Object.FindAnyObjectByType<EventSystem>() != null;
+                    && PointerInputReady;
             }
+        }
+
+        public bool VerifyResumePointerRouting()
+        {
+            if (!PointerInputReady || resumeButton == null || game == null || game.Player == null)
+            {
+                return false;
+            }
+
+            game.Player.SetPausedFromUi(true);
+            ShowPauseMenu();
+            Canvas.ForceUpdateCanvases();
+
+            var eventSystem = UnityEngine.Object.FindAnyObjectByType<EventSystem>();
+            var rect = resumeButton.transform as RectTransform;
+            if (eventSystem == null || rect == null)
+            {
+                return false;
+            }
+
+            var pointer = new PointerEventData(eventSystem)
+            {
+                button = PointerEventData.InputButton.Left,
+                position = RectTransformUtility.WorldToScreenPoint(
+                    rootCanvas.worldCamera,
+                    rect.position)
+            };
+            var hits = new List<RaycastResult>();
+            var raycaster = rootCanvas.GetComponent<GraphicRaycaster>();
+            raycaster.Raycast(pointer, hits);
+            var pointerDiagnostics = new StringBuilder(256);
+            pointerDiagnostics.Append("DESKTOP_LAB_POINTER_TEST screen=")
+                .Append(Screen.width).Append('x').Append(Screen.height)
+                .Append(" pointer=")
+                .Append(pointer.position.x.ToString("0.0")).Append(',')
+                .Append(pointer.position.y.ToString("0.0"))
+                .Append(" rect=")
+                .Append(rect.position.x.ToString("0.0")).Append(',')
+                .Append(rect.position.y.ToString("0.0"))
+                .Append(" hits=");
+            for (var hitIndex = 0; hitIndex < hits.Count; hitIndex++)
+            {
+                if (hitIndex > 0)
+                {
+                    pointerDiagnostics.Append('|');
+                }
+
+                pointerDiagnostics.Append(hits[hitIndex].gameObject.name);
+            }
+
+            Debug.Log(pointerDiagnostics.ToString());
+            var resumeWasHit = false;
+            for (var index = 0; index < hits.Count; index++)
+            {
+                if (hits[index].gameObject == resumeButton.gameObject)
+                {
+                    resumeWasHit = true;
+                    break;
+                }
+            }
+
+            if (resumeWasHit)
+            {
+                ExecuteEvents.Execute(
+                    resumeButton.gameObject,
+                    pointer,
+                    ExecuteEvents.pointerClickHandler);
+            }
+
+            return resumeWasHit
+                && !game.Player.IsPaused
+                && !MainMenuVisible
+                && !PauseMenuVisible
+                && !SettingsVisible;
         }
 
         public void Initialise(DesktopLabGame owner)
@@ -610,16 +696,26 @@ namespace ChemistryLab.Desktop
 
         private void BuildInterface()
         {
-            if (UnityEngine.Object.FindAnyObjectByType<EventSystem>() == null)
+            var eventSystem = UnityEngine.Object.FindAnyObjectByType<EventSystem>();
+            if (eventSystem == null)
             {
-                var eventSystem = new GameObject(
+                var eventSystemObject = new GameObject(
                     "Desktop UI Event System",
                     typeof(EventSystem),
                     typeof(StandaloneInputModule));
-                eventSystem.transform.SetParent(transform, false);
+                eventSystemObject.transform.SetParent(transform, false);
+                eventSystem = eventSystemObject.GetComponent<EventSystem>();
+            }
+            else if (eventSystem.GetComponent<BaseInputModule>() == null)
+            {
+                eventSystem.gameObject.AddComponent<StandaloneInputModule>();
             }
 
-            var canvasObject = new GameObject("Desktop HUD", typeof(Canvas), typeof(CanvasScaler));
+            var canvasObject = new GameObject(
+                "Desktop HUD",
+                typeof(Canvas),
+                typeof(CanvasScaler),
+                typeof(GraphicRaycaster));
             canvasObject.transform.SetParent(transform, false);
             rootCanvas = canvasObject.GetComponent<Canvas>();
             rootCanvas.renderMode = RenderMode.ScreenSpaceOverlay;

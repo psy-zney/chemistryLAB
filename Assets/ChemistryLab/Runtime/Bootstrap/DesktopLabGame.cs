@@ -11,6 +11,8 @@ namespace ChemistryLab.Desktop
         private const float BaselineTemperatureC = 24f;
         private const string MissionReactionId = "copper-hydroxide";
         private const string FullscreenPreferenceKey = "chemistryLab.desktop.fullscreen";
+        private const int PreferredWindowWidth = 1600;
+        private const int PreferredWindowHeight = 900;
 
         private readonly Dictionary<LabStation, List<VesselAddition>> vesselAdditions =
             new Dictionary<LabStation, List<VesselAddition>>();
@@ -129,11 +131,7 @@ namespace ChemistryLab.Desktop
             SynthesizedInventory.ValidateOrThrow();
             LabSafetySystem.ValidateOrThrow();
             DesktopLabAudio.ValidateSignalGenerationOrThrow();
-            Application.targetFrameRate = 120;
-            QualitySettings.vSyncCount = 1;
-            Screen.fullScreenMode = PlayerPrefs.GetInt(FullscreenPreferenceKey, 1) == 1
-                ? FullScreenMode.FullScreenWindow
-                : FullScreenMode.Windowed;
+            ConfigureDesktopPresentation();
 
             vesselAdditions[LabStation.Workbench] = new List<VesselAddition>();
             vesselAdditions[LabStation.FumeHood] = new List<VesselAddition>();
@@ -606,11 +604,14 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
-            player.SetPausedFromUi(!player.IsPaused);
-            if (player.IsPaused)
+            if (hud.PauseMenuVisible)
             {
-                hud.ShowPauseMenu();
+                ResumeFromUi();
+                return;
             }
+
+            player.SetPausedFromUi(true);
+            hud.ShowPauseMenu();
         }
 
         public void ToggleAudio()
@@ -633,12 +634,58 @@ namespace ChemistryLab.Desktop
         public void ToggleFullscreen()
         {
             var fullscreen = Screen.fullScreenMode == FullScreenMode.Windowed;
-            Screen.fullScreenMode = fullscreen
-                ? FullScreenMode.FullScreenWindow
-                : FullScreenMode.Windowed;
+            ApplyDisplayMode(fullscreen);
             PlayerPrefs.SetInt(FullscreenPreferenceKey, fullscreen ? 1 : 0);
             PlayerPrefs.Save();
             hud.SetFullscreenState(fullscreen);
+        }
+
+        private static void ConfigureDesktopPresentation()
+        {
+            QualitySettings.vSyncCount = 1;
+            Application.targetFrameRate = -1;
+            QualitySettings.pixelLightCount = 2;
+            QualitySettings.antiAliasing = 2;
+            QualitySettings.anisotropicFiltering = AnisotropicFiltering.ForceEnable;
+            QualitySettings.shadows = ShadowQuality.All;
+            QualitySettings.shadowResolution = ShadowResolution.Medium;
+            QualitySettings.shadowProjection = ShadowProjection.StableFit;
+            QualitySettings.shadowDistance = 28f;
+            QualitySettings.shadowCascades = 2;
+            QualitySettings.softParticles = false;
+            QualitySettings.realtimeReflectionProbes = false;
+            ScalableBufferManager.ResizeBuffers(1f, 1f);
+
+            var fullscreen = PlayerPrefs.GetInt(FullscreenPreferenceKey, 1) == 1;
+            ApplyDisplayMode(fullscreen);
+        }
+
+        private static void ApplyDisplayMode(bool fullscreen)
+        {
+            if (fullscreen)
+            {
+                var display = Display.main;
+                var width = display != null && display.systemWidth > 0
+                    ? display.systemWidth
+                    : Screen.currentResolution.width;
+                var height = display != null && display.systemHeight > 0
+                    ? display.systemHeight
+                    : Screen.currentResolution.height;
+                Screen.SetResolution(width, height, FullScreenMode.FullScreenWindow);
+                return;
+            }
+
+            var availableWidth = Mathf.Max(960, Screen.currentResolution.width - 80);
+            var availableHeight = Mathf.Max(540, Screen.currentResolution.height - 80);
+            var widthWindowed = Mathf.Min(PreferredWindowWidth, availableWidth);
+            var heightWindowed = Mathf.RoundToInt(widthWindowed * 9f / 16f);
+            if (heightWindowed > availableHeight)
+            {
+                heightWindowed = Mathf.Min(PreferredWindowHeight, availableHeight);
+                widthWindowed = Mathf.RoundToInt(heightWindowed * 16f / 9f);
+            }
+
+            Screen.SetResolution(widthWindowed, heightWindowed, FullScreenMode.Windowed);
         }
 
         public void ToggleRespirator()
@@ -764,7 +811,7 @@ namespace ChemistryLab.Desktop
 
         private void ConfigureEnvironment()
         {
-            RenderSettings.fog = true;
+            RenderSettings.fog = false;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogColor = LabTheme.Wall;
             RenderSettings.fogStartDistance = 14f;
@@ -1381,8 +1428,8 @@ namespace ChemistryLab.Desktop
                     point.color = LabTheme.PaperRaised;
                     point.intensity = 1.1f;
                     point.range = 8f;
-                    point.shadows = LightShadows.Soft;
-                    point.shadowStrength = 0.3f;
+                    point.shadows = LightShadows.None;
+                    point.renderMode = LightRenderMode.ForceVertex;
                 }
             }
 
@@ -1393,7 +1440,8 @@ namespace ChemistryLab.Desktop
             sun.type = LightType.Directional;
             sun.color = LabTheme.PaperRaised;
             sun.intensity = 0.62f;
-            sun.shadows = LightShadows.Soft;
+            sun.shadows = LightShadows.Hard;
+            sun.shadowStrength = 0.48f;
         }
 
         private void BuildTestTubeRack(Transform parent, Vector3 position)
@@ -1552,8 +1600,10 @@ namespace ChemistryLab.Desktop
             camera.farClipPlane = 70f;
             camera.clearFlags = CameraClearFlags.SolidColor;
             camera.backgroundColor = LabTheme.Wall;
-            camera.allowHDR = true;
+            camera.allowHDR = false;
             camera.allowMSAA = true;
+            camera.allowDynamicResolution = false;
+            camera.depthTextureMode = DepthTextureMode.None;
             cameraObject.AddComponent<AudioListener>();
 
             var hands = BuildChemistHands(cameraObject.transform);
@@ -2153,11 +2203,25 @@ namespace ChemistryLab.Desktop
             var pauseSettingsReady = hud.SettingsVisible;
             HandleEscape();
             var returnedToPause = hud.PauseMenuVisible && !hud.SettingsVisible;
+            HandleEscape();
+            var escapeResumeReady = !player.IsPaused
+                && !hud.MainMenuVisible
+                && !hud.PauseMenuVisible
+                && !hud.SettingsVisible;
+            player.SetPausedFromUi(true);
+            hud.ShowPauseMenu();
+            yield return new WaitForEndOfFrame();
+            var pointerClickReady = hud.VerifyResumePointerRouting();
+            player.SetPausedFromUi(true);
+            hud.ShowPauseMenu();
             var menuFlowReady = mainMenuReady
                 && mainSettingsReady
                 && returnedToMain
                 && pauseSettingsReady
-                && returnedToPause;
+                && returnedToPause
+                && escapeResumeReady
+                && pointerClickReady
+                && hud.PointerInputReady;
 
             var additions = new List<VesselAddition>
             {
@@ -2258,6 +2322,8 @@ namespace ChemistryLab.Desktop
                 pauseButtons = hud == null ? 0 : hud.PauseButtonCount,
                 menuButtons = hud == null ? 0 : hud.MenuButtonCount,
                 menuFlowVerified = menuFlowVerified,
+                pointerInputReady = hud != null && hud.PointerInputReady,
+                pointerClickVerified = hud != null && menuFlowVerified,
                 starterChemicals = starterChemicalCount,
                 cameraFovDegrees = player == null || player.ViewCamera == null
                     ? 0f
@@ -2296,6 +2362,8 @@ namespace ChemistryLab.Desktop
             public int pauseButtons;
             public int menuButtons;
             public bool menuFlowVerified;
+            public bool pointerInputReady;
+            public bool pointerClickVerified;
             public int starterChemicals;
             public float cameraFovDegrees;
             public string graphicsDevice;

@@ -62,7 +62,7 @@ namespace ChemistryLab.Desktop.Editor
                 + " reviewedGeneratedCompounds=" + CompoundGenerationMatrix.ReviewedCompoundCount);
         }
 
-        [MenuItem("Chemistry Lab/Desktop/Build Windows x64")]
+        [MenuItem("Chemistry Lab/Desktop/Build Windows x64 #&b")]
         public static void BuildWindows()
         {
             var validation = ValidateData();
