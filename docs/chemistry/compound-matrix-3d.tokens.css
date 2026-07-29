@@ -26,6 +26,8 @@
   --color-axis-x: oklch(52% 0.15 25);
   --color-axis-y: oklch(45% 0.12 155);
   --color-axis-z: oklch(52% 0.16 256);
+  --color-glass: oklch(99% 0.003 250 / 0.82);
+  --color-label: oklch(99% 0.003 250 / 0.9);
 }
 
 [data-theme="universe"] {
@@ -54,6 +56,8 @@
   --color-axis-x: oklch(65% 0.2 25);
   --color-axis-y: oklch(60% 0.18 155);
   --color-axis-z: oklch(65% 0.22 256);
+  --color-glass: oklch(10% 0.02 260 / 0.78);
+  --color-label: oklch(12% 0.02 260 / 0.86);
 }
 
 :root {
@@ -190,7 +194,7 @@ input:focus-visible,
   font-size: var(--text-base);
   font-style: normal;
   font-weight: 700;
-  letter-spacing: -0.025em;
+  letter-spacing: 0;
   line-height: 1.15;
   overflow-wrap: anywhere;
   text-overflow: ellipsis;
@@ -408,7 +412,7 @@ button[data-state="error"] {
   font-size: var(--text-base);
   font-style: normal;
   font-weight: 700;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .panel__close {
@@ -480,7 +484,7 @@ button[data-state="error"] {
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   font-weight: 600;
-  letter-spacing: 0.06em;
+  letter-spacing: 0;
   text-transform: uppercase;
 }
 
@@ -567,14 +571,14 @@ button[data-state="error"] {
   inset-inline-start: 50%;
   transform: translateX(-50%);
   display: flex;
-  max-width: calc(100% - 3rem);
-  gap: var(--space-2xs);
+  max-width: min(46rem, calc(100% - 3rem));
+  gap: var(--space-xs);
   overflow-x: auto;
-  padding: var(--space-xs);
+  padding: var(--space-xs) var(--space-sm);
   border: var(--rule-thin) solid var(--color-rule);
-  border-radius: 999px;
-  background: var(--color-overlay);
-  backdrop-filter: blur(12px);
+  border-radius: var(--radius-md);
+  background: var(--color-glass);
+  backdrop-filter: blur(10px);
   box-shadow: 0 4px 24px var(--color-shadow);
   scrollbar-width: none;
 }
@@ -592,6 +596,7 @@ button[data-state="error"] {
   background: var(--color-paper);
   border-color: var(--color-rule);
   font-size: var(--text-xs);
+  box-shadow: 0 1px 0 var(--color-shadow);
 }
 
 .view-button[aria-pressed="true"] {
@@ -612,8 +617,8 @@ button[data-state="error"] {
   padding: var(--space-sm);
   border: var(--rule-thin) solid var(--color-rule);
   border-radius: var(--radius-sm);
-  background: var(--color-overlay);
-  backdrop-filter: blur(12px);
+  background: var(--color-glass);
+  backdrop-filter: blur(10px);
   font-family: var(--font-mono);
   font-size: var(--text-xs);
   pointer-events: none;
@@ -652,7 +657,7 @@ button[data-state="error"] {
   padding: var(--space-2xs) var(--space-xs);
   border: var(--rule-thin) solid var(--color-rule);
   border-radius: var(--radius-xs);
-  background: oklch(10% 0.02 260 / 0.75);
+  background: var(--color-label);
   backdrop-filter: blur(6px);
   color: var(--color-ink);
   font-family: var(--font-mono);
@@ -671,7 +676,7 @@ button[data-state="error"] {
   padding: var(--space-sm);
   border: var(--rule-thin) solid var(--color-rule-2);
   border-radius: var(--radius-sm);
-  background: oklch(12% 0.02 260 / 0.92);
+  background: var(--color-label);
   backdrop-filter: blur(12px);
   color: var(--color-ink-2);
   box-shadow: 0 0.25rem 1.25rem var(--color-shadow);
@@ -760,7 +765,7 @@ button[data-state="error"] {
   font-family: var(--font-display);
   font-size: var(--text-xl);
   font-weight: 700;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   line-height: 1;
   overflow-wrap: anywhere;
 }
@@ -1285,18 +1290,18 @@ button[data-state="error"] {
 
 .compound-tag {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate3d(var(--label-x, 0), var(--label-y, 0), 0) translate(-50%, -50%) scale(var(--label-scale, 1));
   display: inline-flex;
   align-items: center;
-  gap: 0.25rem;
-  padding: 0.15rem 0.4rem;
+  gap: var(--space-2xs);
+  padding: 0.2rem 0.45rem;
   border-radius: var(--radius-xs);
-  background: oklch(12% 0.02 260 / 0.82);
+  background: var(--color-label);
   backdrop-filter: blur(4px);
   border: 1px solid var(--color-rule-2);
   color: var(--color-ink);
   font-family: var(--font-mono);
-  font-size: 0.68rem;
+  font-size: var(--text-xs);
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
@@ -1310,7 +1315,7 @@ button[data-state="error"] {
 .compound-tag:hover {
   background: var(--color-paper-2);
   border-color: var(--color-accent);
-  transform: translate(-50%, -50%) scale(1.15);
+  --label-scale: 1.08;
   z-index: 10;
 }
 
@@ -1379,12 +1384,12 @@ button[data-state="error"] {
   transform: translate(-50%, -120%);
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  gap: var(--space-2xs);
   width: 15rem;
-  padding: 0.75rem;
+  padding: var(--space-sm);
   border-radius: var(--radius-md);
-  background: oklch(12% 0.02 260 / 0.92);
-  backdrop-filter: blur(16px);
+  background: var(--color-label);
+  backdrop-filter: blur(12px);
   border: 1.5px solid var(--color-accent);
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.5), 0 0 24px oklch(65% 0.22 256 / 0.2);
   z-index: var(--z-tooltip);
@@ -1485,6 +1490,19 @@ button[data-state="error"] {
     opacity: 1;
     transform: translate(-50%, -50%) scale(1);
   }
+}
+
+[data-quality="low"] .stage__toolbar,
+[data-quality="low"] .axis-key,
+[data-quality="low"] .axis-label,
+[data-quality="low"] .compound-tag,
+[data-quality="low"] .hover-card,
+[data-quality="low"] .floating-callout {
+  backdrop-filter: none;
+}
+
+[data-quality="low"] .compound-tag {
+  box-shadow: none;
 }
 
 @keyframes calloutSlideUp {

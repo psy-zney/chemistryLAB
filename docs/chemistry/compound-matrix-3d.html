@@ -392,13 +392,43 @@
     const FAMILY_INFO = {
       Acid: { label: "Acid", shape: "diamond", color: "#FF2A5F" },
       Hydroxide: { label: "Hydroxide / Base", shape: "soft", color: "#00D4FF" },
-      BinarySalt: { label: "Binary Salt", shape: "round", color: "#F0F4F8" },
-      OxySalt: { label: "Oxy Salt", shape: "diamond", color: "#E8EEF5" },
-      AmmoniumSalt: { label: "Ammonium Salt", shape: "round", color: "#FFFFFF" },
+      BinarySalt: { label: "Binary Salt", shape: "round", color: "#22C55E" },
+      OxySalt: { label: "Oxy Salt", shape: "diamond", color: "#F59E0B" },
+      AmmoniumSalt: { label: "Ammonium Salt", shape: "round", color: "#F472B6" },
       NonmetalOxide: { label: "Acidic Oxide", shape: "diamond", color: "#FFEE00" },
       MetalOxide: { label: "Basic Oxide", shape: "soft", color: "#A855F7" },
       Molecular: { label: "Molecular", shape: "round", color: "#38BDF8" }
     };
+
+    function getQualityProfile() {
+      const cores = navigator.hardwareConcurrency || 4;
+      const memory = navigator.deviceMemory || 4;
+      const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      const smallViewport = Math.min(window.innerWidth, window.innerHeight) < 720;
+      const lowPower = reducedMotion || cores <= 4 || memory <= 4 || smallViewport;
+      const highPower = !reducedMotion && cores >= 8 && memory >= 8 && window.devicePixelRatio <= 2;
+
+      if (lowPower) {
+        return { name: "low", pixelRatio: 1, antialias: false, starCount: 900, maxLabels: 24, overlayInterval: 110, renderBudgetRatio: 0.45 };
+      }
+      if (highPower) {
+        return { name: "high", pixelRatio: 2, antialias: true, starCount: 4000, maxLabels: 90, overlayInterval: 32, renderBudgetRatio: 1 };
+      }
+      return { name: "balanced", pixelRatio: 1.35, antialias: true, starCount: 2200, maxLabels: 48, overlayInterval: 66, renderBudgetRatio: 0.7 };
+    }
+
+    const QUALITY = getQualityProfile();
+    const QUALITY_LIMITS = {
+      minPixelRatio: 0.75,
+      maxPixelRatio: QUALITY.pixelRatio,
+      minBudgetRatio: 0.18,
+      maxBudgetRatio: 1,
+      minLabels: 8,
+      maxLabels: QUALITY.maxLabels,
+      minOverlayInterval: QUALITY.overlayInterval,
+      maxOverlayInterval: 180
+    };
+    document.documentElement.dataset.quality = QUALITY.name;
 
     const els = {
       viewport: document.querySelector("#viewport"),
@@ -486,6 +516,13 @@
       orthoCamera: null,
       activeCamera: null,
       labelElementsMap: new Map(),
+      lastOverlayUpdate: 0,
+      fps: {
+        frames: 0,
+        lastSample: 0,
+        average: 60,
+        lastAdjustment: 0
+      },
       projectionBadges: { x: null, y: null, z: null },
       axisIonBadges: []
     };
@@ -885,8 +922,7 @@
       return { group, rejectedGroup, axisX, axisY, axisZ, floorGrid: grid, backWall: backWallSegments, sideWall: sideWallSegments, layerLines: layerSegments };
     }
 
-    function createStarfield(scene) {
-      const count = 4000;
+    function createStarfield(scene, count = QUALITY.starCount) {
       const positions = new Float32Array(count * 3);
       for (let i = 0; i < count; i++) {
         positions[i * 3] = (Math.random() - 0.5) * 600;
@@ -906,8 +942,8 @@
       const scene = new THREE.Scene();
       scene.fog = new THREE.FogExp2(0x080a14, 0.0025);
 
-      const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
-      renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+      const renderer = new THREE.WebGLRenderer({ antialias: QUALITY.antialias, alpha: false, powerPreference: "high-performance" });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, QUALITY.pixelRatio));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
       renderer.setClearColor(0x060810, 1);
       els.viewport.append(renderer.domElement);
@@ -1041,6 +1077,7 @@
         orthoCamera.bottom = -vSize / 2;
         orthoCamera.updateProjectionMatrix();
 
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, QUALITY.pixelRatio));
         renderer.setSize(rect.width, rect.height, false);
       };
       const resizeObserver = new ResizeObserver(resize);
@@ -1090,10 +1127,62 @@
         && (!els.hazardOnly.checked || record.hazards.length > 0);
     }
 
+    function clamp(value, min, max) {
+      return Math.min(max, Math.max(min, value));
+    }
+
+    function updateRendererPixelRatio() {
+      if (!state.world?.renderer) return;
+      state.world.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, QUALITY.pixelRatio));
+    }
+
+    function setQualityTierFromBudget() {
+      const ratio = QUALITY.renderBudgetRatio;
+      const tier = ratio < 0.34 || QUALITY.pixelRatio <= 0.9 ? "low" : ratio < 0.82 ? "balanced" : "high";
+      document.documentElement.dataset.quality = tier;
+    }
+
+    function adjustAdaptiveQuality(now) {
+      const fps = state.fps;
+      fps.frames += 1;
+      if (!fps.lastSample) {
+        fps.lastSample = now;
+        return;
+      }
+
+      const elapsed = now - fps.lastSample;
+      if (elapsed < 1000) return;
+
+      fps.average = (fps.frames * 1000) / elapsed;
+      fps.frames = 0;
+      fps.lastSample = now;
+      if (now - fps.lastAdjustment < 1200) return;
+
+      if (fps.average < 54) {
+        QUALITY.renderBudgetRatio = clamp(QUALITY.renderBudgetRatio - 0.12, QUALITY_LIMITS.minBudgetRatio, QUALITY_LIMITS.maxBudgetRatio);
+        QUALITY.pixelRatio = clamp(QUALITY.pixelRatio - 0.18, QUALITY_LIMITS.minPixelRatio, QUALITY_LIMITS.maxPixelRatio);
+        QUALITY.maxLabels = Math.max(QUALITY_LIMITS.minLabels, Math.floor(QUALITY.maxLabels * 0.72));
+        QUALITY.overlayInterval = Math.min(QUALITY_LIMITS.maxOverlayInterval, Math.round(QUALITY.overlayInterval * 1.28));
+        fps.lastAdjustment = now;
+        setQualityTierFromBudget();
+        updateRendererPixelRatio();
+        updateInstances();
+      } else if (fps.average > 58 && QUALITY.renderBudgetRatio < QUALITY_LIMITS.maxBudgetRatio) {
+        QUALITY.renderBudgetRatio = clamp(QUALITY.renderBudgetRatio + 0.08, QUALITY_LIMITS.minBudgetRatio, QUALITY_LIMITS.maxBudgetRatio);
+        QUALITY.pixelRatio = clamp(QUALITY.pixelRatio + 0.08, QUALITY_LIMITS.minPixelRatio, QUALITY_LIMITS.maxPixelRatio);
+        QUALITY.maxLabels = Math.min(QUALITY_LIMITS.maxLabels, Math.ceil(QUALITY.maxLabels * 1.18));
+        QUALITY.overlayInterval = Math.max(QUALITY_LIMITS.minOverlayInterval, Math.round(QUALITY.overlayInterval * 0.9));
+        fps.lastAdjustment = now;
+        setQualityTierFromBudget();
+        updateRendererPixelRatio();
+        updateInstances();
+      }
+    }
+
     function updateInstances() {
       const world = state.world;
       if (!world) return;
-      let visible = 0;
+      const eligible = [];
       const visibleFormulas = new Set();
       const camera = state.activeCamera || world.camera;
       const target = world.controls.target;
@@ -1102,34 +1191,59 @@
       // In Proximity Mode: reveal radius depends on camera distance (scaled for 4x universe spacing)
       const revealRadius = state.zoomRevealMode ? (camDist > 160 ? 45 : camDist > 100 ? 70 : 140) : 400;
 
+      for (const record of state.records) {
+        let isVisible = recordVisible(record);
+
+        // Proximity filter: if zoom reveal active, hide records far from camera focus unless selected/hovered
+        if (isVisible && state.zoomRevealMode && record !== state.selected && record !== state.hovered) {
+          const distToTarget = record.position.distanceTo(target);
+          if (distToTarget > revealRadius && record.confidence !== "Reviewed") {
+            isVisible = false;
+          }
+        }
+
+        if (!isVisible) continue;
+
+        const priority = (record === state.selected ? -100000 : 0)
+          + (record === state.hovered ? -90000 : 0)
+          + (record.confidence === "Reviewed" ? -12000 : 0)
+          + record.position.distanceToSquared(target);
+        eligible.push({ record, priority });
+      }
+
+      eligible.sort((left, right) => left.priority - right.priority);
+      const floorBudget = Math.min(eligible.length, Math.max(80, state.selected || state.hovered ? 140 : 0));
+      const renderLimit = Math.max(floorBudget, Math.ceil(eligible.length * QUALITY.renderBudgetRatio));
+      const renderSet = new Set(eligible.slice(0, renderLimit).map(item => item.record));
+      if (state.selected && recordVisible(state.selected)) renderSet.add(state.selected);
+      if (state.hovered && recordVisible(state.hovered)) renderSet.add(state.hovered);
+
+      let visible = 0;
       for (const [family, mesh] of world.families) {
         const records = mesh.userData.records;
-        records.forEach((record, index) => {
-          let isVisible = recordVisible(record);
-
-          // Proximity filter: if zoom reveal active, hide records far from camera focus unless selected/hovered
-          if (isVisible && state.zoomRevealMode && record !== state.selected && record !== state.hovered) {
-            const distToTarget = record.position.distanceTo(target);
-            if (distToTarget > revealRadius && record.confidence !== "Reviewed") {
-              isVisible = false;
-            }
-          }
+        const renderedRecords = [];
+        let slot = 0;
+        records.forEach(record => {
+          const isVisible = renderSet.has(record);
+          record.visible = isVisible;
+          if (!isVisible) return;
 
           world.dummy.position.copy(record.position);
           world.dummy.rotation.set(0, record.isOxideRoute ? record.oxidationState * 0.09 : 0, 0);
           const reviewedScale = record.confidence === "Reviewed" ? 1.25 : 0.85;
-          world.dummy.scale.setScalar(isVisible ? reviewedScale : 0.0001);
+          world.dummy.scale.setScalar(reviewedScale);
           world.dummy.updateMatrix();
-          mesh.setMatrixAt(index, world.dummy.matrix);
+          mesh.setMatrixAt(slot, world.dummy.matrix);
           const neonColor = FAMILY_INFO[record.family]?.color || record.colour;
           record.neonColour = neonColor;
-          mesh.setColorAt(index, new THREE.Color(neonColor));
-          record.visible = isVisible;
-          if (isVisible) {
-            visible += 1;
-            visibleFormulas.add(record.formula);
-          }
+          mesh.setColorAt(slot, new THREE.Color(neonColor));
+          renderedRecords.push(record);
+          slot += 1;
+          visible += 1;
+          visibleFormulas.add(record.formula);
         });
+        mesh.count = slot;
+        mesh.userData.renderedRecords = renderedRecords;
         mesh.instanceMatrix.needsUpdate = true;
         if (mesh.instanceColor) {
           mesh.instanceColor.needsUpdate = true;
@@ -1139,7 +1253,7 @@
       const locale = currentLang === "vi" ? "vi-VN" : "en-US";
       els.visibleCount.textContent = visible.toLocaleString(locale);
       els.formulaCount.textContent = visibleFormulas.size.toLocaleString(locale);
-      els.status.textContent = `${visible} / ${state.records.length} ${t('points')} · ${visibleFormulas.size} ${t('formulas')}`;
+      els.status.textContent = `${visible} / ${state.records.length} ${t('points')} · ${visibleFormulas.size} ${t('formulas')} · ${Math.round(state.fps.average)} FPS · ${Math.round(QUALITY.renderBudgetRatio * 100)}% render`;
       if (state.selected && !state.selected.visible) clearSelection();
     }
 
@@ -1180,7 +1294,7 @@
       world.raycaster.setFromCamera(world.pointer, camera);
       const intersections = world.raycaster.intersectObjects([...world.families.values()], false);
       for (const hit of intersections) {
-        const record = hit.object.userData.records?.[hit.instanceId];
+        const record = hit.object.userData.renderedRecords?.[hit.instanceId];
         if (record?.visible) return record;
       }
       return null;
@@ -1229,6 +1343,7 @@
       }
       els.appShell.classList.remove("is-collapsed-right");
       state.selected = record;
+      updateInstances();
       const world = state.world;
 
       // Glowing Point Light & Halo Animation
@@ -1407,8 +1522,8 @@
       const rect = els.viewport.getBoundingClientRect();
       const camera = state.activeCamera || state.world.camera;
 
-      // Smart LOD: limit labels to top N active records
-      const maxLabels = 75;
+      // Smart LOD: limit labels to top N active records for the current device profile.
+      const maxLabels = QUALITY.maxLabels;
       const visibleRecords = state.records.filter(r => r.visible);
       visibleRecords.sort((a, b) => {
         if (a === state.selected) return -1;
@@ -1452,11 +1567,11 @@
           state.labelElementsMap.set(record, tag);
         }
 
-        const screenX = (projected.x * 0.5 + 0.5) * rect.width;
-        const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
+        const screenX = Math.round((projected.x * 0.5 + 0.5) * rect.width);
+        const screenY = Math.round((-projected.y * 0.5 + 0.5) * rect.height);
 
-        tag.style.left = `${screenX}px`;
-        tag.style.top = `${screenY}px`;
+        tag.style.setProperty("--label-x", `${screenX}px`);
+        tag.style.setProperty("--label-y", `${screenY}px`);
         tag.style.display = "inline-flex";
         tag.classList.toggle("is-selected", record === state.selected);
       }
@@ -2028,10 +2143,12 @@
       world.controls.update();
 
       const camera = state.activeCamera || world.camera;
+      const now = timestamp || performance.now();
+      adjustAdaptiveQuality(now);
 
       // Pulsing Halo & Point Light Animation for selection
       if (state.selected && world.selectionHaloMesh && world.selectionHaloMesh.visible) {
-        const time = (timestamp || performance.now()) * 0.003;
+        const time = now * 0.003;
         const scaleVal = 1.0 + Math.sin(time * 3) * 0.22;
         world.selectionHaloMesh.scale.setScalar(scaleVal);
         world.selectionHaloMesh.lookAt(camera.position);
@@ -2040,10 +2157,13 @@
         }
       }
 
-      updateAxisLabels();
-      updateAxisIonLabels();
-      updateFormulaOverlayLabels();
-      updateProjectionBadgesAndCallout();
+      if (now - state.lastOverlayUpdate >= QUALITY.overlayInterval) {
+        state.lastOverlayUpdate = now;
+        updateAxisLabels();
+        updateAxisIonLabels();
+        updateFormulaOverlayLabels();
+        updateProjectionBadgesAndCallout();
+      }
 
       world.renderer.render(world.scene, camera);
       requestAnimationFrame(animate);
