@@ -233,7 +233,7 @@ namespace ChemistryLab.Desktop
 
             if (Input.GetKeyDown(KeyCode.Escape))
             {
-                SetPaused(!paused);
+                game.HandleEscape();
             }
 
             if (Input.GetKeyDown(KeyCode.F))
@@ -243,8 +243,7 @@ namespace ChemistryLab.Desktop
 
             if (Input.GetKeyDown(KeyCode.F10))
             {
-                LabAccessibility.ReducedMotion = !LabAccessibility.ReducedMotion;
-                game.Hud.SetAccessibilityState(LabAccessibility.ReducedMotion);
+                game.ToggleReducedMotion();
                 game.AudioSystem.PlayUiClick();
             }
 

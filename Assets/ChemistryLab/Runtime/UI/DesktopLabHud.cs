@@ -29,6 +29,8 @@ namespace ChemistryLab.Desktop
         private Text accessibilityText;
         private Text audioStatusText;
         private Text audioButtonText;
+        private Text reducedMotionButtonText;
+        private Text fullscreenButtonText;
         private Text debugText;
         private Text playerSafetyText;
         private Text respiratorButtonText;
@@ -37,13 +39,18 @@ namespace ChemistryLab.Desktop
         private CanvasGroup inspectorGroup;
         private RectTransform inspectorRect;
         private GameObject pauseOverlay;
+        private GameObject mainMenuOverlay;
+        private GameObject settingsOverlay;
         private GameObject debugPanel;
         private Button resumeButton;
+        private Button mainMenuStartButton;
+        private Button settingsBackButton;
         private GameObject selectedSection;
         private GameObject vesselSection;
         private Coroutine inspectorAnimation;
         private Coroutine transientAnimation;
         private bool inspectorVisible;
+        private bool settingsReturnToMainMenu;
 
         public bool InspectorVisible
         {
@@ -60,16 +67,60 @@ namespace ChemistryLab.Desktop
             }
         }
 
+        public int MenuButtonCount
+        {
+            get
+            {
+                var count = 0;
+                if (mainMenuOverlay != null)
+                {
+                    count += mainMenuOverlay.GetComponentsInChildren<Button>(true).Length;
+                }
+
+                if (pauseOverlay != null)
+                {
+                    count += pauseOverlay.GetComponentsInChildren<Button>(true).Length;
+                }
+
+                if (settingsOverlay != null)
+                {
+                    count += settingsOverlay.GetComponentsInChildren<Button>(true).Length;
+                }
+
+                return count;
+            }
+        }
+
+        public bool MainMenuVisible
+        {
+            get { return mainMenuOverlay != null && mainMenuOverlay.activeSelf; }
+        }
+
+        public bool SettingsVisible
+        {
+            get { return settingsOverlay != null && settingsOverlay.activeSelf; }
+        }
+
+        public bool PauseMenuVisible
+        {
+            get { return pauseOverlay != null && pauseOverlay.activeSelf; }
+        }
+
         public bool RuntimeUiReady
         {
             get
             {
                 return rootCanvas != null
                     && pauseOverlay != null
+                    && mainMenuOverlay != null
+                    && settingsOverlay != null
                     && debugPanel != null
                     && resumeButton != null
+                    && mainMenuStartButton != null
+                    && settingsBackButton != null
                     && playerSafetyText != null
                     && PauseButtonCount == 3
+                    && MenuButtonCount == 10
                     && UnityEngine.Object.FindAnyObjectByType<EventSystem>() != null;
             }
         }
@@ -424,15 +475,62 @@ namespace ChemistryLab.Desktop
 
         public void SetPaused(bool paused)
         {
-            if (pauseOverlay != null)
+            if (!paused)
             {
-                pauseOverlay.SetActive(paused);
+                HideMenus();
+                return;
             }
 
-            if (paused && resumeButton != null)
+            ShowPauseMenu();
+        }
+
+        public void ShowMainMenu()
+        {
+            SetMenuState(true, false, false);
+            settingsReturnToMainMenu = true;
+            if (mainMenuStartButton != null)
+            {
+                mainMenuStartButton.Select();
+            }
+        }
+
+        public void ShowPauseMenu()
+        {
+            SetMenuState(false, true, false);
+            settingsReturnToMainMenu = false;
+            if (resumeButton != null)
             {
                 resumeButton.Select();
             }
+        }
+
+        public void ShowSettingsFromMainMenu()
+        {
+            settingsReturnToMainMenu = true;
+            ShowSettings();
+        }
+
+        public void ShowSettingsFromPauseMenu()
+        {
+            settingsReturnToMainMenu = false;
+            ShowSettings();
+        }
+
+        public void ReturnFromSettings()
+        {
+            if (settingsReturnToMainMenu)
+            {
+                ShowMainMenu();
+            }
+            else
+            {
+                ShowPauseMenu();
+            }
+        }
+
+        public void HideMenus()
+        {
+            SetMenuState(false, false, false);
         }
 
         public void SetAccessibilityState(bool reducedMotion)
@@ -442,6 +540,13 @@ namespace ChemistryLab.Desktop
                 accessibilityText.text = reducedMotion
                     ? "F10 · MOTION GIẢM"
                     : "F10 · MOTION ĐẦY";
+            }
+
+            if (reducedMotionButtonText != null)
+            {
+                reducedMotionButtonText.text = reducedMotion
+                    ? "GIẢM CHUYỂN ĐỘNG · BẬT"
+                    : "GIẢM CHUYỂN ĐỘNG · TẮT";
             }
         }
 
@@ -456,6 +561,16 @@ namespace ChemistryLab.Desktop
             if (audioButtonText != null)
             {
                 audioButtonText.text = "ÂM THANH · " + state;
+            }
+        }
+
+        public void SetFullscreenState(bool fullscreen)
+        {
+            if (fullscreenButtonText != null)
+            {
+                fullscreenButtonText.text = fullscreen
+                    ? "MÀN HÌNH · TOÀN MÀN HÌNH"
+                    : "MÀN HÌNH · CỬA SỔ";
             }
         }
 
@@ -666,7 +781,9 @@ namespace ChemistryLab.Desktop
             CreateCrosshair(canvasObject.transform);
             CreateFooter(canvasObject.transform);
             CreateInspector(canvasObject.transform);
+            CreateMainMenuOverlay(canvasObject.transform);
             CreatePauseOverlay(canvasObject.transform);
+            CreateSettingsOverlay(canvasObject.transform);
         }
 
         private void CreateFooter(Transform parent)
@@ -984,7 +1101,7 @@ namespace ChemistryLab.Desktop
             CreateText(
                 "Pause Title",
                 card.transform,
-                "BẮT ĐẦU PHÒNG THÍ NGHIỆM 3D",
+                "TẠM DỪNG THỰC HÀNH",
                 displayFont,
                 27,
                 FontStyle.Bold,
@@ -998,14 +1115,12 @@ namespace ChemistryLab.Desktop
             CreateText(
                 "Pause Copy",
                 card.transform,
-                "MỤC TIÊU ĐẦU TIÊN\n"
-                + "1. WASD tới khay hóa chất trên bàn giữa.\n"
-                + "2. Đặt tâm ngắm lên CuSO₄·5H₂O, nhấn E để lấy; tới cốc và nhấn E để rót.\n"
-                + "3. Làm tương tự với NaOH để tạo kết tủa xanh Cu(OH)₂.\n\n"
+                "MỤC TIÊU HIỆN TẠI\n"
+                + "Tạo kết tủa xanh Cu(OH)₂ từ CuSO₄·5H₂O và NaOH trên bàn giữa.\n\n"
                 + "ĐIỀU KHIỂN\n"
                 + "Chuột — nhìn    WASD — đi    Shift — chạy    E — tương tác\n"
                 + "[ / ] — định lượng    F — dữ liệu    C — thu sản phẩm\n"
-                + "Page Up / Down — nhiệt độ    F8 — pha loãng    ESC — hướng dẫn",
+                + "Page Up / Down — nhiệt độ    F8 — pha loãng    ESC — tiếp tục",
                 bodyFont,
                 16,
                 FontStyle.Normal,
@@ -1024,22 +1139,227 @@ namespace ChemistryLab.Desktop
                 new Vector2(604f, 174f),
                 game.ResumeFromUi);
 
-            var audioButton = CreateButton(
-                "Audio Button",
+            CreateButton(
+                "Settings Button",
                 card.transform,
-                "ÂM THANH · BẬT",
+                "CÀI ĐẶT",
                 new Vector2(36f, 50f),
                 new Vector2(304f, 104f),
-                game.ToggleAudio);
-            audioButtonText = audioButton.GetComponentInChildren<Text>();
+                ShowSettingsFromPauseMenu);
 
             CreateButton(
-                "Quit Button",
+                "Back To Main Menu Button",
+                card.transform,
+                "VỀ MÀN HÌNH CHÍNH",
+                new Vector2(326f, 50f),
+                new Vector2(604f, 104f),
+                game.ReturnToMainMenuFromUi);
+        }
+
+        private void CreateMainMenuOverlay(Transform parent)
+        {
+            mainMenuOverlay = CreatePanel(
+                "Main Menu Overlay",
+                parent,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(0.5f, 0.5f),
+                Vector2.zero,
+                Vector2.zero,
+                LabTheme.WithAlpha(LabTheme.Graphite, 0.82f));
+            mainMenuOverlay.GetComponent<Image>().raycastTarget = true;
+
+            var card = CreatePanel(
+                "Main Menu Card",
+                mainMenuOverlay.transform,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(-320f, -245f),
+                new Vector2(320f, 245f),
+                LabTheme.PaperRaised);
+
+            CreateText(
+                "Main Menu Eyebrow",
+                card.transform,
+                "MÔ PHỎNG HÓA HỌC · PHÒNG THÍ NGHIỆM 3D",
+                bodyFont,
+                13,
+                FontStyle.Bold,
+                LabTheme.AccentDeep,
+                TextAnchor.UpperLeft,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(36f, 410f),
+                new Vector2(-36f, -28f));
+
+            CreateText(
+                "Main Menu Title",
+                card.transform,
+                "CHEMISTRY LAB",
+                displayFont,
+                38,
+                FontStyle.Bold,
+                LabTheme.Ink,
+                TextAnchor.UpperLeft,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(36f, 334f),
+                new Vector2(-36f, -68f));
+
+            CreateText(
+                "Main Menu Copy",
+                card.transform,
+                "Tự do khám phá hóa chất, điều kiện phản ứng và an toàn phòng thí nghiệm.\n\n"
+                + "NHIỆM VỤ KHỞI ĐẦU\n"
+                + "Lấy CuSO₄·5H₂O và NaOH trên bàn giữa để tạo Cu(OH)₂ màu xanh.",
+                bodyFont,
+                16,
+                FontStyle.Normal,
+                LabTheme.InkSoft,
+                TextAnchor.UpperLeft,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(36f, 210f),
+                new Vector2(-36f, -146f));
+
+            mainMenuStartButton = CreateButton(
+                "Start Game Button",
+                card.transform,
+                "BẮT ĐẦU / TIẾP TỤC",
+                new Vector2(36f, 120f),
+                new Vector2(604f, 174f),
+                game.ResumeFromUi);
+
+            CreateButton(
+                "Main Menu Settings Button",
+                card.transform,
+                "CÀI ĐẶT",
+                new Vector2(36f, 50f),
+                new Vector2(304f, 104f),
+                ShowSettingsFromMainMenu);
+
+            CreateButton(
+                "Main Menu Quit Button",
                 card.transform,
                 "THOÁT RA DESKTOP",
                 new Vector2(326f, 50f),
                 new Vector2(604f, 104f),
                 game.QuitToDesktop);
+        }
+
+        private void CreateSettingsOverlay(Transform parent)
+        {
+            settingsOverlay = CreatePanel(
+                "Settings Overlay",
+                parent,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(0.5f, 0.5f),
+                Vector2.zero,
+                Vector2.zero,
+                LabTheme.WithAlpha(LabTheme.Graphite, 0.82f));
+            settingsOverlay.GetComponent<Image>().raycastTarget = true;
+
+            var card = CreatePanel(
+                "Settings Card",
+                settingsOverlay.transform,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(-320f, -245f),
+                new Vector2(320f, 245f),
+                LabTheme.PaperRaised);
+
+            CreateText(
+                "Settings Title",
+                card.transform,
+                "CÀI ĐẶT",
+                displayFont,
+                32,
+                FontStyle.Bold,
+                LabTheme.Ink,
+                TextAnchor.UpperLeft,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(36f, 392f),
+                new Vector2(-36f, -34f));
+
+            CreateText(
+                "Settings Copy",
+                card.transform,
+                "Các thay đổi được lưu tự động cho lần chạy tiếp theo.",
+                bodyFont,
+                15,
+                FontStyle.Normal,
+                LabTheme.InkSoft,
+                TextAnchor.UpperLeft,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(36f, 336f),
+                new Vector2(-36f, -92f));
+
+            var audioButton = CreateButton(
+                "Settings Audio Button",
+                card.transform,
+                "ÂM THANH · BẬT",
+                new Vector2(36f, 250f),
+                new Vector2(604f, 304f),
+                game.ToggleAudio);
+            audioButtonText = audioButton.GetComponentInChildren<Text>();
+
+            var reducedMotionButton = CreateButton(
+                "Reduced Motion Button",
+                card.transform,
+                "GIẢM CHUYỂN ĐỘNG · TẮT",
+                new Vector2(36f, 180f),
+                new Vector2(604f, 234f),
+                game.ToggleReducedMotion);
+            reducedMotionButtonText = reducedMotionButton.GetComponentInChildren<Text>();
+
+            var fullscreenButton = CreateButton(
+                "Fullscreen Button",
+                card.transform,
+                "MÀN HÌNH · TOÀN MÀN HÌNH",
+                new Vector2(36f, 110f),
+                new Vector2(604f, 164f),
+                game.ToggleFullscreen);
+            fullscreenButtonText = fullscreenButton.GetComponentInChildren<Text>();
+
+            settingsBackButton = CreateButton(
+                "Settings Back Button",
+                card.transform,
+                "QUAY LẠI",
+                new Vector2(36f, 40f),
+                new Vector2(604f, 94f),
+                ReturnFromSettings);
+        }
+
+        private void ShowSettings()
+        {
+            SetMenuState(false, false, true);
+            if (settingsBackButton != null)
+            {
+                settingsBackButton.Select();
+            }
+        }
+
+        private void SetMenuState(bool mainMenu, bool pause, bool settings)
+        {
+            if (mainMenuOverlay != null)
+            {
+                mainMenuOverlay.SetActive(mainMenu);
+            }
+
+            if (pauseOverlay != null)
+            {
+                pauseOverlay.SetActive(pause);
+            }
+
+            if (settingsOverlay != null)
+            {
+                settingsOverlay.SetActive(settings);
+            }
         }
 
         private void CreateCrosshair(Transform parent)

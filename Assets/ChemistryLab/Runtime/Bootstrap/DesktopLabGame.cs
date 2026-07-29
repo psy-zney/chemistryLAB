@@ -10,6 +10,7 @@ namespace ChemistryLab.Desktop
     {
         private const float BaselineTemperatureC = 24f;
         private const string MissionReactionId = "copper-hydroxide";
+        private const string FullscreenPreferenceKey = "chemistryLab.desktop.fullscreen";
 
         private readonly Dictionary<LabStation, List<VesselAddition>> vesselAdditions =
             new Dictionary<LabStation, List<VesselAddition>>();
@@ -130,7 +131,9 @@ namespace ChemistryLab.Desktop
             DesktopLabAudio.ValidateSignalGenerationOrThrow();
             Application.targetFrameRate = 120;
             QualitySettings.vSyncCount = 1;
-            Screen.fullScreenMode = FullScreenMode.FullScreenWindow;
+            Screen.fullScreenMode = PlayerPrefs.GetInt(FullscreenPreferenceKey, 1) == 1
+                ? FullScreenMode.FullScreenWindow
+                : FullScreenMode.Windowed;
 
             vesselAdditions[LabStation.Workbench] = new List<VesselAddition>();
             vesselAdditions[LabStation.FumeHood] = new List<VesselAddition>();
@@ -154,6 +157,7 @@ namespace ChemistryLab.Desktop
             hud.SetMission("Tạo kết tủa xanh Cu(OH)₂", false);
             hud.SetZone(ZoneLabel(currentZone));
             hud.SetAudioState(audioSystem != null && !audioSystem.IsMuted);
+            hud.SetFullscreenState(Screen.fullScreenMode != FullScreenMode.Windowed);
             hud.SetSafetySystem(labSafety);
             hud.ShowTransient("Bắt đầu tại khay hóa chất trên bàn giữa: lấy CuSO₄·5H₂O và NaOH bằng phím E.");
 
@@ -170,6 +174,7 @@ namespace ChemistryLab.Desktop
             else
             {
                 player.SetPausedFromUi(true);
+                hud.ShowMainMenu();
             }
         }
 
@@ -559,6 +564,7 @@ namespace ChemistryLab.Desktop
         {
             if (player != null)
             {
+                hud.HideMenus();
                 player.SetPausedFromUi(false);
             }
         }
@@ -568,6 +574,42 @@ namespace ChemistryLab.Desktop
             if (player != null)
             {
                 player.SetPausedFromUi(true);
+                hud.ShowPauseMenu();
+            }
+        }
+
+        public void ReturnToMainMenuFromUi()
+        {
+            if (player != null)
+            {
+                player.SetPausedFromUi(true);
+            }
+
+            hud.ShowMainMenu();
+        }
+
+        public void HandleEscape()
+        {
+            if (hud == null || player == null)
+            {
+                return;
+            }
+
+            if (hud.SettingsVisible)
+            {
+                hud.ReturnFromSettings();
+                return;
+            }
+
+            if (hud.MainMenuVisible)
+            {
+                return;
+            }
+
+            player.SetPausedFromUi(!player.IsPaused);
+            if (player.IsPaused)
+            {
+                hud.ShowPauseMenu();
             }
         }
 
@@ -580,6 +622,23 @@ namespace ChemistryLab.Desktop
 
             audioSystem.ToggleMuted();
             hud.SetAudioState(!audioSystem.IsMuted);
+        }
+
+        public void ToggleReducedMotion()
+        {
+            LabAccessibility.ReducedMotion = !LabAccessibility.ReducedMotion;
+            hud.SetAccessibilityState(LabAccessibility.ReducedMotion);
+        }
+
+        public void ToggleFullscreen()
+        {
+            var fullscreen = Screen.fullScreenMode == FullScreenMode.Windowed;
+            Screen.fullScreenMode = fullscreen
+                ? FullScreenMode.FullScreenWindow
+                : FullScreenMode.Windowed;
+            PlayerPrefs.SetInt(FullscreenPreferenceKey, fullscreen ? 1 : 0);
+            PlayerPrefs.Save();
+            hud.SetFullscreenState(fullscreen);
         }
 
         public void ToggleRespirator()
@@ -2028,6 +2087,18 @@ namespace ChemistryLab.Desktop
             else if (string.Equals(captureView, "pause", StringComparison.OrdinalIgnoreCase))
             {
                 player.SetPausedFromUi(true);
+                hud.ShowPauseMenu();
+            }
+            else if (string.Equals(captureView, "main", StringComparison.OrdinalIgnoreCase))
+            {
+                player.SetPausedFromUi(true);
+                hud.ShowMainMenu();
+            }
+            else if (string.Equals(captureView, "settings", StringComparison.OrdinalIgnoreCase))
+            {
+                player.SetPausedFromUi(true);
+                hud.ShowMainMenu();
+                hud.ShowSettingsFromMainMenu();
             }
             else if (string.Equals(captureView, "debug", StringComparison.OrdinalIgnoreCase))
             {
@@ -2070,6 +2141,24 @@ namespace ChemistryLab.Desktop
         private IEnumerator RunSmokeTest()
         {
             yield return null;
+            player.SetPausedFromUi(true);
+            hud.ShowMainMenu();
+            var mainMenuReady = hud.MainMenuVisible && !hud.SettingsVisible && !hud.PauseMenuVisible;
+            hud.ShowSettingsFromMainMenu();
+            var mainSettingsReady = hud.SettingsVisible;
+            HandleEscape();
+            var returnedToMain = hud.MainMenuVisible && !hud.SettingsVisible;
+            hud.ShowPauseMenu();
+            hud.ShowSettingsFromPauseMenu();
+            var pauseSettingsReady = hud.SettingsVisible;
+            HandleEscape();
+            var returnedToPause = hud.PauseMenuVisible && !hud.SettingsVisible;
+            var menuFlowReady = mainMenuReady
+                && mainSettingsReady
+                && returnedToMain
+                && pauseSettingsReady
+                && returnedToPause;
+
             var additions = new List<VesselAddition>
             {
                 new VesselAddition("copper-sulfate", 10d),
@@ -2092,15 +2181,20 @@ namespace ChemistryLab.Desktop
                 || player.ViewCamera == null
                 || player.ViewCamera.GetComponent<AudioListener>() == null
                 || starterChemicalCount != 4
+                || !menuFlowReady
                 || diagnostics == null)
             {
-                WriteSmokeReport("failed", "One or more runtime assertions failed.", outcome);
+                WriteSmokeReport(
+                    "failed",
+                    "One or more runtime assertions failed.",
+                    outcome,
+                    menuFlowReady);
                 Debug.LogError("DESKTOP_LAB_SMOKE_FAIL");
                 Application.Quit(2);
                 yield break;
             }
 
-            WriteSmokeReport("succeeded", null, outcome);
+            WriteSmokeReport("succeeded", null, outcome, menuFlowReady);
             Debug.Log(
                 "DESKTOP_LAB_SMOKE_PASS chemicals="
                 + DesktopChemistryDatabase.AllChemicals.Count
@@ -2118,6 +2212,8 @@ namespace ChemistryLab.Desktop
                 + audioSystem.ClipCount
                 + " pauseButtons="
                 + hud.PauseButtonCount
+                + " menuButtons="
+                + hud.MenuButtonCount
                 + " starterChemicals="
                 + starterChemicalCount
                 + " cameraFov="
@@ -2126,7 +2222,11 @@ namespace ChemistryLab.Desktop
             Application.Quit(0);
         }
 
-        private void WriteSmokeReport(string result, string failure, ReactionOutcome outcome)
+        private void WriteSmokeReport(
+            string result,
+            string failure,
+            ReactionOutcome outcome,
+            bool menuFlowVerified)
         {
             var reportPath = GetCommandLineValue("-reportPath");
             if (string.IsNullOrWhiteSpace(reportPath))
@@ -2156,6 +2256,8 @@ namespace ChemistryLab.Desktop
                 estimatedProductGrams = outcome == null ? 0d : outcome.EstimatedProductGrams,
                 runtimeAudioClips = audioSystem == null ? 0 : audioSystem.ClipCount,
                 pauseButtons = hud == null ? 0 : hud.PauseButtonCount,
+                menuButtons = hud == null ? 0 : hud.MenuButtonCount,
+                menuFlowVerified = menuFlowVerified,
                 starterChemicals = starterChemicalCount,
                 cameraFovDegrees = player == null || player.ViewCamera == null
                     ? 0f
@@ -2192,6 +2294,8 @@ namespace ChemistryLab.Desktop
             public double estimatedProductGrams;
             public int runtimeAudioClips;
             public int pauseButtons;
+            public int menuButtons;
+            public bool menuFlowVerified;
             public int starterChemicals;
             public float cameraFovDegrees;
             public string graphicsDevice;
