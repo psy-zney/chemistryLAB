@@ -15,8 +15,6 @@ namespace ChemistryLab.Desktop.Editor
         private const string ScenePath = SceneDirectory + "/DesktopChemistryLab.unity";
         private const string ResourceDirectory = "Assets/ChemistryLab/Resources";
         private const string StandardMaterialPath = ResourceDirectory + "/DesktopLabStandard.mat";
-        private const string BuildDirectory = "Builds/ChemistryLab3D";
-        private const string ExecutablePath = BuildDirectory + "/ChemistryLab3D.exe";
         private const string ReportDirectory = "BuildReports";
         private const string BuildReportFile = "desktop-build-report.json";
         private const string ValidationReportFile = "desktop-validation-report.json";
@@ -70,39 +68,63 @@ namespace ChemistryLab.Desktop.Editor
             var validation = ValidateData();
             CreateSceneAssets();
             var projectRoot = Directory.GetParent(Application.dataPath).FullName;
-            var absoluteBuildDirectory = Path.Combine(projectRoot, BuildDirectory);
-            var absoluteExecutablePath = Path.Combine(projectRoot, ExecutablePath);
-            Directory.CreateDirectory(absoluteBuildDirectory);
+            DesktopLabReleasePackaging.PrepareCleanOutput(projectRoot);
+            var absoluteExecutablePath = Path.Combine(
+                projectRoot,
+                DesktopLabReleasePackaging.ExecutablePath);
 
             var options = new BuildPlayerOptions
             {
                 scenes = new[] { ScenePath },
                 locationPathName = absoluteExecutablePath,
                 target = BuildTarget.StandaloneWindows64,
-                options = BuildOptions.None
+                options = BuildOptions.StrictMode
             };
             var report = BuildPipeline.BuildPlayer(options);
-            WriteStructuredReport(
-                BuildReportFile,
-                "windows-player",
-                report.summary.result == BuildResult.Succeeded ? "succeeded" : "failed",
-                validation,
-                (int)report.summary.totalWarnings,
-                (int)report.summary.totalErrors,
-                (long)report.summary.totalSize,
-                ExecutablePath);
             if (report.summary.result != BuildResult.Succeeded)
             {
+                WriteStructuredReport(
+                    BuildReportFile,
+                    "windows-player",
+                    "failed",
+                    validation,
+                    (int)report.summary.totalWarnings,
+                    (int)report.summary.totalErrors,
+                    (long)report.summary.totalSize,
+                    DesktopLabReleasePackaging.ExecutablePath);
                 throw new InvalidOperationException(
                     "Native Windows build failed: " + report.summary.result
                     + " · errors=" + report.summary.totalErrors
                     + " · warnings=" + report.summary.totalWarnings);
             }
 
+            var package = DesktopLabReleasePackaging.CreatePortablePackage(projectRoot);
+            WriteStructuredReport(
+                BuildReportFile,
+                "windows-portable-package",
+                "succeeded",
+                validation,
+                (int)report.summary.totalWarnings,
+                (int)report.summary.totalErrors,
+                (long)report.summary.totalSize,
+                DesktopLabReleasePackaging.ExecutablePath,
+                package);
             Debug.Log(
                 "DESKTOP_LAB_BUILD_PASS path=" + absoluteExecutablePath
                 + " size=" + report.summary.totalSize
-                + " warnings=" + report.summary.totalWarnings);
+                + " warnings=" + report.summary.totalWarnings
+                + " package=" + package.archivePath
+                + " sha256=" + package.archiveSha256);
+        }
+
+        [MenuItem("Chemistry Lab/Desktop/Validate Windows Package")]
+        public static void ValidateWindowsPackage()
+        {
+            var projectRoot = Directory.GetParent(Application.dataPath).FullName;
+            DesktopLabReleasePackaging.ValidateExistingPackageOrThrow(projectRoot);
+            Debug.Log(
+                "DESKTOP_LAB_PACKAGE_PASS distribution="
+                + DesktopLabReleasePackaging.DistributionDirectory);
         }
 
         private static ValidationSummary ValidateData()
@@ -407,7 +429,8 @@ namespace ChemistryLab.Desktop.Editor
             int warnings,
             int errors,
             long sizeBytes,
-            string outputPath)
+            string outputPath,
+            ReleasePackage package = null)
         {
             var projectRoot = Directory.GetParent(Application.dataPath).FullName;
             var absoluteReportDirectory = Path.Combine(projectRoot, ReportDirectory);
@@ -427,6 +450,7 @@ namespace ChemistryLab.Desktop.Editor
                 warnings = warnings,
                 errors = errors,
                 sizeBytes = sizeBytes,
+                package = package,
                 validation = validation
             };
             File.WriteAllText(
@@ -449,6 +473,7 @@ namespace ChemistryLab.Desktop.Editor
             public int warnings;
             public int errors;
             public long sizeBytes;
+            public ReleasePackage package;
             public ValidationSummary validation;
         }
 
