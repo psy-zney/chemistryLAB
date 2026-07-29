@@ -56,6 +56,7 @@
   --color-axis-z: oklch(65% 0.22 256);
 }
 
+:root {
   --font-display: "Space Grotesk", "IBM Plex Sans", sans-serif;
   --font-body: "Space Grotesk", "IBM Plex Sans", sans-serif;
   --font-mono: "JetBrains Mono", "IBM Plex Mono", monospace;
@@ -446,7 +447,7 @@ button[data-state="error"] {
   padding-block: var(--space-sm);
 }
 
-.readout__item + .readout__item {
+.readout__item+.readout__item {
   padding-inline-start: var(--space-sm);
   border-inline-start: var(--rule-thin) solid var(--color-rule);
 }
@@ -775,7 +776,7 @@ button[data-state="error"] {
   border-block-start: var(--rule-thin) solid var(--color-rule);
 }
 
-.property-list > div {
+.property-list>div {
   display: grid;
   min-width: 0;
   grid-template-columns: minmax(6.5rem, 0.8fr) minmax(0, 1.2fr);
@@ -989,13 +990,16 @@ button[data-state="error"] {
   width: 6px;
   height: 6px;
 }
+
 ::-webkit-scrollbar-track {
   background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
   background: var(--color-rule-2);
   border-radius: 3px;
 }
+
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-muted);
 }
@@ -1017,32 +1021,40 @@ button[data-state="error"] {
   border-radius: 0;
   transition: background-color var(--dur-short), color var(--dur-short);
 }
+
 .edge-toggle:hover {
   background: var(--color-paper-3);
   color: var(--color-ink);
 }
+
 .edge-toggle::after {
   font-size: 0.75rem;
 }
+
 .edge-toggle--left {
   left: 0;
   border-left: none;
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
+
 .edge-toggle--left::after {
   content: "▶";
 }
+
 .edge-toggle--right {
   right: 0;
   border-right: none;
   border-radius: var(--radius-md) 0 0 var(--radius-md);
 }
+
 .edge-toggle--right::after {
   content: "◀";
 }
+
 .app-shell:not(.is-collapsed-left) .edge-toggle--left {
   display: none;
 }
+
 .app-shell:not(.is-collapsed-right) .edge-toggle--right {
   display: none;
 }
@@ -1085,6 +1097,7 @@ button[data-state="error"] {
 }
 
 @media (hover: hover) and (pointer: fine) {
+
   .search-pill:hover,
   .icon-button:hover,
   .tool-button:hover,
@@ -1194,9 +1207,11 @@ button[data-state="error"] {
   .app-shell.is-collapsed-left {
     grid-template-columns: 0rem minmax(0, 1fr) 20rem;
   }
+
   .app-shell.is-collapsed-right {
     grid-template-columns: 15rem minmax(0, 1fr) 0rem;
   }
+
   .app-shell.is-collapsed-left.is-collapsed-right,
   .app-shell.is-fullscreen {
     grid-template-columns: 0rem minmax(0, 1fr) 0rem !important;
@@ -1208,6 +1223,7 @@ button[data-state="error"] {
     opacity: 0;
     pointer-events: none;
   }
+
   .app-shell.is-collapsed-right .panel--inspector,
   .app-shell.is-fullscreen .panel--inspector {
     transform: translateX(100%);
@@ -1236,6 +1252,7 @@ button[data-state="error"] {
 }
 
 @media (pointer: coarse) {
+
   button,
   .check-row {
     min-height: 2.75rem;
@@ -1243,6 +1260,7 @@ button[data-state="error"] {
 }
 
 @media (prefers-reduced-motion: reduce) {
+
   *,
   *::before,
   *::after {
@@ -1458,13 +1476,27 @@ button[data-state="error"] {
 }
 
 @keyframes badgePopIn {
-  from { opacity: 0; transform: translate(-50%, -50%) scale(0.6); }
-  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.6);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
 }
 
 @keyframes calloutSlideUp {
-  from { opacity: 0; transform: translate(-50%, -90%) scale(0.95); }
-  to { opacity: 1; transform: translate(-50%, -120%) scale(1); }
+  from {
+    opacity: 0;
+    transform: translate(-50%, -90%) scale(0.95);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate(-50%, -120%) scale(1);
+  }
 }
 
 /* Axis Ion Badges along X, Y, Z coordinate lines */
