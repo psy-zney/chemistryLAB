@@ -1,0 +1,32 @@
+{
+    "schemaVersion": "1.0",
+    "generatedAtUtc": "2026-07-29T15:18:07.9873439Z",
+    "unityVersion": "6000.5.3f1",
+    "phase": "windows-player",
+    "result": "succeeded",
+    "platform": "Windows Standalone x64",
+    "scene": "Assets/ChemistryLab/Scenes/DesktopChemistryLab.unity",
+    "output": "Builds/ChemistryLab3D/ChemistryLab3D.exe",
+    "warnings": 485,
+    "errors": 0,
+    "sizeBytes": 139590853,
+    "validation": {
+        "elements": 52,
+        "chemicals": 40,
+        "reactions": 38,
+        "dynamicSpecies": 40,
+        "dynamicRuleFamilies": 9,
+        "conditionProfiles": 7,
+        "redoxRules": 8,
+        "dynamicResolvedPairs": 155,
+        "generatedCompounds": 565,
+        "uniqueGeneratedFormulas": 541,
+        "reviewedGeneratedCompounds": 45,
+        "compoundMatrixElements": 27,
+        "compoundMatrixIons": 46,
+        "fumeHoodRules": 11,
+        "effectClasses": 4,
+        "proceduralAudioSignalClasses": 5,
+        "reactantOrdersPerReaction": 2
+    }
+}

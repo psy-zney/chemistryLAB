@@ -2,9 +2,13 @@
 
 [![Deploy docs to GitHub Pages](https://github.com/psy-zney/chemistryLAB/actions/workflows/deploy-docs-pages.yml/badge.svg)](https://github.com/psy-zney/chemistryLAB/actions/workflows/deploy-docs-pages.yml)
 
-Chemistry Lab 3D is a native Unity/C# desktop game. It is not a web build. The current production project is `NativeChemistryLab`, a Windows-focused first-person chemistry laboratory where the player walks around a 3D room, picks chemicals, loads vessels, observes reactions, and sees safety consequences when hazardous gases are handled incorrectly.
+Chemistry Lab 3D is a native Unity/C# desktop game. It is not a web build. The repository root is the canonical Unity project; its production desktop module lives in `Assets/ChemistryLab`. It is a Windows-focused first-person chemistry laboratory where the player walks around a 3D room, picks chemicals, loads vessels, observes reactions, and sees safety consequences when hazardous gases are handled incorrectly.
 
 The game is built as an educational simulation, not as real laboratory operating guidance.
+
+![First-person 3D chemistry laboratory with starter chemicals](docs/gameplay/desktop-lab-3d.png)
+
+[Open the first-run onboarding screen](docs/gameplay/desktop-lab-onboarding.png).
 
 ## Current Feature Set
 
@@ -21,8 +25,9 @@ The game is built as an educational simulation, not as real laboratory operating
 - Persistent synthesized-product inventory. Every collected batch records mass, purity, phase, color, hazards, and source equation in JSON; reused material is mass-accounted and generated ionic products re-enter the dynamic reaction engine.
 - Safety system for toxic, corrosive, flammable, oxidising, and asphyxiant gas outcomes. Unsafe reactions are allowed to happen, but the player pays health and credit consequences if they do not use the fume hood, respirator, or gas trap correctly.
 - Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, pause menu, diagnostics, audio toggles, and accessibility reduced-motion mode.
+- First-run onboarding with a visible help button and a four-bottle starter tray containing water, copper sulfate, sodium hydroxide, and hydrochloric acid.
 - Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
-- JSON build, validation, and smoke-test reports under `NativeChemistryLab/BuildReports/`.
+- JSON build, validation, and smoke-test reports under `BuildReports/`.
 
 ## Current Chemistry Matrix — 3D Graph
 
@@ -77,26 +82,28 @@ game remains the native Unity/C# desktop project.
 ## Main Project
 
 ```text
-NativeChemistryLab/
+chemistryLAB/
 |-- Assets/
-|   `-- ChemistryLab/
-|       |-- Editor/
-|       |   `-- BuildPipeline/       Unity validation and Windows build entry points
-|       |-- Resources/               Runtime materials and chemistry JSON datasets
-|       |-- Runtime/
-|       |   |-- Audio/               Procedural audio system and signal validation
-|       |   |-- Bootstrap/           Composition root and procedural 3D lab construction
-|       |   |-- Chemistry/           Chemicals, elements, curated reactions, dynamic rules
-|       |   |-- Core/                Theme colors, fonts, and accessibility flags
-|       |   |-- Diagnostics/         Runtime F3 diagnostics panel
-|       |   |-- Player/              First-person controller and interactable objects
-|       |   |-- Safety/              Hazard classifier, gas catalog, player consequence model
-|       |   `-- UI/                  HUD, inspector, pause menu, buttons, transient messages
-|       `-- Scenes/                  DesktopChemistryLab Unity scene
+|   |-- ChemistryLab/
+|   |   |-- Editor/
+|   |   |   `-- BuildPipeline/       Unity validation and Windows build entry points
+|   |   |-- Resources/               Runtime materials and chemistry JSON datasets
+|   |   |-- Runtime/
+|   |   |   |-- Audio/               Procedural audio system and signal validation
+|   |   |   |-- Bootstrap/           Composition root and procedural 3D lab construction
+|   |   |   |-- Chemistry/           Chemicals, elements, curated reactions, dynamic rules
+|   |   |   |-- Core/                Theme colors, fonts, and accessibility flags
+|   |   |   |-- Diagnostics/         Runtime F3 diagnostics panel
+|   |   |   |-- Player/              First-person controller and interactable objects
+|   |   |   |-- Safety/              Hazard classifier, gas catalog, player consequence model
+|   |   |   `-- UI/                  HUD, inspector, pause menu, buttons, transient messages
+|   |   `-- Scenes/                  DesktopChemistryLab Unity scene
+|   `-- _Game/                       Earlier 2D Unity architecture prototype
 |-- BuildReports/                    Committed structured JSON reports
 |-- Builds/                          Local Windows build output, ignored by git
 |-- Packages/                        Unity package manifest and lock file
 |-- ProjectSettings/                 Unity project settings
+|-- NativeChemistryLab/              Historical standalone snapshot
 `-- README.md
 ```
 
@@ -105,12 +112,11 @@ The root repository also contains older planning/prototype material:
 ```text
 docs/                            Project documentation and structured logs
 LAB-animated/                    Earlier web/React prototype
-Assets/_Game/                    Earlier Unity architecture prototype
 ChemistryLabGame/                Earlier mobile/Unity project
 PlanCoreGame/                    Design and gameplay planning documents
 ```
 
-For new desktop game work, use `NativeChemistryLab` unless a task explicitly targets an older prototype.
+For new desktop game work, open the repository root in Unity and use `Assets/ChemistryLab`. Do not build `Assets/_Game/Scenes/MainLab.unity`; that scene belongs to the earlier 2D prototype.
 
 ## Architecture Notes
 
@@ -150,7 +156,7 @@ F6            Buy/equip/remove respirator
 F7            Connect/disconnect gas isolation trap
 F9            Toggle all audio
 F10           Toggle reduced motion
-Esc           Pause or resume
+Esc           Open help/pause or resume
 ```
 
 ## Build Output
@@ -158,7 +164,7 @@ Esc           Pause or resume
 The current Windows build target is:
 
 ```text
-NativeChemistryLab/Builds/ChemistryLab3D/ChemistryLab3D.exe
+Builds/ChemistryLab3D/ChemistryLab3D.exe
 ```
 
 Keep `ChemistryLab3D_Data` beside the executable.
@@ -186,15 +192,14 @@ Reviewed overrides:     45
 Fume hood rules:        11
 Effect classes:         4
 Audio signal classes:   5
-Warnings:               0
+Build result:           Succeeded
 Errors:                 0
 ```
 
 Structured reports and documentation artifacts:
 
-- `NativeChemistryLab/BuildReports/desktop-validation-report.json`
-- `NativeChemistryLab/BuildReports/desktop-build-report.json`
-- `NativeChemistryLab/BuildReports/desktop-smoke-report.json`
+- `BuildReports/desktop-build-report.json`
+- `BuildReports/desktop-smoke-report.json`
 - `docs/chemistry/compound-generation-matrix.md`
 - `docs/chemistry/compound-generation-matrix.json`
 - `docs/chemistry/compound-matrix-3d.html`

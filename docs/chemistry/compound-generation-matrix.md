@@ -26,7 +26,7 @@ Phiên bản `1.0` hiện chứa:
 | Tổ hợp bị loại rõ lý do | 9 |
 
 Dữ liệu nguồn nằm trong
-`NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json`.
+`Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json`.
 Mã giải nằm trong
 `NativeChemistryLab/Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs`.
 
