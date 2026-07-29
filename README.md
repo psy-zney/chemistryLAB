@@ -102,7 +102,7 @@ chemistryLAB/
 |   |   `-- Scenes/                  DesktopChemistryLab Unity scene
 |   `-- _Game/                       Earlier 2D Unity architecture prototype
 |-- BuildReports/                    Committed structured JSON reports
-|-- Builds/                          Local Windows build output, ignored by git
+|-- Builds/                          Local portable releases, ignored by git
 |-- Packages/                        Unity package manifest and lock file
 |-- ProjectSettings/                 Unity project settings
 |-- NativeChemistryLab/              Historical standalone snapshot
@@ -165,15 +165,37 @@ The game opens on its main menu. During play, press `Esc` for Resume, Settings,
 or Back to Main Menu. Settings provides audio, reduced-motion, and
 fullscreen/windowed controls and saves them for the next launch.
 
-## Build Output
+## Windows Portable Build
 
-The current Windows build target is:
+Run `Chemistry Lab -> Desktop -> Build Windows x64` in Unity. The pipeline
+cleans the generated build root, produces the game, removes Burst
+`DoNotShip` debug data, validates required Unity runtime files, writes a
+manifest and README, then creates a versioned ZIP and SHA-256 checksum:
 
 ```text
-Builds/ChemistryLab3D/ChemistryLab3D.exe
+Builds/ChemistryLab3D/
+|-- Windows-x64/
+|   |-- ChemistryLab3D.exe
+|   |-- ChemistryLab3D_Data/
+|   |-- MonoBleedingEdge/
+|   |-- UnityPlayer.dll
+|   |-- build-manifest.json
+|   `-- README.txt
+`-- Packages/
+    |-- ChemistryLab3D-Windows-x64-v1.0.zip
+    `-- ChemistryLab3D-Windows-x64-v1.0.zip.sha256
 ```
 
-Keep `ChemistryLab3D_Data` beside the executable.
+Run the local build from
+`Builds/ChemistryLab3D/Windows-x64/ChemistryLab3D.exe`. Distribute the ZIP,
+not the EXE by itself. Unity requires `ChemistryLab3D_Data`, `UnityPlayer.dll`,
+and the managed runtime to remain beside the executable. The ZIP contains one
+top-level `ChemistryLab3D-Windows-x64` folder so extraction stays tidy.
+
+Use `Chemistry Lab -> Desktop -> Validate Windows Package` to recheck an
+existing distribution without rebuilding it. See
+[`docs/release/windows-portable-layout.md`](docs/release/windows-portable-layout.md)
+for the packaging contract and release checks.
 
 ## Validation
 
@@ -213,5 +235,6 @@ Structured reports and documentation artifacts:
 - `docs/chemistry/compound-matrix-3d-preview.png`
 - `docs/chemistry/reaction-condition-engine.md`
 - `docs/chemistry/reaction-condition-engine.json`
+- `docs/release/windows-portable-layout.md`
 
 Raw Unity logs are temporary and ignored. Important logs should be converted to JSON or Markdown before being committed.
