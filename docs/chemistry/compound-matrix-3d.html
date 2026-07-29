@@ -1,10 +1,10 @@
 <!doctype html>
-<html lang="vi">
+<html lang="vi" data-lang="vi">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="description" content="Đồ thị Three.js tương tác của ma trận hợp chất đang dùng trong Chemistry Lab 3D.">
-  <title>Ma trận hợp chất 3D · Chemistry Lab</title>
+  <meta name="description" content="Interactive Three.js 3D compound matrix visualization for Chemistry Lab.">
+  <title>3D Compound Matrix · Chemistry Lab</title>
   <link rel="icon" href="data:,">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -30,110 +30,164 @@
     </div>
 
     <div class="topbar__tools">
-      <button class="search-pill" id="openSearch" type="button" aria-label="Tìm công thức hoặc tên chất">
-        <span class="search-pill__label">Tìm công thức hoặc tên chất</span>
+      <button class="search-pill" id="openSearch" type="button" aria-label="Search formula or compound">
+        <span class="search-pill__label" data-i18n="searchPlaceholder">Search formula or compound</span>
         <span><kbd>Ctrl</kbd> <kbd>K</kbd></span>
       </button>
       <div>
-        <button class="icon-button" type="button" data-mobile-panel="filters" aria-label="Mở bộ lọc">
+        <button class="icon-button" id="toggleFiltersDesktop" type="button" title="Toggle Filters Sidebar" aria-label="Toggle Filters Sidebar">
+          <span aria-hidden="true">⇥</span>
+          <span class="icon-button__text">Filters</span>
+        </button>
+        <button class="lang-toggle" id="themeToggle" type="button" aria-label="Toggle Theme">🌌 Universe</button>
+        <button class="lang-toggle" id="langToggle" type="button" aria-label="Toggle language">🌐 EN</button>
+        <button class="icon-button" id="toggleFullscreenTop" type="button" title="Toggle Fullscreen 3D View" aria-label="Fullscreen View">
+          <span aria-hidden="true">⛶</span>
+          <span class="icon-button__text">Fullscreen</span>
+        </button>
+        <button class="icon-button" type="button" data-mobile-panel="filters" aria-label="Open filters">
           <span aria-hidden="true">≡</span>
-          <span class="icon-button__text">Bộ lọc</span>
+          <span class="icon-button__text" data-i18n="filters">Filters</span>
         </button>
-        <button class="icon-button" id="openSearchCompact" type="button" aria-label="Tìm chất">
+        <button class="icon-button" id="openSearchCompact" type="button" aria-label="Search">
           <span aria-hidden="true">⌕</span>
-          <span class="icon-button__text">Tìm chất</span>
+          <span class="icon-button__text" data-i18n="search">Search</span>
         </button>
-        <button class="icon-button" type="button" data-mobile-panel="inspector" aria-label="Mở bảng phân tích">
+        <button class="icon-button" type="button" data-mobile-panel="inspector" aria-label="Open inspector">
           <span aria-hidden="true">i</span>
-          <span class="icon-button__text">Phân tích</span>
+          <span class="icon-button__text" data-i18n="inspector">Inspector</span>
+        </button>
+        <button class="icon-button" id="toggleInspectorDesktop" type="button" title="Toggle Inspector Sidebar" aria-label="Toggle Inspector Sidebar">
+          <span aria-hidden="true">⇤</span>
+          <span class="icon-button__text">Inspector</span>
         </button>
       </div>
     </div>
   </header>
 
-  <main class="app-shell" id="appShell">
-    <aside class="panel panel--filters" id="filterPanel" aria-label="Bộ lọc đồ thị">
+  <main class="app-shell is-collapsed-right" id="appShell">
+    <!-- Edge Toggle Buttons -->
+    <button class="edge-toggle edge-toggle--left" id="panelCollapseLeft" aria-label="Toggle Data Layers" title="Toggle Data Layers"></button>
+    <button class="edge-toggle edge-toggle--right" id="panelCollapseRight" aria-label="Toggle Inspector" title="Toggle Inspector"></button>
+
+    <aside class="panel panel--filters" id="filterPanel" aria-label="Filters">
       <div class="panel__head">
-        <h2>Lớp dữ liệu</h2>
-        <button class="panel__close" type="button" data-close-panel aria-label="Đóng bộ lọc">×</button>
+        <h2 data-i18n="filterLayers">Data Layers</h2>
+        <button class="panel__close" type="button" data-close-panel aria-label="Close filters">×</button>
       </div>
       <div class="panel__body">
-        <div class="readout" aria-label="Thống kê điểm">
+        <div class="readout" aria-label="Point statistics">
           <div class="readout__item">
             <strong id="visibleCount">—</strong>
-            <span>đang hiển thị</span>
+            <span data-i18n="showing">showing</span>
           </div>
           <div class="readout__item">
             <strong id="formulaCount">—</strong>
-            <span>công thức riêng</span>
+            <span data-i18n="uniqueFormulas">unique formulas</span>
           </div>
         </div>
 
         <fieldset class="filter-group">
-          <legend>Họ hợp chất</legend>
+          <legend data-i18n="familyTitle">Compound Family</legend>
           <div class="filter-list" id="familyFilters"></div>
         </fieldset>
 
         <fieldset class="filter-group">
-          <legend>Mức tin cậy</legend>
+          <legend data-i18n="confidenceTitle">Confidence</legend>
           <div class="filter-list">
             <label class="check-row">
               <input type="checkbox" name="confidence" value="Reviewed" checked>
-              <span>Đã thẩm định</span>
+              <span data-i18n="confidenceReviewed">Reviewed</span>
               <span class="check-row__count" id="reviewedCount">—</span>
             </label>
             <label class="check-row">
               <input type="checkbox" name="confidence" value="RuleDerived" checked>
-              <span>Suy ra bằng luật</span>
+              <span data-i18n="confidenceRuleDerived">Rule-derived</span>
               <span class="check-row__count" id="derivedCount">—</span>
             </label>
           </div>
         </fieldset>
 
         <fieldset class="filter-group">
-          <legend>Hiển thị</legend>
+          <legend data-i18n="displayTitle">Display</legend>
           <div class="filter-list">
             <label class="check-row">
               <input id="hazardOnly" type="checkbox">
-              <span>Chỉ chất có cảnh báo</span>
+              <span data-i18n="hazardOnly">Hazard compounds only</span>
               <span class="check-row__count">!</span>
             </label>
             <label class="check-row">
               <input id="showGrid" type="checkbox" checked>
-              <span>Lưới tọa độ</span>
+              <span data-i18n="gridLabel">Coordinate grid</span>
               <span class="check-row__count">XYZ</span>
             </label>
             <label class="check-row">
+              <input id="showFormulaLabels" type="checkbox" checked>
+              <span data-i18n="formulaLabelsLabel">Compound labels</span>
+              <span class="check-row__count">Aa</span>
+            </label>
+            <label class="check-row">
+              <input id="zoomRevealMode" type="checkbox" checked>
+              <span data-i18n="zoomRevealLabel">Proximity Mode (reveal on zoom)</span>
+              <span class="check-row__count">🔍</span>
+            </label>
+            <label class="check-row">
               <input id="showRejected" type="checkbox">
-              <span>Điểm bị loại</span>
+              <span data-i18n="rejectedLabel">Excluded points</span>
               <span class="check-row__count" id="rejectedCount">—</span>
             </label>
           </div>
         </fieldset>
 
-        <button class="tool-button" id="selectAllFamilies" type="button">Hiện lại mọi lớp</button>
+        <button class="tool-button" id="selectAllFamilies" type="button" data-i18n="showAllLayers">Show all layers</button>
       </div>
     </aside>
 
-    <section class="stage" id="stage" aria-label="Đồ thị hợp chất ba chiều">
-      <div id="viewport" tabindex="0" aria-label="Kéo để xoay đồ thị, cuộn để thu phóng, nhấp một điểm để xem tính chất"></div>
+    <section class="stage" id="stage" aria-label="3D Compound Graph">
+      <div id="viewport" tabindex="0" aria-label="Drag to rotate graph, scroll to zoom, click point to analyze"></div>
 
-      <div class="stage__toolbar" aria-label="Góc nhìn">
-        <button class="view-button" type="button" data-view="perspective" aria-pressed="true">Phối cảnh</button>
-        <button class="view-button" type="button" data-view="top" aria-pressed="false">Từ trên</button>
-        <button class="view-button" type="button" data-view="front" aria-pressed="false">Mặt trước</button>
-        <button class="view-button" id="resetCamera" type="button">Đặt lại</button>
+      <div class="stage__toolbar" aria-label="Camera Views & Display Toggles">
+        <button class="view-button" type="button" data-view="perspective" data-i18n="perspective" title="3D Perspective" aria-pressed="true">🧊 3D</button>
+        <button class="view-button" type="button" data-view="xz" data-i18n="planeXZ" title="XZ Plane (Cation–Anion)" aria-pressed="false">📐 XZ</button>
+        <button class="view-button" type="button" data-view="xy" data-i18n="planeXY" title="XY Plane (Cation–Oxy)" aria-pressed="false">📐 XY</button>
+        <button class="view-button" type="button" data-view="yz" data-i18n="planeYZ" title="YZ Plane (Anion–Oxy)" aria-pressed="false">📐 YZ</button>
+        <span class="toolbar-divider" aria-hidden="true"></span>
+        <button class="view-button" id="toggleZoomReveal" type="button" title="Toggle Proximity LOD Mode" aria-pressed="true">👁️ LOD</button>
+        <button class="view-button" id="toggleFormulaLabels" type="button" title="Toggle Compound Labels" aria-pressed="false">🏷️ Labels</button>
+        <button class="view-button" id="resetCamera" type="button" title="Reset Camera View">🔄 Reset</button>
+        <span class="toolbar-divider" aria-hidden="true"></span>
+        <button class="view-button" id="toggleFullscreen" type="button" title="Toggle Fullscreen 3D View">⛶ Fullscreen</button>
+      </div>
+
+      <!-- Axis Ion Badges Container & 2D Overlay Labels -->
+      <div class="axis-ion-container" id="axisIonContainer"></div>
+      <div class="compound-labels-container" id="compoundLabelsContainer"></div>
+      <div id="projectionBadgesContainer"></div>
+
+      <!-- Floating Callout Card for Selected Compound -->
+      <div class="floating-callout" id="floatingCallout" hidden>
+        <div class="floating-callout__head">
+          <span class="floating-callout__formula" id="calloutFormula"></span>
+          <span class="floating-callout__badge" id="calloutFamily"></span>
+          <button class="floating-callout__close" id="calloutCloseBtn" type="button" aria-label="Close">×</button>
+        </div>
+        <div class="floating-callout__name" id="calloutName"></div>
+        <div class="floating-callout__meta">
+          <span id="calloutMass"></span>
+          <span id="calloutSolubility"></span>
+        </div>
+        <button class="floating-callout__btn" id="calloutInspectBtn" type="button" data-i18n="fullAnalysis">Full analysis →</button>
       </div>
 
       <div class="axis-key" aria-hidden="true">
-        <span class="axis-key__x"><i></i>X · kim loại / cation</span>
-        <span class="axis-key__y"><i></i>Y · phi kim / anion</span>
-        <span class="axis-key__z"><i></i>Z · oxy / số oxi hóa</span>
+        <span class="axis-key__x"><i style="--axis-color: var(--color-axis-x)"></i><span data-i18n="axisKeyX">X · metal / cation</span></span>
+        <span class="axis-key__y"><i style="--axis-color: var(--color-axis-y)"></i><span data-i18n="axisKeyY">Y · nonmetal / anion</span></span>
+        <span class="axis-key__z"><i style="--axis-color: var(--color-axis-z)"></i><span data-i18n="axisKeyZ">Z · oxy / oxidation</span></span>
       </div>
 
-      <span class="axis-label" id="axisX" aria-hidden="true">X · hoạt động mạnh → yếu</span>
-      <span class="axis-label" id="axisY" aria-hidden="true">Y · anion / gốc axit</span>
-      <span class="axis-label" id="axisZ" aria-hidden="true">Z · số nguyên tử O</span>
+      <span class="axis-label" id="axisX" aria-hidden="true" data-i18n="axisLabelX">X · strong → weak activity</span>
+      <span class="axis-label" id="axisY" aria-hidden="true" data-i18n="axisLabelY">Y · anion / acid radical</span>
+      <span class="axis-label" id="axisZ" aria-hidden="true" data-i18n="axisLabelZ">Z · oxygen count</span>
 
       <div class="hover-card" id="hoverCard" role="tooltip">
         <strong id="hoverFormula"></strong>
@@ -142,19 +196,19 @@
 
       <div class="loading-screen" id="loadingScreen">
         <span class="loading-screen__mark" aria-hidden="true"></span>
-        <h2>Đang dựng 565 điểm hợp chất</h2>
-        <p id="loadingMessage">Đọc ma trận JSON và cân bằng điện tích bằng cùng quy tắc với engine Unity.</p>
+        <h2 data-i18n="loadingTitle">Building 565 compound points</h2>
+        <p id="loadingMessage" data-i18n="loadingMsg">Reading matrix JSON and balancing charge using same rules as Unity engine.</p>
       </div>
     </section>
 
-    <aside class="panel panel--inspector" id="inspectorPanel" aria-label="Tính chất hợp chất">
+    <aside class="panel panel--inspector" id="inspectorPanel" aria-label="Inspector">
       <div class="panel__head">
-        <h2>Phân tích điểm</h2>
-        <button class="panel__close" type="button" data-close-panel aria-label="Đóng bảng phân tích">×</button>
+        <h2 data-i18n="inspectorTitle">Point Analysis</h2>
+        <button class="panel__close" type="button" data-close-panel aria-label="Close inspector">×</button>
       </div>
       <div class="panel__body" id="inspectorBody">
-        <div class="inspector-empty" id="inspectorEmpty">
-          Chọn một điểm trên đồ thị hoặc tìm theo công thức. Màu nút lấy trực tiếp từ dữ liệu hóa chất; hình học biểu thị họ hợp chất.
+        <div class="inspector-empty" id="inspectorEmpty" data-i18n="inspectorEmpty">
+          Select a point on the graph or search by formula.
         </div>
 
         <div id="compoundDetails" hidden>
@@ -164,19 +218,19 @@
           </div>
 
           <dl class="property-list">
-            <div><dt>Họ</dt><dd id="detailFamily"></dd></div>
-            <div><dt>Tọa độ</dt><dd id="detailCoordinate"></dd></div>
-            <div><dt>Thành phần</dt><dd id="detailIons"></dd></div>
-            <div><dt>Tỉ lệ ion</dt><dd id="detailRatio"></dd></div>
-            <div><dt>Khối lượng mol</dt><dd id="detailMass"></dd></div>
-            <div><dt>Trạng thái</dt><dd id="detailPhase"></dd></div>
-            <div><dt>Độ tan</dt><dd id="detailSolubility"></dd></div>
-            <div><dt>Màu mô phỏng</dt><dd id="detailColour"></dd></div>
-            <div><dt>Độ tin cậy</dt><dd id="detailConfidence"></dd></div>
+            <div><dt data-i18n="propFamily">Family</dt><dd id="detailFamily"></dd></div>
+            <div><dt data-i18n="propCoord">Coordinate</dt><dd id="detailCoordinate"></dd></div>
+            <div><dt data-i18n="propIons">Composition</dt><dd id="detailIons"></dd></div>
+            <div><dt data-i18n="propRatio">Ion Ratio</dt><dd id="detailRatio"></dd></div>
+            <div><dt data-i18n="propMass">Molar Mass</dt><dd id="detailMass"></dd></div>
+            <div><dt data-i18n="propPhase">Phase</dt><dd id="detailPhase"></dd></div>
+            <div><dt data-i18n="propSol">Solubility</dt><dd id="detailSolubility"></dd></div>
+            <div><dt data-i18n="propColour">Sim Colour</dt><dd id="detailColour"></dd></div>
+            <div><dt data-i18n="propConf">Confidence</dt><dd id="detailConfidence"></dd></div>
           </dl>
 
           <div>
-            <p class="filter-label">Cảnh báo</p>
+            <p class="filter-label" data-i18n="hazardTitle">Warnings</p>
             <div class="hazard-list" id="detailHazards"></div>
           </div>
 
@@ -215,19 +269,135 @@
     const DATA_URL = "../../NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json";
     const EXPECTED_ACCEPTED = 565;
     const EXPECTED_UNIQUE = 541;
-    const DEFAULT_CAMERA = new THREE.Vector3(25, 21, 31);
-    const DEFAULT_TARGET = new THREE.Vector3(0, 5.4, 0);
+    const X_SPAN = 152;      // 38 * 4x
+    const Y_SPAN = 100;      // 25 * 4x
+    const O_STEP = 4.32;     // 1.08 * 4x
+    const DEFAULT_CAMERA = new THREE.Vector3(90, 75, 110);
+    const DEFAULT_TARGET = new THREE.Vector3(0, 12, 0);
     const SUBSCRIPT = "₀₁₂₃₄₅₆₇₈₉";
 
+    /* ─── i18n ─── */
+    const LANG = {
+      en: {
+        title: "3D Compound Matrix", brandMeta: "Loading engine data…",
+        searchPlaceholder: "Search formula or compound name",
+        filters: "Filters", search: "Search", inspector: "Inspector",
+        filterLayers: "Data Layers", familyTitle: "Compound Family",
+        confidenceTitle: "Confidence", confidenceReviewed: "Reviewed",
+        confidenceRuleDerived: "Rule-derived",
+        displayTitle: "Display", hazardOnly: "Hazard compounds only",
+        gridLabel: "Coordinate grid", formulaLabelsLabel: "Compound labels",
+        zoomRevealLabel: "Proximity Mode (reveal on zoom)",
+        rejectedLabel: "Excluded points", showAllLayers: "Show all layers",
+        perspective: "🧊 3D",
+        planeXZ: "📐 XZ (Cation–Anion)", planeXY: "📐 XY (Cation–Oxy)",
+        planeYZ: "📐 YZ (Anion–Oxy)",
+        zoomRevealBtn: "👁️ LOD: ", zoomOn: "ON", zoomOff: "OFF",
+        showAllLabels: "🏷️ Labels", resetCamera: "🔄 Reset",
+        axisKeyX: "X · metal / cation", axisKeyY: "Y · nonmetal / anion",
+        axisKeyZ: "Z · oxy / oxidation",
+        axisLabelX: "X · strong → weak activity",
+        axisLabelY: "Y · anion / acid radical",
+        axisLabelZ: "Z · oxygen count",
+        inspectorTitle: "Point Analysis", inspectorEmpty: "Select a point on the graph or search by formula.",
+        propFamily: "Family", propCoord: "Coordinate", propIons: "Composition",
+        propRatio: "Ion Ratio", propMass: "Molar Mass", propPhase: "Phase",
+        propSol: "Solubility", propColour: "Sim Colour", propConf: "Confidence",
+        hazardTitle: "Warnings", noHazard: "no additional hazard flags",
+        fullAnalysis: "Full analysis →",
+        showing: "showing", uniqueFormulas: "unique formulas",
+        loadingTitle: "Building 565 compound points",
+        loadingMsg: "Reading matrix JSON and balancing charge using same rules as Unity engine.",
+        reviewed: "Reviewed · verified data", ruleDerived: "RuleDerived · rule-inferred",
+        statusInit: "Initializing WebGL…",
+        statusHelp: "Left click: rotate · scroll: zoom · right click: pan · Ctrl K: search",
+        searchEmpty: "No matching points found. Try formula, ion name, phase or hazard flag.",
+        searchFoot: "Search entire matrix",
+        projecting: "Projecting onto 3 axes X, Y, Z",
+        displaying: "displaying", points: "points", formulas: "formulas",
+        langBtn: "🌐 VI",
+        themeUniverse: "🌌 Universe", themeDefault: "☀️ Light Theme"
+      },
+      vi: {
+        title: "Ma trận hợp chất 3D", brandMeta: "đang đọc dữ liệu engine…",
+        searchPlaceholder: "Tìm công thức hoặc tên chất",
+        filters: "Bộ lọc", search: "Tìm chất", inspector: "Phân tích",
+        filterLayers: "Lớp dữ liệu", familyTitle: "Họ hợp chất",
+        confidenceTitle: "Mức tin cậy", confidenceReviewed: "Đã thẩm định",
+        confidenceRuleDerived: "Suy ra bằng luật",
+        displayTitle: "Hiển thị", hazardOnly: "Chỉ chất có cảnh báo",
+        gridLabel: "Lưới tọa độ", formulaLabelsLabel: "Nhãn tên chất trên ô",
+        zoomRevealLabel: "Mode Cận cảnh (Reveal khi Zoom)",
+        rejectedLabel: "Điểm bị loại", showAllLayers: "Hiện lại mọi lớp",
+        perspective: "🧊 3D",
+        planeXZ: "📐 XZ (Cation – Anion)", planeXY: "📐 XY (Cation – Oxy)",
+        planeYZ: "📐 YZ (Anion – Oxy)",
+        zoomRevealBtn: "👁️ LOD: ", zoomOn: "Bật", zoomOff: "Tắt",
+        showAllLabels: "🏷️ Nhãn", resetCamera: "🔄 Đặt lại",
+        axisKeyX: "X · kim loại / cation", axisKeyY: "Y · phi kim / anion",
+        axisKeyZ: "Z · oxy / số oxi hóa",
+        axisLabelX: "X · hoạt động mạnh → yếu",
+        axisLabelY: "Y · anion / gốc axit",
+        axisLabelZ: "Z · số nguyên tử O",
+        inspectorTitle: "Phân tích điểm", inspectorEmpty: "Chọn một điểm trên đồ thị hoặc tìm theo công thức.",
+        propFamily: "Họ", propCoord: "Tọa độ", propIons: "Thành phần",
+        propRatio: "Tỉ lệ ion", propMass: "Khối lượng mol", propPhase: "Trạng thái",
+        propSol: "Độ tan", propColour: "Màu mô phỏng", propConf: "Độ tin cậy",
+        hazardTitle: "Cảnh báo", noHazard: "không có cờ nguy cơ bổ sung",
+        fullAnalysis: "Phân tích đầy đủ →",
+        showing: "đang hiển thị", uniqueFormulas: "công thức riêng",
+        loadingTitle: "Đang dựng 565 điểm hợp chất",
+        loadingMsg: "Đọc ma trận JSON và cân bằng điện tích bằng cùng quy tắc với engine Unity.",
+        reviewed: "Reviewed · dữ liệu thẩm định", ruleDerived: "RuleDerived · suy ra bằng luật",
+        statusInit: "Đang khởi tạo WebGL…",
+        statusHelp: "Chuột trái: xoay · con lăn: zoom · chuột phải: pan · Ctrl K: tìm",
+        searchEmpty: "Không tìm thấy điểm phù hợp. Thử công thức, tên ion, pha hoặc cờ nguy cơ.",
+        searchFoot: "Tìm trong toàn bộ ma trận",
+        projecting: "Chiếu vuông góc 3 trục X, Y, Z",
+        displaying: "đang hiển thị", points: "điểm", formulas: "công thức",
+        langBtn: "🌐 EN",
+        themeUniverse: "🌌 Vũ trụ", themeDefault: "☀️ Mặc định"
+      }
+    };
+
+    const FAMILY_LABELS = {
+      en: {
+        BinarySalt: "Binary Salt",
+        OxySalt: "Oxy Salt",
+        Acid: "Acid",
+        Hydroxide: "Base / Hydroxide",
+        MetalOxide: "Basic Oxide",
+        NonmetalOxide: "Acidic Oxide",
+        AmmoniumSalt: "Ammonium Salt",
+        Molecular: "Molecular"
+      },
+      vi: {
+        BinarySalt: "Muối nhị nguyên",
+        OxySalt: "Muối có oxy",
+        Acid: "Axit",
+        Hydroxide: "Bazơ / hydroxide",
+        MetalOxide: "Oxit bazơ",
+        NonmetalOxide: "Oxit axit",
+        AmmoniumSalt: "Muối amoni",
+        Molecular: "Phân tử"
+      }
+    };
+
+    let currentLang = localStorage.getItem("chem3d_lang") || "en";
+    let currentTheme = localStorage.getItem("chem3d_theme") || "universe";
+
+    function t(key) { return LANG[currentLang]?.[key] || LANG.en[key] || key; }
+    function familyLabel(family) { return FAMILY_LABELS[currentLang]?.[family] || family; }
+
     const FAMILY_INFO = {
-      BinarySalt: { label: "Muối nhị nguyên", shape: "round" },
-      OxySalt: { label: "Muối có oxy", shape: "diamond" },
-      Acid: { label: "Axit", shape: "diamond" },
-      Hydroxide: { label: "Bazơ / hydroxide", shape: "soft" },
-      MetalOxide: { label: "Oxit kim loại", shape: "soft" },
-      NonmetalOxide: { label: "Oxit phi kim", shape: "diamond" },
-      AmmoniumSalt: { label: "Muối amoni", shape: "round" },
-      Molecular: { label: "Phân tử", shape: "round" }
+      Acid: { label: "Acid", shape: "diamond", color: "#FF2A5F" },
+      Hydroxide: { label: "Hydroxide / Base", shape: "soft", color: "#00D4FF" },
+      BinarySalt: { label: "Binary Salt", shape: "round", color: "#F0F4F8" },
+      OxySalt: { label: "Oxy Salt", shape: "diamond", color: "#E8EEF5" },
+      AmmoniumSalt: { label: "Ammonium Salt", shape: "round", color: "#FFFFFF" },
+      NonmetalOxide: { label: "Acidic Oxide", shape: "diamond", color: "#FFEE00" },
+      MetalOxide: { label: "Basic Oxide", shape: "soft", color: "#A855F7" },
+      Molecular: { label: "Molecular", shape: "round", color: "#38BDF8" }
     };
 
     const els = {
@@ -244,6 +414,10 @@
       rejectedCount: document.querySelector("#rejectedCount"),
       hazardOnly: document.querySelector("#hazardOnly"),
       showGrid: document.querySelector("#showGrid"),
+      showFormulaLabels: document.querySelector("#showFormulaLabels"),
+      toggleFormulaLabels: document.querySelector("#toggleFormulaLabels"),
+      zoomRevealMode: document.querySelector("#zoomRevealMode"),
+      toggleZoomReveal: document.querySelector("#toggleZoomReveal"),
       showRejected: document.querySelector("#showRejected"),
       selectAllFamilies: document.querySelector("#selectAllFamilies"),
       hoverCard: document.querySelector("#hoverCard"),
@@ -260,7 +434,27 @@
       compoundDetails: document.querySelector("#compoundDetails"),
       searchDialog: document.querySelector("#searchDialog"),
       searchInput: document.querySelector("#searchInput"),
-      searchResults: document.querySelector("#searchResults")
+      searchResults: document.querySelector("#searchResults"),
+      axisIonContainer: document.querySelector("#axisIonContainer"),
+      compoundLabelsContainer: document.querySelector("#compoundLabelsContainer"),
+      projectionBadgesContainer: document.querySelector("#projectionBadgesContainer"),
+      floatingCallout: document.querySelector("#floatingCallout"),
+      calloutFormula: document.querySelector("#calloutFormula"),
+      calloutFamily: document.querySelector("#calloutFamily"),
+      calloutName: document.querySelector("#calloutName"),
+      calloutMass: document.querySelector("#calloutMass"),
+      calloutSolubility: document.querySelector("#calloutSolubility"),
+      calloutInspectBtn: document.querySelector("#calloutInspectBtn"),
+      calloutCloseBtn: document.querySelector("#calloutCloseBtn"),
+      langToggle: document.querySelector("#langToggle"),
+      themeToggle: document.querySelector("#themeToggle"),
+      appShell: document.querySelector("#appShell"),
+      toggleFullscreen: document.querySelector("#toggleFullscreen"),
+      toggleFullscreenTop: document.querySelector("#toggleFullscreenTop"),
+      toggleFiltersDesktop: document.querySelector("#toggleFiltersDesktop"),
+      toggleInspectorDesktop: document.querySelector("#toggleInspectorDesktop"),
+      panelCollapseLeft: document.querySelector("#panelCollapseLeft"),
+      panelCollapseRight: document.querySelector("#panelCollapseRight")
     };
 
     const detailFields = Object.fromEntries(
@@ -284,7 +478,16 @@
       pointerDown: null,
       centralOrder: [],
       anionOrder: [],
-      world: null
+      world: null,
+      showLabels: false,
+      zoomRevealMode: true,
+      currentPlane: "perspective",
+      perspCamera: null,
+      orthoCamera: null,
+      activeCamera: null,
+      labelElementsMap: new Map(),
+      projectionBadges: { x: null, y: null, z: null },
+      axisIonBadges: []
     };
 
     function repairText(value) {
@@ -539,15 +742,13 @@
 
       const centralIndex = new Map(state.centralOrder.map((key, index) => [key, index]));
       const anionIndex = new Map(state.anionOrder.map((key, index) => [key, index]));
-      const xSpan = 38;
-      const ySpan = 25;
 
       for (const record of records) {
-        const xBase = (centralIndex.get(record.centralKey) / Math.max(1, state.centralOrder.length - 1) - 0.5) * xSpan;
-        const oxidationOffset = (record.oxidationState - 2) * 0.18;
+        const xBase = (centralIndex.get(record.centralKey) / Math.max(1, state.centralOrder.length - 1) - 0.5) * X_SPAN;
+        const oxidationOffset = (record.oxidationState - 2) * 0.72;
         const anionPosition = anionIndex.get(record.anionId) ?? anionIndex.get("oxide") ?? 0;
-        const z = (anionPosition / Math.max(1, state.anionOrder.length - 1) - 0.5) * ySpan;
-        const y = 0.35 + record.oxygenCount * 1.08;
+        const z = (anionPosition / Math.max(1, state.anionOrder.length - 1) - 0.5) * Y_SPAN;
+        const y = 1.4 + record.oxygenCount * O_STEP;
         record.position = new THREE.Vector3(xBase + oxidationOffset, y, z);
         record.matrixCoordinate = {
           x: centralIndex.get(record.centralKey),
@@ -572,16 +773,7 @@
     }
 
     function makeFamilyGeometry(family) {
-      switch (family) {
-        case "OxySalt": return new THREE.OctahedronGeometry(0.29, 0);
-        case "Acid": return new THREE.ConeGeometry(0.26, 0.52, 8);
-        case "Hydroxide": return new THREE.CylinderGeometry(0.21, 0.21, 0.46, 8);
-        case "MetalOxide": return new THREE.BoxGeometry(0.43, 0.43, 0.43);
-        case "NonmetalOxide": return new THREE.TetrahedronGeometry(0.34, 0);
-        case "AmmoniumSalt": return new THREE.DodecahedronGeometry(0.29, 0);
-        case "Molecular": return new THREE.TorusGeometry(0.24, 0.08, 6, 14);
-        default: return new THREE.SphereGeometry(0.25, 10, 8);
-      }
+      return new THREE.SphereGeometry(0.55, 20, 20);
     }
 
     function buildGrid(documentData, generated) {
@@ -589,32 +781,66 @@
       group.name = "matrix-grid";
       const major = cssTokenToThree("--color-canvas-major");
       const minor = cssTokenToThree("--color-canvas-minor");
-      const grid = new THREE.GridHelper(44, 28, major, minor);
+      const halfX = X_SPAN / 2;
+      const halfZ = Y_SPAN / 2;
+      const maxY = 1.4 + 5 * O_STEP + 2;
+
+      // Floor grid
+      const grid = new THREE.GridHelper(Math.max(X_SPAN, Y_SPAN) * 1.1, 28, major, minor);
+      grid.material.transparent = true;
+      grid.material.opacity = 0.15;
       grid.position.y = 0;
       group.add(grid);
 
-      const layerMaterial = new THREE.LineBasicMaterial({ color: minor, transparent: true, opacity: 0.35 });
+      // Back Wall grid (XY plane at Z = -halfZ)
+      const wallMat = new THREE.LineBasicMaterial({ color: minor, transparent: true, opacity: 0.1 });
+      const backWallPoints = [];
+      for (let x = -halfX; x <= halfX; x += halfX / 7) {
+        backWallPoints.push(new THREE.Vector3(x, 0, -halfZ), new THREE.Vector3(x, maxY, -halfZ));
+      }
+      for (let y = 0; y <= maxY; y += maxY / 8) {
+        backWallPoints.push(new THREE.Vector3(-halfX, y, -halfZ), new THREE.Vector3(halfX, y, -halfZ));
+      }
+      const backWallSegments = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(backWallPoints), wallMat);
+      group.add(backWallSegments);
+
+      // Side Wall grid (YZ plane at X = -halfX)
+      const sideWallPoints = [];
+      for (let z = -halfZ; z <= halfZ; z += halfZ / 5) {
+        sideWallPoints.push(new THREE.Vector3(-halfX, 0, z), new THREE.Vector3(-halfX, maxY, z));
+      }
+      for (let y = 0; y <= maxY; y += maxY / 8) {
+        sideWallPoints.push(new THREE.Vector3(-halfX, y, -halfZ), new THREE.Vector3(-halfX, y, halfZ));
+      }
+      const sideWallSegments = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(sideWallPoints), wallMat.clone());
+      group.add(sideWallSegments);
+
+      // Horizontal layer lines
+      const layerMaterial = new THREE.LineBasicMaterial({ color: minor, transparent: true, opacity: 0.08 });
       const layerPoints = [];
-      for (let level = 2; level <= 14; level += 2) {
-        const y = 0.35 + level * 1.08;
+      for (let oCount = 1; oCount <= 5; oCount++) {
+        const y = 1.4 + oCount * O_STEP;
         layerPoints.push(
-          new THREE.Vector3(-19, y, -12.5), new THREE.Vector3(19, y, -12.5),
-          new THREE.Vector3(19, y, -12.5), new THREE.Vector3(19, y, 12.5),
-          new THREE.Vector3(19, y, 12.5), new THREE.Vector3(-19, y, 12.5),
-          new THREE.Vector3(-19, y, 12.5), new THREE.Vector3(-19, y, -12.5)
+          new THREE.Vector3(-halfX, y, -halfZ), new THREE.Vector3(halfX, y, -halfZ),
+          new THREE.Vector3(halfX, y, -halfZ), new THREE.Vector3(halfX, y, halfZ),
+          new THREE.Vector3(halfX, y, halfZ), new THREE.Vector3(-halfX, y, halfZ),
+          new THREE.Vector3(-halfX, y, halfZ), new THREE.Vector3(-halfX, y, -halfZ)
         );
       }
-      group.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(layerPoints), layerMaterial));
+      const layerSegments = new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(layerPoints), layerMaterial);
+      group.add(layerSegments);
 
-      const axisOrigin = new THREE.Vector3(-19.8, 0.05, 13.1);
-      const axisX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), axisOrigin, 39.6, cssTokenToThree("--color-axis-x"), 0.7, 0.35);
-      const axisY = new THREE.ArrowHelper(new THREE.Vector3(0, 0, -1), axisOrigin, 26.2, cssTokenToThree("--color-axis-y"), 0.7, 0.35);
-      const axisZ = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), axisOrigin, 16.6, cssTokenToThree("--color-axis-z"), 0.7, 0.35);
+      // Axis arrows — origin at bottom-left-front corner
+      const axisOrigin = new THREE.Vector3(-halfX - 2, 0.05, halfZ + 2);
+      const axisX = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), axisOrigin, X_SPAN + 4, cssTokenToThree("--color-axis-x"), 2.5, 1.2);
+      const axisY = new THREE.ArrowHelper(new THREE.Vector3(0, 0, -1), axisOrigin, Y_SPAN + 4, cssTokenToThree("--color-axis-y"), 2.5, 1.2);
+      const axisZ = new THREE.ArrowHelper(new THREE.Vector3(0, 1, 0), axisOrigin, maxY + 4, cssTokenToThree("--color-axis-z"), 2.5, 1.2);
       group.add(axisX, axisY, axisZ);
 
+      // Rejected coordinates
       const rejectedGroup = new THREE.Group();
       rejectedGroup.name = "rejected-coordinates";
-      const rejectedMaterial = new THREE.LineBasicMaterial({ color: cssTokenToThree("--color-danger") });
+      const rejectedMaterial = new THREE.LineBasicMaterial({ color: cssTokenToThree("--color-danger"), transparent: true, opacity: 0.4 });
       const rejectedPoints = [];
       for (const coordinate of generated.exclusions.keys()) {
         let position = null;
@@ -627,9 +853,9 @@
             const xIndex = state.centralOrder.indexOf(central);
             const zIndex = state.anionOrder.indexOf(anionId);
             position = new THREE.Vector3(
-              (xIndex / Math.max(1, state.centralOrder.length - 1) - 0.5) * 38 + (cation.charge - 2) * 0.18,
-              0.35 + anion.oxygenCount * 1.08,
-              (zIndex / Math.max(1, state.anionOrder.length - 1) - 0.5) * 25
+              (xIndex / Math.max(1, state.centralOrder.length - 1) - 0.5) * X_SPAN + (cation.charge - 2) * 0.72,
+              1.4 + anion.oxygenCount * O_STEP,
+              (zIndex / Math.max(1, state.anionOrder.length - 1) - 0.5) * Y_SPAN
             );
           }
         } else if (coordinate.startsWith("oxide:")) {
@@ -638,13 +864,13 @@
           const xIndex = state.centralOrder.indexOf(symbol);
           const zIndex = state.anionOrder.indexOf("oxide");
           position = new THREE.Vector3(
-            (xIndex / Math.max(1, state.centralOrder.length - 1) - 0.5) * 38 + (oxidationState - 2) * 0.18,
-            0.35 + oxidationState * 0.54,
-            (zIndex / Math.max(1, state.anionOrder.length - 1) - 0.5) * 25
+            (xIndex / Math.max(1, state.centralOrder.length - 1) - 0.5) * X_SPAN + (oxidationState - 2) * 0.72,
+            1.4 + oxidationState * O_STEP * 0.5,
+            (zIndex / Math.max(1, state.anionOrder.length - 1) - 0.5) * Y_SPAN
           );
         }
         if (!position) continue;
-        const size = 0.35;
+        const size = 0.8;
         rejectedPoints.push(
           position.clone().add(new THREE.Vector3(-size, -size, 0)),
           position.clone().add(new THREE.Vector3(size, size, 0)),
@@ -656,35 +882,83 @@
       rejectedGroup.visible = false;
       group.add(rejectedGroup);
 
-      return { group, rejectedGroup };
+      return { group, rejectedGroup, axisX, axisY, axisZ, floorGrid: grid, backWall: backWallSegments, sideWall: sideWallSegments, layerLines: layerSegments };
+    }
+
+    function createStarfield(scene) {
+      const count = 4000;
+      const positions = new Float32Array(count * 3);
+      for (let i = 0; i < count; i++) {
+        positions[i * 3] = (Math.random() - 0.5) * 600;
+        positions[i * 3 + 1] = (Math.random() - 0.5) * 600;
+        positions[i * 3 + 2] = (Math.random() - 0.5) * 600;
+      }
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+      const mat = new THREE.PointsMaterial({ color: 0xaaaacc, size: 0.3, transparent: true, opacity: 0.4, sizeAttenuation: true });
+      const stars = new THREE.Points(geo, mat);
+      stars.name = "starfield";
+      scene.add(stars);
+      return stars;
     }
 
     function createWorld(documentData, generated) {
       const scene = new THREE.Scene();
+      scene.fog = new THREE.FogExp2(0x080a14, 0.0025);
+
       const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: false, powerPreference: "high-performance" });
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
       renderer.outputColorSpace = THREE.SRGBColorSpace;
-      renderer.setClearColor(cssTokenToThree("--color-canvas"), 1);
+      renderer.setClearColor(0x060810, 1);
       els.viewport.append(renderer.domElement);
 
-      const camera = new THREE.PerspectiveCamera(42, 1, 0.1, 160);
-      camera.position.copy(DEFAULT_CAMERA);
-      const controls = new OrbitControls(camera, renderer.domElement);
+      const perspCamera = new THREE.PerspectiveCamera(42, 1, 0.1, 800);
+      perspCamera.position.copy(DEFAULT_CAMERA);
+
+      const aspect = (els.viewport.clientWidth || 800) / (els.viewport.clientHeight || 600);
+      const viewSize = X_SPAN * 1.1;
+      const orthoCamera = new THREE.OrthographicCamera(
+        -viewSize * aspect / 2, viewSize * aspect / 2,
+        viewSize / 2, -viewSize / 2,
+        0.1, 800
+      );
+      orthoCamera.position.copy(DEFAULT_CAMERA);
+
+      state.perspCamera = perspCamera;
+      state.orthoCamera = orthoCamera;
+      state.activeCamera = perspCamera;
+
+      const controls = new OrbitControls(perspCamera, renderer.domElement);
       controls.target.copy(DEFAULT_TARGET);
       controls.enableDamping = !window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       controls.dampingFactor = 0.075;
-      controls.minDistance = 7;
-      controls.maxDistance = 78;
+      controls.minDistance = 8;
+      controls.maxDistance = 350;
       controls.maxPolarAngle = Math.PI * 0.49;
       controls.update();
 
-      scene.add(new THREE.HemisphereLight(cssTokenToThree("--color-paper"), cssTokenToThree("--color-rule-2"), 2.2));
-      const keyLight = new THREE.DirectionalLight(cssTokenToThree("--color-paper"), 2.6);
-      keyLight.position.set(15, 27, 18);
+      // Ambient & directional lights (dynamic via theme)
+      const ambientLight = new THREE.AmbientLight(0x223355, 0.6);
+      scene.add(ambientLight);
+      const keyLight = new THREE.DirectionalLight(0xccddff, 1.8);
+      keyLight.position.set(60, 100, 70);
       scene.add(keyLight);
-      const rimLight = new THREE.DirectionalLight(cssTokenToThree("--color-accent-soft"), 1.2);
-      rimLight.position.set(-18, 10, -15);
+      const rimLight = new THREE.DirectionalLight(0x6644aa, 0.6);
+      rimLight.position.set(-70, 40, -60);
       scene.add(rimLight);
+
+      // Starfield background
+      const starfield = createStarfield(scene);
+
+      // Point Light & Halo Animation Mesh for selection
+      const selectionLight = new THREE.PointLight(0x3b82f6, 0, 60);
+      scene.add(selectionLight);
+
+      const haloGeometry = new THREE.RingGeometry(0.6, 1.5, 32);
+      const haloMaterial = new THREE.MeshBasicMaterial({ color: 0x3b82f6, side: THREE.DoubleSide, transparent: true, opacity: 0 });
+      const selectionHaloMesh = new THREE.Mesh(haloGeometry, haloMaterial);
+      selectionHaloMesh.visible = false;
+      scene.add(selectionHaloMesh);
 
       const grid = buildGrid(documentData, generated);
       scene.add(grid.group);
@@ -694,7 +968,15 @@
         const records = generated.records.filter(record => record.family === familyName);
         if (records.length === 0) continue;
         const geometry = makeFamilyGeometry(familyName);
-        const material = new THREE.MeshBasicMaterial({ toneMapped: false });
+        // Emissive glowing material for universe theme
+        const material = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          emissive: 0xffffff,
+          emissiveIntensity: 0.6,
+          roughness: 0.3,
+          metalness: 0.1,
+          toneMapped: false
+        });
         const mesh = new THREE.InstancedMesh(geometry, material, records.length);
         mesh.name = familyName;
         mesh.userData.records = records;
@@ -704,26 +986,41 @@
       }
 
       const selectionMarker = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(0.5, 1),
+        new THREE.IcosahedronGeometry(1.1, 1),
         new THREE.MeshBasicMaterial({ color: cssTokenToThree("--color-accent"), wireframe: true })
       );
       selectionMarker.visible = false;
       scene.add(selectionMarker);
 
       const hoverMarker = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(0.42, 1),
-        new THREE.MeshBasicMaterial({ color: cssTokenToThree("--color-ink"), wireframe: true })
+        new THREE.IcosahedronGeometry(0.85, 1),
+        new THREE.MeshBasicMaterial({ color: 0xeeeeff, wireframe: true })
       );
       hoverMarker.visible = false;
       scene.add(hoverMarker);
 
-      const selectionStemGeometry = new THREE.BufferGeometry();
-      const selectionStem = new THREE.Line(
-        selectionStemGeometry,
-        new THREE.LineBasicMaterial({ color: cssTokenToThree("--color-accent") })
-      );
-      selectionStem.visible = false;
-      scene.add(selectionStem);
+      // 3 Projection Lines connecting to X, Y, Z axes
+      const lineMatX = new THREE.LineBasicMaterial({ color: 0xef4444, linewidth: 2, transparent: true, opacity: 0.7 });
+      const lineMatY = new THREE.LineBasicMaterial({ color: 0x10b981, linewidth: 2, transparent: true, opacity: 0.7 });
+      const lineMatZ = new THREE.LineBasicMaterial({ color: 0x3b82f6, linewidth: 2, transparent: true, opacity: 0.7 });
+
+      const selectionLineX = new THREE.Line(new THREE.BufferGeometry(), lineMatX);
+      const selectionLineY = new THREE.Line(new THREE.BufferGeometry(), lineMatY);
+      const selectionLineZ = new THREE.Line(new THREE.BufferGeometry(), lineMatZ);
+      selectionLineX.visible = false;
+      selectionLineY.visible = false;
+      selectionLineZ.visible = false;
+      scene.add(selectionLineX, selectionLineY, selectionLineZ);
+
+      // 3 Projection Nodes (Spheres on axes)
+      const nodeGeo = new THREE.SphereGeometry(0.6, 16, 16);
+      const projNodeX = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({ color: 0xef4444 }));
+      const projNodeY = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({ color: 0x10b981 }));
+      const projNodeZ = new THREE.Mesh(nodeGeo, new THREE.MeshBasicMaterial({ color: 0x3b82f6 }));
+      projNodeX.visible = false;
+      projNodeY.visible = false;
+      projNodeZ.visible = false;
+      scene.add(projNodeX, projNodeY, projNodeZ);
 
       const raycaster = new THREE.Raycaster();
       const pointer = new THREE.Vector2();
@@ -732,8 +1029,18 @@
       const resize = () => {
         const rect = els.viewport.getBoundingClientRect();
         if (rect.width === 0 || rect.height === 0) return;
-        camera.aspect = rect.width / rect.height;
-        camera.updateProjectionMatrix();
+        const currentAspect = rect.width / rect.height;
+
+        perspCamera.aspect = currentAspect;
+        perspCamera.updateProjectionMatrix();
+
+        const vSize = X_SPAN * 1.1;
+        orthoCamera.left = -vSize * currentAspect / 2;
+        orthoCamera.right = vSize * currentAspect / 2;
+        orthoCamera.top = vSize / 2;
+        orthoCamera.bottom = -vSize / 2;
+        orthoCamera.updateProjectionMatrix();
+
         renderer.setSize(rect.width, rect.height, false);
       };
       const resizeObserver = new ResizeObserver(resize);
@@ -743,14 +1050,33 @@
       return {
         scene,
         renderer,
-        camera,
+        camera: perspCamera,
+        perspCamera,
+        orthoCamera,
         controls,
         families,
+        starfield,
+        ambientLight,
+        keyLight,
         gridGroup: grid.group,
         rejectedGroup: grid.rejectedGroup,
+        floorGrid: grid.floorGrid,
+        backWall: grid.backWall,
+        sideWall: grid.sideWall,
+        layerLines: grid.layerLines,
+        axisX: grid.axisX,
+        axisY: grid.axisY,
+        axisZ: grid.axisZ,
         selectionMarker,
+        selectionHaloMesh,
+        selectionLight,
+        selectionLineX,
+        selectionLineY,
+        selectionLineZ,
+        projNodeX,
+        projNodeY,
+        projNodeZ,
         hoverMarker,
-        selectionStem,
         raycaster,
         pointer,
         dummy,
@@ -766,19 +1092,38 @@
 
     function updateInstances() {
       const world = state.world;
+      if (!world) return;
       let visible = 0;
       const visibleFormulas = new Set();
+      const camera = state.activeCamera || world.camera;
+      const target = world.controls.target;
+      const camDist = camera.position.distanceTo(target);
+
+      // In Proximity Mode: reveal radius depends on camera distance (scaled for 4x universe spacing)
+      const revealRadius = state.zoomRevealMode ? (camDist > 160 ? 45 : camDist > 100 ? 70 : 140) : 400;
+
       for (const [family, mesh] of world.families) {
         const records = mesh.userData.records;
         records.forEach((record, index) => {
-          const isVisible = recordVisible(record);
+          let isVisible = recordVisible(record);
+
+          // Proximity filter: if zoom reveal active, hide records far from camera focus unless selected/hovered
+          if (isVisible && state.zoomRevealMode && record !== state.selected && record !== state.hovered) {
+            const distToTarget = record.position.distanceTo(target);
+            if (distToTarget > revealRadius && record.confidence !== "Reviewed") {
+              isVisible = false;
+            }
+          }
+
           world.dummy.position.copy(record.position);
           world.dummy.rotation.set(0, record.isOxideRoute ? record.oxidationState * 0.09 : 0, 0);
-          const reviewedScale = record.confidence === "Reviewed" ? 1.22 : 0.86;
+          const reviewedScale = record.confidence === "Reviewed" ? 1.25 : 0.85;
           world.dummy.scale.setScalar(isVisible ? reviewedScale : 0.0001);
           world.dummy.updateMatrix();
           mesh.setMatrixAt(index, world.dummy.matrix);
-          mesh.setColorAt(index, new THREE.Color(record.colour));
+          const neonColor = FAMILY_INFO[record.family]?.color || record.colour;
+          record.neonColour = neonColor;
+          mesh.setColorAt(index, new THREE.Color(neonColor));
           record.visible = isVisible;
           if (isVisible) {
             visible += 1;
@@ -791,9 +1136,10 @@
         }
         mesh.computeBoundingSphere();
       }
-      els.visibleCount.textContent = visible.toLocaleString("vi-VN");
-      els.formulaCount.textContent = visibleFormulas.size.toLocaleString("vi-VN");
-      els.status.textContent = `${visible} / ${state.records.length} điểm · ${visibleFormulas.size} công thức riêng`;
+      const locale = currentLang === "vi" ? "vi-VN" : "en-US";
+      els.visibleCount.textContent = visible.toLocaleString(locale);
+      els.formulaCount.textContent = visibleFormulas.size.toLocaleString(locale);
+      els.status.textContent = `${visible} / ${state.records.length} ${t('points')} · ${visibleFormulas.size} ${t('formulas')}`;
       if (state.selected && !state.selected.visible) clearSelection();
     }
 
@@ -809,13 +1155,14 @@
         input.type = "checkbox";
         input.name = "family";
         input.value = family;
-        input.checked = true;
+        input.checked = state.activeFamilies.has(family);
         const shape = document.createElement("span");
         shape.className = "check-row__shape";
         shape.dataset.shape = info.shape;
+        shape.style.setProperty("--shape-color", info.color || "var(--color-paper-3)");
         shape.setAttribute("aria-hidden", "true");
         const text = document.createElement("span");
-        text.textContent = info.label;
+        text.textContent = familyLabel(family);
         const count = document.createElement("span");
         count.className = "check-row__count";
         count.textContent = counts.get(family);
@@ -826,10 +1173,11 @@
 
     function pickRecord(clientX, clientY) {
       const world = state.world;
+      const camera = state.activeCamera || world.camera;
       const rect = world.renderer.domElement.getBoundingClientRect();
       world.pointer.x = ((clientX - rect.left) / rect.width) * 2 - 1;
       world.pointer.y = -((clientY - rect.top) / rect.height) * 2 + 1;
-      world.raycaster.setFromCamera(world.pointer, world.camera);
+      world.raycaster.setFromCamera(world.pointer, camera);
       const intersections = world.raycaster.intersectObjects([...world.families.values()], false);
       for (const hit of intersections) {
         const record = hit.object.userData.records?.[hit.instanceId];
@@ -857,7 +1205,7 @@
       state.hoverTimer = window.setTimeout(() => {
         if (state.hovered !== record) return;
         els.hoverFormula.textContent = record.formula;
-        els.hoverMeta.textContent = `${FAMILY_INFO[record.family].label} · O = ${record.oxygenCount} · ${record.confidence === "Reviewed" ? "đã thẩm định" : "suy ra bằng luật"}`;
+        els.hoverMeta.textContent = `${familyLabel(record.family)} · O = ${record.oxygenCount} · ${record.confidence === "Reviewed" ? t("reviewed") : t("ruleDerived")}`;
         els.hoverCard.classList.add("is-visible");
         positionTooltip(state.lastPointer);
       }, 800);
@@ -879,24 +1227,78 @@
         clearSelection();
         return;
       }
+      els.appShell.classList.remove("is-collapsed-right");
       state.selected = record;
       const world = state.world;
+
+      // Glowing Point Light & Halo Animation
+      const colorVal = record.colour ? (cssTokenToThree(record.colour) || new THREE.Color(record.colour)) : new THREE.Color(0x3b82f6);
+      if (world.selectionLight) {
+        world.selectionLight.color.copy(colorVal);
+        world.selectionLight.position.copy(record.position);
+        world.selectionLight.intensity = 6.0;
+      }
+
+      if (world.selectionHaloMesh) {
+        world.selectionHaloMesh.position.copy(record.position);
+        world.selectionHaloMesh.visible = true;
+        world.selectionHaloMesh.material.color.copy(colorVal);
+        world.selectionHaloMesh.material.opacity = 0.9;
+      }
+
       world.selectionMarker.visible = true;
       world.selectionMarker.position.copy(record.position);
-      world.selectionMarker.scale.setScalar(record.confidence === "Reviewed" ? 1.35 : 1.05);
-      world.selectionStem.geometry.dispose();
-      world.selectionStem.geometry = new THREE.BufferGeometry().setFromPoints([
-        new THREE.Vector3(record.position.x, 0, record.position.z),
-        record.position.clone()
-      ]);
-      world.selectionStem.visible = true;
+      world.selectionMarker.scale.setScalar(record.confidence === "Reviewed" ? 1.4 : 1.1);
+
+      // 3 Projection Lines to X, Y, Z axes
+      const P = record.position.clone();
+      const halfX = X_SPAN / 2;
+      const halfZ = Y_SPAN / 2;
+      const Px_floor = new THREE.Vector3(P.x, 0, P.z);
+      const Px_axis = new THREE.Vector3(P.x, 0, halfZ + 2);
+      const Pz_axis = new THREE.Vector3(-halfX - 2, 0, P.z);
+      const Py_axis = new THREE.Vector3(-halfX - 2, P.y, halfZ + 2);
+      const Py_wall = new THREE.Vector3(-halfX - 2, P.y, P.z);
+
+      // Line X (Red): P -> Px_floor -> Px_axis
+      world.selectionLineX.geometry.dispose();
+      world.selectionLineX.geometry = new THREE.BufferGeometry().setFromPoints([P, Px_floor, Px_axis]);
+      world.selectionLineX.visible = true;
+
+      // Line Z (Blue): P -> Px_floor -> Pz_axis
+      world.selectionLineZ.geometry.dispose();
+      world.selectionLineZ.geometry = new THREE.BufferGeometry().setFromPoints([P, Px_floor, Pz_axis]);
+      world.selectionLineZ.visible = true;
+
+      // Line Y (Green): P -> Py_wall -> Py_axis
+      world.selectionLineY.geometry.dispose();
+      world.selectionLineY.geometry = new THREE.BufferGeometry().setFromPoints([P, Py_wall, Py_axis]);
+      world.selectionLineY.visible = true;
+
+      // 3 Intersection spheres on axes
+      world.projNodeX.position.copy(Px_axis);
+      world.projNodeX.visible = true;
+
+      world.projNodeZ.position.copy(Pz_axis);
+      world.projNodeZ.visible = true;
+
+      world.projNodeY.position.copy(Py_axis);
+      world.projNodeY.visible = true;
+
+      // Create/Update Projection Badges
+      renderProjectionBadges(record, Px_axis, Py_axis, Pz_axis);
+
+      // Render Floating Callout Card
+      renderFloatingCallout(record);
+
       renderInspector(record);
-      els.status.textContent = `${record.formula} · ${record.coordinate} · nhấp điểm khác để so sánh`;
+      els.status.textContent = `${record.formula} · ${record.name} · ${t('projecting')}`;
 
       if (focusCamera) {
-        const offset = world.camera.position.clone().sub(world.controls.target).normalize().multiplyScalar(8.5);
+        const camera = state.activeCamera || world.camera;
+        const offset = camera.position.clone().sub(world.controls.target).normalize().multiplyScalar(24);
         world.controls.target.copy(record.position);
-        world.camera.position.copy(record.position).add(offset);
+        camera.position.copy(record.position).add(offset);
         world.controls.update();
       }
     }
@@ -905,10 +1307,159 @@
       state.selected = null;
       if (state.world) {
         state.world.selectionMarker.visible = false;
-        state.world.selectionStem.visible = false;
+        if (state.world.selectionHaloMesh) state.world.selectionHaloMesh.visible = false;
+        if (state.world.selectionLight) state.world.selectionLight.intensity = 0;
+        if (state.world.selectionLineX) state.world.selectionLineX.visible = false;
+        if (state.world.selectionLineY) state.world.selectionLineY.visible = false;
+        if (state.world.selectionLineZ) state.world.selectionLineZ.visible = false;
+        if (state.world.projNodeX) state.world.projNodeX.visible = false;
+        if (state.world.projNodeY) state.world.projNodeY.visible = false;
+        if (state.world.projNodeZ) state.world.projNodeZ.visible = false;
       }
+      if (els.projectionBadgesContainer) els.projectionBadgesContainer.replaceChildren();
+      if (els.floatingCallout) els.floatingCallout.hidden = true;
       els.inspectorEmpty.hidden = false;
       els.compoundDetails.hidden = true;
+      els.appShell.classList.add("is-collapsed-right");
+    }
+
+    function renderProjectionBadges(record, Px_axis, Py_axis, Pz_axis) {
+      const container = els.projectionBadgesContainer;
+      if (!container) return;
+      container.replaceChildren();
+
+      const badgeX = document.createElement("div");
+      badgeX.className = "projection-badge projection-badge--x";
+      badgeX.textContent = `X · ${record.cationName || record.centralKey}`;
+
+      const badgeY = document.createElement("div");
+      badgeY.className = "projection-badge projection-badge--y";
+      badgeY.textContent = `Y · O = ${record.oxygenCount}`;
+
+      const badgeZ = document.createElement("div");
+      badgeZ.className = "projection-badge projection-badge--z";
+      badgeZ.textContent = `Z · ${record.anionName || record.anionId}`;
+
+      container.append(badgeX, badgeY, badgeZ);
+
+      state.projectionBadges = {
+        x: { el: badgeX, pos: Px_axis },
+        y: { el: badgeY, pos: Py_axis },
+        z: { el: badgeZ, pos: Pz_axis }
+      };
+    }
+
+    function renderFloatingCallout(record) {
+      if (!els.floatingCallout) return;
+      els.calloutFormula.textContent = record.formula;
+      els.calloutFamily.textContent = familyLabel(record.family);
+      els.calloutName.textContent = record.name;
+      els.calloutMass.textContent = `${record.molarMass.toFixed(1)} g/mol`;
+      els.calloutSolubility.textContent = record.solubility;
+      els.floatingCallout.hidden = false;
+    }
+
+    function updateProjectionBadgesAndCallout() {
+      if (!state.world) return;
+      const rect = els.viewport.getBoundingClientRect();
+      const camera = state.activeCamera || state.world.camera;
+
+      // Update projection badges
+      if (state.projectionBadges.x && state.selected) {
+        for (const key of ["x", "y", "z"]) {
+          const item = state.projectionBadges[key];
+          if (!item || !item.el) continue;
+          const projected = item.pos.clone().project(camera);
+          if (projected.z > 1) {
+            item.el.style.display = "none";
+          } else {
+            const screenX = (projected.x * 0.5 + 0.5) * rect.width;
+            const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
+            item.el.style.left = `${screenX}px`;
+            item.el.style.top = `${screenY}px`;
+            item.el.style.display = "inline-flex";
+          }
+        }
+      }
+
+      // Update floating callout position
+      if (state.selected && els.floatingCallout && !els.floatingCallout.hidden) {
+        const projected = state.selected.position.clone().project(camera);
+        if (projected.z > 1) {
+          els.floatingCallout.style.display = "none";
+        } else {
+          const screenX = (projected.x * 0.5 + 0.5) * rect.width;
+          const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
+          els.floatingCallout.style.left = `${screenX}px`;
+          els.floatingCallout.style.top = `${screenY}px`;
+          els.floatingCallout.style.display = "flex";
+        }
+      }
+    }
+
+    function updateFormulaOverlayLabels() {
+      if (!state.world || !els.compoundLabelsContainer) return;
+      if (!state.showLabels) {
+        els.compoundLabelsContainer.style.display = "none";
+        return;
+      }
+      els.compoundLabelsContainer.style.display = "block";
+      const rect = els.viewport.getBoundingClientRect();
+      const camera = state.activeCamera || state.world.camera;
+
+      // Smart LOD: limit labels to top N active records
+      const maxLabels = 75;
+      const visibleRecords = state.records.filter(r => r.visible);
+      visibleRecords.sort((a, b) => {
+        if (a === state.selected) return -1;
+        if (b === state.selected) return 1;
+        if (a.confidence !== b.confidence) return a.confidence === "Reviewed" ? -1 : 1;
+        return a.position.distanceToSquared(camera.position) - b.position.distanceToSquared(camera.position);
+      });
+
+      const activeSet = new Set(visibleRecords.slice(0, maxLabels));
+
+      for (const record of state.records) {
+        let tag = state.labelElementsMap.get(record);
+
+        if (!activeSet.has(record)) {
+          if (tag) tag.style.display = "none";
+          continue;
+        }
+
+        const projected = record.position.clone().project(camera);
+        if (projected.z > 1 || projected.x < -1.1 || projected.x > 1.1 || projected.y < -1.1 || projected.y > 1.1) {
+          if (tag) tag.style.display = "none";
+          continue;
+        }
+
+        if (!tag) {
+          tag = document.createElement("div");
+          tag.className = "compound-tag";
+          const dot = document.createElement("span");
+          dot.className = "compound-tag__dot";
+          dot.style.setProperty("--dot-color", record.neonColour || FAMILY_INFO[record.family]?.color || record.colour || "#3b82f6");
+          const text = document.createElement("span");
+          text.textContent = record.formula;
+          tag.append(dot, text);
+
+          tag.addEventListener("click", event => {
+            event.stopPropagation();
+            selectRecord(record, true);
+          });
+
+          els.compoundLabelsContainer.append(tag);
+          state.labelElementsMap.set(record, tag);
+        }
+
+        const screenX = (projected.x * 0.5 + 0.5) * rect.width;
+        const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
+
+        tag.style.left = `${screenX}px`;
+        tag.style.top = `${screenY}px`;
+        tag.style.display = "inline-flex";
+        tag.classList.toggle("is-selected", record === state.selected);
+      }
     }
 
     function renderInspector(record) {
@@ -916,7 +1467,7 @@
       els.compoundDetails.hidden = false;
       detailFields.formula.textContent = record.formula;
       detailFields.name.textContent = record.name;
-      detailFields.family.textContent = FAMILY_INFO[record.family].label;
+      detailFields.family.textContent = familyLabel(record.family);
       detailFields.coordinate.textContent = `X ${record.matrixCoordinate.x} · Y ${record.matrixCoordinate.y} · Z ${record.matrixCoordinate.z}`;
       detailFields.ions.textContent = `${record.cationName} + ${record.anionName}`;
       detailFields.ratio.textContent = `${record.cationCount} : ${record.anionCount}`;
@@ -929,12 +1480,12 @@
       swatch.style.setProperty("--sample-color", record.colour);
       swatch.setAttribute("aria-hidden", "true");
       detailFields.colour.append(swatch, document.createTextNode(record.colour));
-      detailFields.confidence.textContent = record.confidence === "Reviewed" ? "Reviewed · dữ liệu thẩm định" : "RuleDerived · suy ra bằng luật";
+      detailFields.confidence.textContent = record.confidence === "Reviewed" ? t("reviewed") : t("ruleDerived");
       detailFields.hazards.replaceChildren();
       if (record.hazards.length === 0) {
         const tag = document.createElement("span");
         tag.className = "hazard-tag hazard-tag--none";
-        tag.textContent = "không có cờ nguy cơ bổ sung";
+        tag.textContent = t("noHazard");
         detailFields.hazards.append(tag);
       } else {
         for (const hazard of record.hazards) {
@@ -948,16 +1499,110 @@
       detailFields.notes.textContent = record.notes;
     }
 
+    function buildAxisIonLabels(documentData, generated) {
+      const container = els.axisIonContainer;
+      if (!container) return;
+      container.replaceChildren();
+      state.axisIonBadges = [];
+
+      const halfX = X_SPAN / 2;
+      const halfZ = Y_SPAN / 2;
+
+      // 1. X Axis (Cations / Metals)
+      state.centralOrder.forEach((centralKey, index) => {
+        const xPos = (index / Math.max(1, state.centralOrder.length - 1) - 0.5) * X_SPAN;
+        const pos = new THREE.Vector3(xPos, 0, halfZ + 2.5);
+        const badge = document.createElement("span");
+        badge.className = "axis-ion-badge axis-ion-badge--x";
+        badge.textContent = centralKey;
+        badge.title = `Cation: ${centralKey}`;
+        container.append(badge);
+        state.axisIonBadges.push({ el: badge, pos, type: "x" });
+      });
+
+      // 2. Z Axis (Anions / Acid Radicals)
+      const anionSymbols = {
+        fluoride: "F⁻", chloride: "Cl⁻", bromide: "Br⁻", iodide: "I⁻",
+        sulfate: "SO₄²⁻", nitrate: "NO₃⁻", carbonate: "CO₃²⁻", phosphate: "PO₄³⁻",
+        hydroxide: "OH⁻", oxide: "O²⁻", sulfide: "S²⁻", silicate: "SiO₃²⁻",
+        acetate: "CH₃COO⁻", nitrite: "NO₂⁻", chlorate: "ClO₃⁻"
+      };
+      state.anionOrder.forEach((anionId, index) => {
+        const zPos = (index / Math.max(1, state.anionOrder.length - 1) - 0.5) * Y_SPAN;
+        const pos = new THREE.Vector3(-halfX - 2.5, 0, zPos);
+        const badge = document.createElement("span");
+        badge.className = "axis-ion-badge axis-ion-badge--z";
+        badge.textContent = anionSymbols[anionId] || anionId;
+        badge.title = `Anion: ${anionId}`;
+        container.append(badge);
+        state.axisIonBadges.push({ el: badge, pos, type: "z" });
+      });
+
+      // 3. Y Axis (Oxygen Levels)
+      let maxO = 5;
+      for (const record of generated.records || []) {
+        if (record.oxygenCount > maxO) maxO = record.oxygenCount;
+      }
+      for (let oCount = 0; oCount <= maxO; oCount++) {
+        const yPos = 1.4 + oCount * O_STEP;
+        const pos = new THREE.Vector3(-halfX - 2.5, yPos, halfZ + 2.5);
+        const badge = document.createElement("span");
+        badge.className = "axis-ion-badge axis-ion-badge--y";
+        badge.textContent = `${oCount}O`;
+        badge.title = `${t('axisLabelZ')}: ${oCount}`;
+        container.append(badge);
+        state.axisIonBadges.push({ el: badge, pos, type: "y" });
+      }
+    }
+
+    function updateAxisIonLabels() {
+      if (!state.world || !state.axisIonBadges.length) return;
+      const rect = els.viewport.getBoundingClientRect();
+      const camera = state.activeCamera || state.world.camera;
+
+      for (const item of state.axisIonBadges) {
+        // Hide 3rd axis ion badges depending on current 2D plane
+        if (state.currentPlane === "xz" && item.type === "y") {
+          item.el.style.display = "none";
+          continue;
+        }
+        if (state.currentPlane === "xy" && item.type === "z") {
+          item.el.style.display = "none";
+          continue;
+        }
+        if (state.currentPlane === "yz" && item.type === "x") {
+          item.el.style.display = "none";
+          continue;
+        }
+
+        const projected = item.pos.clone().project(camera);
+        if (projected.z > 1 || projected.x < -1.15 || projected.x > 1.15 || projected.y < -1.15 || projected.y > 1.15) {
+          item.el.style.display = "none";
+        } else {
+          const screenX = (projected.x * 0.5 + 0.5) * rect.width;
+          const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
+          item.el.style.left = `${screenX}px`;
+          item.el.style.top = `${screenY}px`;
+          item.el.style.display = "inline-flex";
+        }
+      }
+    }
+
     function updateAxisLabels() {
       if (!state.world) return;
+      const camera = state.activeCamera || state.world.camera;
+      const halfX = X_SPAN / 2;
+      const halfZ = Y_SPAN / 2;
+      const maxY = 1.4 + 5 * O_STEP + 2;
       const labels = [
-        [els.axisX, new THREE.Vector3(20.4, 0.05, 13.1)],
-        [els.axisY, new THREE.Vector3(-19.8, 0.05, -13.2)],
-        [els.axisZ, new THREE.Vector3(-19.8, 16.9, 13.1)]
+        [els.axisX, new THREE.Vector3(halfX, 0.05, halfZ + 2.5)],
+        [els.axisY, new THREE.Vector3(-halfX - 2.5, 0.05, -halfZ)],
+        [els.axisZ, new THREE.Vector3(-halfX - 2.5, maxY + 2.5, halfZ + 2.5)]
       ];
       const rect = els.viewport.getBoundingClientRect();
       for (const [element, point] of labels) {
-        const projected = point.clone().project(state.world.camera);
+        if (!element) continue;
+        const projected = point.clone().project(camera);
         const x = (projected.x * 0.5 + 0.5) * rect.width;
         const y = (-projected.y * 0.5 + 0.5) * rect.height;
         element.style.left = `${x}px`;
@@ -967,21 +1612,146 @@
     }
 
     function setCameraView(view) {
+      state.currentPlane = view;
       const world = state.world;
-      const target = state.selected?.position || DEFAULT_TARGET;
-      world.controls.target.copy(target);
-      if (view === "top") {
-        world.camera.position.copy(target).add(new THREE.Vector3(0, 42, 0.01));
-      } else if (view === "front") {
-        world.camera.position.copy(target).add(new THREE.Vector3(0, 8, 38));
+      if (!world) return;
+
+      const halfX = X_SPAN / 2;
+      const halfZ = Y_SPAN / 2;
+      const midY = 1.4 + 2.5 * O_STEP;
+
+      // 1. Show only active 2D plane grid lines
+      if (world.floorGrid) world.floorGrid.visible = (view === "perspective" || view === "xz");
+      if (world.backWall) world.backWall.visible = (view === "perspective" || view === "xy");
+      if (world.sideWall) world.sideWall.visible = (view === "perspective" || view === "yz");
+      if (world.layerLines) world.layerLines.visible = (view === "perspective");
+
+      // 2. Hide 3rd axis arrows in 2D plane mode
+      if (world.axisX) world.axisX.visible = (view === "perspective" || view === "xz" || view === "xy");
+      if (world.axisY) world.axisY.visible = (view === "perspective" || view === "xy" || view === "yz");
+      if (world.axisZ) world.axisZ.visible = (view === "perspective" || view === "xz" || view === "yz");
+
+      if (view === "xz") {
+        // XZ Plane: Cation - Anion (100% Flat 2D top-down)
+        state.activeCamera = world.orthoCamera;
+        world.controls.object = world.orthoCamera;
+        world.controls.enableRotate = false;
+
+        world.controls.target.set(0, 0, 0);
+        world.orthoCamera.position.set(0, 200, 0.0001);
+        world.orthoCamera.lookAt(0, 0, 0);
+      } else if (view === "xy") {
+        // XY Plane: Cation - Oxy (100% Flat 2D front)
+        state.activeCamera = world.orthoCamera;
+        world.controls.object = world.orthoCamera;
+        world.controls.enableRotate = false;
+
+        world.controls.target.set(0, midY, -halfZ);
+        world.orthoCamera.position.set(0, midY, 200);
+        world.orthoCamera.lookAt(0, midY, -halfZ);
+      } else if (view === "yz") {
+        // YZ Plane: Anion - Oxy (100% Flat 2D side)
+        state.activeCamera = world.orthoCamera;
+        world.controls.object = world.orthoCamera;
+        world.controls.enableRotate = false;
+
+        world.controls.target.set(-halfX, midY, 0);
+        world.orthoCamera.position.set(200, midY, 0);
+        world.orthoCamera.lookAt(-halfX, midY, 0);
       } else {
-        world.camera.position.copy(DEFAULT_CAMERA);
+        // 3D Perspective
+        state.activeCamera = world.perspCamera;
+        world.controls.object = world.perspCamera;
+        world.controls.enableRotate = true;
+
         world.controls.target.copy(DEFAULT_TARGET);
+        world.perspCamera.position.copy(DEFAULT_CAMERA);
       }
+
       world.controls.update();
+      updateInstances();
       document.querySelectorAll("[data-view]").forEach(button => {
         button.setAttribute("aria-pressed", String(button.dataset.view === view));
       });
+    }
+
+    function applyLanguage(lang) {
+      currentLang = lang;
+      localStorage.setItem("chem3d_lang", lang);
+      document.documentElement.lang = lang;
+      document.documentElement.dataset.lang = lang;
+
+      if (els.langToggle) els.langToggle.textContent = t("langBtn");
+      if (els.themeToggle) els.themeToggle.textContent = currentTheme === "universe" ? t("themeUniverse") : t("themeDefault");
+
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.dataset.i18n;
+        if (key && t(key)) el.textContent = t(key);
+      });
+
+      document.title = `${t("title")} · Chemistry Lab`;
+      if (els.searchInput) els.searchInput.placeholder = t("searchPlaceholder");
+
+      if (els.axisX) els.axisX.textContent = t("axisLabelX");
+      if (els.axisY) els.axisY.textContent = t("axisLabelY");
+      if (els.axisZ) els.axisZ.textContent = t("axisLabelZ");
+
+      if (state.records.length > 0) {
+        buildFamilyFilters();
+        if (state.document && state.world) {
+          buildAxisIonLabels(state.document, { records: state.records });
+        }
+      }
+
+      if (els.toggleZoomReveal) {
+        els.toggleZoomReveal.textContent = state.zoomRevealMode ? (currentLang === "vi" ? "👁️ LOD: Bật" : "👁️ LOD: ON") : (currentLang === "vi" ? "🕶️ LOD: Tắt" : "🕶️ LOD: OFF");
+      }
+
+      if (els.toggleFormulaLabels) {
+        els.toggleFormulaLabels.textContent = state.showLabels ? (currentLang === "vi" ? "🏷️ Nhãn: Bật" : "🏷️ Labels: ON") : (currentLang === "vi" ? "🏷️ Nhãn: Tắt" : "🏷️ Labels: OFF");
+      }
+
+      if (state.selected) {
+        renderFloatingCallout(state.selected);
+        renderInspector(state.selected);
+      }
+
+      updateInstances();
+    }
+
+    function applyTheme(theme) {
+      currentTheme = theme;
+      localStorage.setItem("chem3d_theme", theme);
+      document.documentElement.dataset.theme = theme;
+
+      if (els.themeToggle) {
+        els.themeToggle.textContent = theme === "universe" ? t("themeUniverse") : t("themeDefault");
+      }
+
+      if (state.world) {
+        const isUniverse = theme === "universe";
+        const canvasBg = cssTokenToThree("--color-canvas") || new THREE.Color(isUniverse ? 0x060810 : 0xf1f3f9);
+        state.world.renderer.setClearColor(canvasBg, 1);
+        if (state.world.scene.fog) {
+          state.world.scene.fog.color.copy(canvasBg);
+          state.world.scene.fog.density = isUniverse ? 0.0025 : 0.0002;
+        }
+        if (state.world.starfield) {
+          state.world.starfield.visible = isUniverse;
+        }
+        if (state.world.ambientLight) {
+          state.world.ambientLight.color.copy(isUniverse ? new THREE.Color(0x223355) : new THREE.Color(0x8899bb));
+          state.world.ambientLight.intensity = isUniverse ? 0.6 : 1.6;
+        }
+        if (state.world.keyLight) {
+          state.world.keyLight.color.copy(isUniverse ? new THREE.Color(0xccddff) : new THREE.Color(0xffffff));
+          state.world.keyLight.intensity = isUniverse ? 1.8 : 2.4;
+        }
+        for (const mesh of state.world.families.values()) {
+          mesh.material.emissiveIntensity = isUniverse ? 0.6 : 0.15;
+          mesh.material.needsUpdate = true;
+        }
+      }
     }
 
     function openPanel(name) {
@@ -1106,6 +1876,78 @@
         state.world.gridGroup.visible = els.showGrid.checked;
         state.world.rejectedGroup.visible = els.showGrid.checked && els.showRejected.checked;
       });
+      if (els.showFormulaLabels) {
+        els.showFormulaLabels.addEventListener("change", () => {
+          state.showLabels = els.showFormulaLabels.checked;
+          if (els.toggleFormulaLabels) els.toggleFormulaLabels.setAttribute("aria-pressed", String(state.showLabels));
+        });
+      }
+      if (els.toggleFormulaLabels) {
+        els.toggleFormulaLabels.addEventListener("click", () => {
+          state.showLabels = !state.showLabels;
+          if (els.showFormulaLabels) els.showFormulaLabels.checked = state.showLabels;
+          els.toggleFormulaLabels.setAttribute("aria-pressed", String(state.showLabels));
+          els.toggleFormulaLabels.textContent = state.showLabels ? (currentLang === "vi" ? "🏷️ Nhãn: Bật" : "🏷️ Labels: ON") : (currentLang === "vi" ? "🏷️ Nhãn: Tắt" : "🏷️ Labels: OFF");
+        });
+      }
+      if (els.zoomRevealMode) {
+        els.zoomRevealMode.addEventListener("change", () => {
+          state.zoomRevealMode = els.zoomRevealMode.checked;
+          if (els.toggleZoomReveal) els.toggleZoomReveal.setAttribute("aria-pressed", String(state.zoomRevealMode));
+          updateInstances();
+        });
+      }
+      if (els.toggleZoomReveal) {
+        els.toggleZoomReveal.addEventListener("click", () => {
+          state.zoomRevealMode = !state.zoomRevealMode;
+          if (els.zoomRevealMode) els.zoomRevealMode.checked = state.zoomRevealMode;
+          els.toggleZoomReveal.setAttribute("aria-pressed", String(state.zoomRevealMode));
+          els.toggleZoomReveal.textContent = state.zoomRevealMode ? (currentLang === "vi" ? "👁️ LOD: Bật" : "👁️ LOD: ON") : (currentLang === "vi" ? "🕶️ LOD: Tắt" : "🕶️ LOD: OFF");
+          updateInstances();
+        });
+      }
+
+      const toggleFullscreenMode = () => {
+        const isFS = els.appShell.classList.toggle("is-fullscreen");
+        if (els.toggleFullscreen) {
+          els.toggleFullscreen.textContent = isFS ? (currentLang === "vi" ? "🗗 Thu nhỏ" : "🗗 Normal") : "⛶ Fullscreen";
+          els.toggleFullscreen.setAttribute("aria-pressed", String(isFS));
+        }
+        if (state.world) {
+          requestAnimationFrame(() => state.world.resizeObserver);
+        }
+      };
+
+      if (els.toggleFullscreen) els.toggleFullscreen.addEventListener("click", toggleFullscreenMode);
+      if (els.toggleFullscreenTop) els.toggleFullscreenTop.addEventListener("click", toggleFullscreenMode);
+
+      if (els.toggleFiltersDesktop) {
+        els.toggleFiltersDesktop.addEventListener("click", () => {
+          els.appShell.classList.toggle("is-collapsed-left");
+        });
+      }
+      if (els.toggleInspectorDesktop) {
+        els.toggleInspectorDesktop.addEventListener("click", () => {
+          els.appShell.classList.toggle("is-collapsed-right");
+        });
+      }
+
+      if (els.calloutInspectBtn) {
+        els.calloutInspectBtn.addEventListener("click", () => openPanel("inspector"));
+      }
+      if (els.calloutCloseBtn) {
+        els.calloutCloseBtn.addEventListener("click", () => clearSelection());
+      }
+      if (els.langToggle) {
+        els.langToggle.addEventListener("click", () => {
+          applyLanguage(currentLang === "en" ? "vi" : "en");
+        });
+      }
+      if (els.themeToggle) {
+        els.themeToggle.addEventListener("click", () => {
+          applyTheme(currentTheme === "universe" ? "default" : "universe");
+        });
+      }
       els.showRejected.addEventListener("change", () => {
         state.world.rejectedGroup.visible = els.showRejected.checked && els.showGrid.checked;
       });
@@ -1126,7 +1968,17 @@
       document.querySelectorAll("[data-mobile-panel]").forEach(button => {
         button.addEventListener("click", () => openPanel(button.dataset.mobilePanel));
       });
-      document.querySelectorAll("[data-close-panel]").forEach(button => button.addEventListener("click", closePanels));
+      document.querySelectorAll("[data-close-panel]").forEach(button => {
+        button.addEventListener("click", (e) => {
+          closePanels(); // for mobile
+          const panel = e.target.closest(".panel");
+          if (panel && panel.id === "filterPanel") {
+            els.appShell.classList.add("is-collapsed-left");
+          } else if (panel && panel.id === "inspectorPanel") {
+            clearSelection();
+          }
+        });
+      });
       els.panelScrim.addEventListener("click", closePanels);
 
       document.querySelector("#openSearch").addEventListener("click", openSearch);
@@ -1135,6 +1987,13 @@
         if ((event.ctrlKey || event.metaKey) && event.key.toLocaleLowerCase() === "k") {
           event.preventDefault();
           openSearch();
+        } else if (event.key === "Escape") {
+          if (els.searchDialog.open) {
+            els.searchDialog.close();
+          } else {
+            clearSelection();
+            closePanels();
+          }
         }
       });
       els.searchInput.addEventListener("input", () => {
@@ -1164,18 +2023,36 @@
       });
     }
 
-    function animate() {
+    function animate(timestamp) {
       const world = state.world;
       world.controls.update();
+
+      const camera = state.activeCamera || world.camera;
+
+      // Pulsing Halo & Point Light Animation for selection
+      if (state.selected && world.selectionHaloMesh && world.selectionHaloMesh.visible) {
+        const time = (timestamp || performance.now()) * 0.003;
+        const scaleVal = 1.0 + Math.sin(time * 3) * 0.22;
+        world.selectionHaloMesh.scale.setScalar(scaleVal);
+        world.selectionHaloMesh.lookAt(camera.position);
+        if (world.selectionLight) {
+          world.selectionLight.intensity = 4.0 + Math.sin(time * 4) * 1.2;
+        }
+      }
+
       updateAxisLabels();
-      world.renderer.render(world.scene, world.camera);
+      updateAxisIonLabels();
+      updateFormulaOverlayLabels();
+      updateProjectionBadgesAndCallout();
+
+      world.renderer.render(world.scene, camera);
       requestAnimationFrame(animate);
     }
 
     async function init() {
       try {
         const response = await fetch(DATA_URL);
-        if (!response.ok) throw new Error(`HTTP ${response.status} khi đọc ${DATA_URL}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status} when fetching ${DATA_URL}`);
         const raw = await response.json();
         state.document = raw;
         const generated = generateRecords(raw);
@@ -1184,19 +2061,23 @@
 
         buildFamilyFilters();
         state.world = createWorld(raw, generated);
+        buildAxisIonLabels(raw, generated);
         state.families = state.world.families;
         updateInstances();
         bindEvents();
+
+        applyTheme(currentTheme);
+        applyLanguage(currentLang);
 
         const uniqueFormulaCount = new Set(state.records.map(record => record.formula)).size;
         const reviewedCount = state.records.filter(record => record.confidence === "Reviewed").length;
         els.reviewedCount.textContent = reviewedCount;
         els.derivedCount.textContent = state.records.length - reviewedCount;
         els.rejectedCount.textContent = raw.exclusions.length;
-        els.brandMeta.textContent = `${state.records.length} điểm · ${uniqueFormulaCount} công thức · schema ${raw.schemaVersion}`;
+        els.brandMeta.textContent = `${state.records.length} ${t('points')} · ${uniqueFormulaCount} ${t('formulas')} · schema ${raw.schemaVersion}`;
 
         if (state.records.length !== EXPECTED_ACCEPTED || uniqueFormulaCount !== EXPECTED_UNIQUE) {
-          els.status.textContent = `Cảnh báo dữ liệu: nhận ${state.records.length}/${uniqueFormulaCount}, kỳ vọng ${EXPECTED_ACCEPTED}/${EXPECTED_UNIQUE}.`;
+          els.status.textContent = `Data warning: received ${state.records.length}/${uniqueFormulaCount}, expected ${EXPECTED_ACCEPTED}/${EXPECTED_UNIQUE}.`;
           document.body.dataset.loadState = "error";
         } else {
           document.body.dataset.loadState = "success";
@@ -1233,16 +2114,16 @@
         console.error(error);
         document.body.dataset.loadState = "error";
         els.loading.querySelector(".loading-screen__mark").hidden = true;
-        els.loading.querySelector("h2").textContent = "Không thể mở ma trận";
+        els.loading.querySelector("h2").textContent = "Unable to load matrix";
         els.loadingMessage.innerHTML = "";
         const explanation = document.createElement("span");
-        explanation.textContent = "Trang cần chạy qua static server để đọc JSON và nạp Three.js. Tại thư mục gốc repo, chạy ";
+        explanation.textContent = "Please run via static server. At repo root, run ";
         const command = document.createElement("code");
         command.textContent = "python -m http.server 4173";
         const tail = document.createElement("span");
-        tail.textContent = ", rồi mở /docs/chemistry/compound-matrix-3d.html.";
+        tail.textContent = ", then open /docs/chemistry/compound-matrix-3d.html.";
         els.loadingMessage.append(explanation, command, tail);
-        els.status.textContent = `Lỗi khởi tạo: ${error.message}`;
+        els.status.textContent = `Init error: ${error.message}`;
         window.__CHEM_MATRIX_DEBUG__ = { ready: false, error: error.message };
       }
     }
