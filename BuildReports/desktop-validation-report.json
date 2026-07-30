@@ -1,0 +1,43 @@
+{
+    "schemaVersion": "1.0",
+    "generatedAtUtc": "2026-07-30T21:38:08.3233760Z",
+    "unityVersion": "6000.5.3f1",
+    "phase": "validation",
+    "result": "succeeded",
+    "platform": "Windows Standalone x64",
+    "scene": "Assets/ChemistryLab/Scenes/DesktopChemistryLab.unity",
+    "output": "",
+    "warnings": 0,
+    "errors": 0,
+    "sizeBytes": 0,
+    "package": {
+        "distributionPath": "",
+        "executablePath": "",
+        "dataDirectory": "",
+        "archivePath": "",
+        "checksumPath": "",
+        "archiveSha256": "",
+        "runtimeFileCount": 0,
+        "runtimeSizeBytes": 0,
+        "archiveSizeBytes": 0
+    },
+    "validation": {
+        "elements": 52,
+        "chemicals": 40,
+        "reactions": 38,
+        "dynamicSpecies": 40,
+        "dynamicRuleFamilies": 9,
+        "conditionProfiles": 7,
+        "redoxRules": 8,
+        "dynamicResolvedPairs": 155,
+        "generatedCompounds": 565,
+        "uniqueGeneratedFormulas": 541,
+        "reviewedGeneratedCompounds": 45,
+        "compoundMatrixElements": 27,
+        "compoundMatrixIons": 46,
+        "fumeHoodRules": 11,
+        "effectClasses": 4,
+        "proceduralAudioSignalClasses": 5,
+        "reactantOrdersPerReaction": 2
+    }
+}

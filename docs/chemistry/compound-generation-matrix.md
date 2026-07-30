@@ -28,7 +28,7 @@ Phiên bản `1.0` hiện chứa:
 Dữ liệu nguồn nằm trong
 `Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json`.
 Mã giải nằm trong
-`NativeChemistryLab/Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs`.
+`Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs`.
 
 ## Vì sao không dùng mảng `matrix[x,y,z]` đơn giản
 

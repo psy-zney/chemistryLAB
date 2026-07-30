@@ -37,8 +37,9 @@ namespace ChemistryLab.Desktop
             {
                 var chemical = DesktopChemistryDatabase.GetChemical(ChemicalId);
                 return chemical == null
-                    ? "E · Kiểm tra chai"
-                    : "E · Lấy " + chemical.Formula + " — " + chemical.Name;
+                    ? LabLocalization.Text("E · Kiểm tra chai", "E · Inspect bottle")
+                    : LabLocalization.Text("E · Lấy ", "E · Pick up ")
+                      + chemical.Formula + " — " + chemical.Name;
             }
         }
 
@@ -61,37 +62,52 @@ namespace ChemistryLab.Desktop
             {
                 if (Game == null)
                 {
-                    return "E · Kiểm tra bình phản ứng";
+                    return LabLocalization.Text(
+                        "E · Kiểm tra bình phản ứng",
+                        "E · Inspect reaction vessel");
                 }
 
                 if (Game.SelectedChemical != null)
                 {
                     if (Game.HasStagedSample(Station))
                     {
-                        return "Q · Cất mẫu đang cầm trước khi nạp "
+                        return LabLocalization.Text(
+                            "Q · Cất mẫu đang cầm trước khi nạp ",
+                            "Q · Put away held sample before loading ")
                             + Game.GetStagedSampleLabel(Station);
                     }
 
-                    return "Cần đặt " + Game.SelectedChemical.Formula
-                        + " xuống khay trước khi nạp bình";
+                    return LabLocalization.Text("Cần đặt ", "Place ")
+                        + Game.SelectedChemical.Formula
+                        + LabLocalization.Text(
+                            " xuống khay trước khi nạp bình",
+                            " on the tray before loading the vessel");
                 }
 
                 if (Game.HasStagedSample(Station))
                 {
-                    return "E · Nạp " + Game.GetStagedSampleLabel(Station) + " từ khay đặt mẫu";
+                    return LabLocalization.Text("E · Nạp ", "E · Load ")
+                        + Game.GetStagedSampleLabel(Station)
+                        + LabLocalization.Text(" từ khay đặt mẫu", " from preparation tray");
                 }
 
                 if (Game.SelectedChemical == null)
                 {
                     if (Game.CanCollectProduct(Station))
                     {
-                        return "E · Thu và lưu sản phẩm vào kho";
+                        return LabLocalization.Text(
+                            "E · Thu và lưu sản phẩm vào kho",
+                            "E · Collect and store product");
                     }
 
-                    return "E · Bình phản ứng — cần mẫu trên khay";
+                    return LabLocalization.Text(
+                        "E · Bình phản ứng — cần mẫu trên khay",
+                        "E · Reaction vessel — sample tray is empty");
                 }
 
-                return "E · Kiểm tra bình phản ứng";
+                return LabLocalization.Text(
+                    "E · Kiểm tra bình phản ứng",
+                    "E · Inspect reaction vessel");
             }
         }
 
@@ -123,24 +139,35 @@ namespace ChemistryLab.Desktop
             {
                 if (Game == null)
                 {
-                    return "E · Kiểm tra khay đặt mẫu";
+                    return LabLocalization.Text(
+                        "E · Kiểm tra khay đặt mẫu",
+                        "E · Inspect preparation tray");
                 }
 
                 if (Game.SelectedChemical != null)
                 {
                     if (Game.HasStagedSample(Station))
                     {
-                        return "Khay đã có " + Game.GetStagedSampleLabel(Station)
-                            + " · Q để cất mẫu đang cầm";
+                        return LabLocalization.Text("Khay đã có ", "Tray contains ")
+                            + Game.GetStagedSampleLabel(Station)
+                            + LabLocalization.Text(
+                                " · Q để cất mẫu đang cầm",
+                                " · Q to put away held sample");
                     }
 
-                    return "E · Đặt " + Game.SelectedChemical.Formula
-                        + " xuống khay · " + Game.SelectedAmountGrams.ToString("0.#") + " g";
+                    return LabLocalization.Text("E · Đặt ", "E · Place ")
+                        + Game.SelectedChemical.Formula
+                        + LabLocalization.Text(" xuống khay · ", " on tray · ")
+                        + Game.SelectedAmountGrams.ToString("0.#") + " g";
                 }
 
                 return Game.HasStagedSample(Station)
-                    ? "E · Cầm lại " + Game.GetStagedSampleLabel(Station) + " từ khay"
-                    : "Khay đặt mẫu đang trống";
+                    ? LabLocalization.Text("E · Cầm lại ", "E · Pick up ")
+                      + Game.GetStagedSampleLabel(Station)
+                      + LabLocalization.Text(" từ khay", " from tray")
+                    : LabLocalization.Text(
+                        "Khay đặt mẫu đang trống",
+                        "Preparation tray is empty");
             }
         }
 
@@ -159,7 +186,12 @@ namespace ChemistryLab.Desktop
 
         public override string Prompt
         {
-            get { return "E · Gia nhiệt bình thêm 25 °C"; }
+            get
+            {
+                return LabLocalization.Text(
+                    "E · Gia nhiệt bình thêm 25 °C",
+                    "E · Heat vessel by 25 °C");
+            }
         }
 
         public override void Interact()
@@ -175,7 +207,12 @@ namespace ChemistryLab.Desktop
     {
         public override string Prompt
         {
-            get { return "E · Rửa sạch toàn bộ cốc phản ứng"; }
+            get
+            {
+                return LabLocalization.Text(
+                    "E · Rửa sạch toàn bộ cốc phản ứng",
+                    "E · Wash all reaction vessels");
+            }
         }
 
         public override void Interact()
@@ -191,7 +228,12 @@ namespace ChemistryLab.Desktop
     {
         public override string Prompt
         {
-            get { return "E · Mở bảng dữ liệu vật lý và hóa học"; }
+            get
+            {
+                return LabLocalization.Text(
+                    "E · Mở bảng dữ liệu vật lý và hóa học",
+                    "E · Open physical and chemical data");
+            }
         }
 
         public override void Interact()
@@ -213,8 +255,11 @@ namespace ChemistryLab.Desktop
             {
                 var element = HighSchoolPeriodicTable.Get(AtomicNumber);
                 return element == null
-                    ? "E · Kiểm tra ô nguyên tố"
-                    : "E · Phân tích " + element.Symbol + " — " + element.Name;
+                    ? LabLocalization.Text(
+                        "E · Kiểm tra ô nguyên tố",
+                        "E · Inspect element tile")
+                    : LabLocalization.Text("E · Phân tích ", "E · Analyse ")
+                      + element.Symbol + " — " + element.Name;
             }
         }
 
@@ -236,19 +281,27 @@ namespace ChemistryLab.Desktop
                 var safety = Game == null ? null : Game.SafetySystem;
                 if (safety == null)
                 {
-                    return "E · Kiểm tra tủ PPE";
+                    return LabLocalization.Text(
+                        "E · Kiểm tra tủ PPE",
+                        "E · Inspect PPE cabinet");
                 }
 
                 if (!safety.RespiratorOwned)
                 {
-                    return "E · Mua và đeo mặt nạ lọc độc · "
+                    return LabLocalization.Text(
+                        "E · Mua và đeo mặt nạ lọc độc · ",
+                        "E · Buy and wear respirator · ")
                         + LabSafetySystem.RespiratorPrice
-                        + " tín dụng";
+                        + LabLocalization.Text(" tín dụng", " credits");
                 }
 
                 return safety.RespiratorEquipped
-                    ? "E · Tháo mặt nạ lọc độc"
-                    : "E · Đeo mặt nạ lọc độc";
+                    ? LabLocalization.Text(
+                        "E · Tháo mặt nạ lọc độc",
+                        "E · Remove respirator")
+                    : LabLocalization.Text(
+                        "E · Đeo mặt nạ lọc độc",
+                        "E · Wear respirator");
             }
         }
 
@@ -269,8 +322,12 @@ namespace ChemistryLab.Desktop
             {
                 var safety = Game == null ? null : Game.SafetySystem;
                 return safety != null && safety.GasTrapConnected
-                    ? "E · Tháo bình cách ly khỏi hệ rửa khí"
-                    : "E · Nối bình cách ly vào hệ rửa khí";
+                    ? LabLocalization.Text(
+                        "E · Tháo bình cách ly khỏi hệ rửa khí",
+                        "E · Disconnect isolation trap")
+                    : LabLocalization.Text(
+                        "E · Nối bình cách ly vào hệ rửa khí",
+                        "E · Connect isolation trap");
             }
         }
 

@@ -1,0 +1,80 @@
+{
+  "schemaVersion": "1.0",
+  "title": {
+    "vi": "Hướng dẫn người chơi Chemistry Lab 3D",
+    "en": "Chemistry Lab 3D Player Guide"
+  },
+  "languages": ["vi", "en"],
+  "languageSetting": {
+    "path": {
+      "vi": "ESC > Cài đặt > Ngôn ngữ",
+      "en": "ESC > Settings > Language"
+    },
+    "persisted": true,
+    "appliesImmediately": true,
+    "scope": [
+      "main-menu",
+      "pause-menu",
+      "settings",
+      "hud",
+      "interaction-prompts",
+      "reaction-card"
+    ]
+  },
+  "starterMission": {
+    "vi": "Tạo kết tủa xanh Cu(OH)2 từ CuSO4·5H2O và NaOH.",
+    "en": "Create blue Cu(OH)2 precipitate from CuSO4·5H2O and NaOH.",
+    "equation": "CuSO4 + 2NaOH -> Cu(OH)2 + Na2SO4"
+  },
+  "physicalWorkflow": [
+    {
+      "id": "pick-up",
+      "key": "E",
+      "vi": "Lấy một chai hóa chất từ kho.",
+      "en": "Pick up a chemical bottle from storage."
+    },
+    {
+      "id": "stage",
+      "key": "E",
+      "vi": "Đặt mẫu xuống khay cạnh bình.",
+      "en": "Place the sample on the tray beside the vessel."
+    },
+    {
+      "id": "load",
+      "key": "E",
+      "vi": "Khi tay trống, nạp mẫu từ khay vào bình.",
+      "en": "With empty hands, load the staged sample into the vessel."
+    },
+    {
+      "id": "observe",
+      "key": "Space/E",
+      "vi": "Quan sát phương trình, điều kiện và hiện tượng; có thể bỏ qua góc cận.",
+      "en": "Observe the equation, conditions and phenomenon; the close-up can be skipped."
+    },
+    {
+      "id": "collect",
+      "key": "C",
+      "vi": "Lưu sản phẩm thành lô có thể tái sử dụng.",
+      "en": "Save the product as a reusable batch."
+    }
+  ],
+  "rules": {
+    "reactionInHandAllowed": false,
+    "remoteVesselOperationAllowed": false,
+    "gasCollectionRequiresFumeHood": true,
+    "gasCollectionRequiresConnectedTrap": true,
+    "productsAreReusable": true
+  },
+  "controls": [
+    {"key": "WASD", "vi": "Di chuyển", "en": "Move"},
+    {"key": "Mouse", "vi": "Nhìn", "en": "Look"},
+    {"key": "Shift", "vi": "Chạy", "en": "Sprint"},
+    {"key": "E", "vi": "Tương tác vật lý", "en": "Physical interaction"},
+    {"key": "[ / ]", "vi": "Đổi khối lượng mẫu", "en": "Adjust sample mass"},
+    {"key": "Page Up / Page Down", "vi": "Tăng / giảm nhiệt độ", "en": "Raise / lower temperature"},
+    {"key": "F8", "vi": "Pha loãng", "en": "Dilute"},
+    {"key": "C", "vi": "Thu sản phẩm", "en": "Collect product"},
+    {"key": "I", "vi": "Duyệt kho điều chế", "en": "Cycle synthesized inventory"},
+    {"key": "ESC", "vi": "Tạm dừng / quay lại", "en": "Pause / back"}
+  ]
+}

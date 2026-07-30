@@ -8,10 +8,6 @@ The game is built as an educational simulation, not as real laboratory operating
 
 ![First-person 3D chemistry laboratory with starter chemicals](docs/gameplay/desktop-lab-3d.png)
 
-[Open the first-run onboarding screen](docs/gameplay/desktop-lab-onboarding.png),
-[main menu](docs/gameplay/desktop-lab-main-menu.png), or
-[settings screen](docs/gameplay/desktop-lab-settings.png).
-
 ## Current Feature Set
 
 - Native Unity 6 desktop project using C#.
@@ -26,7 +22,7 @@ The game is built as an educational simulation, not as real laboratory operating
 - 8 oxidation-reduction rules validated by electron least-common-multiple balancing, including acidic permanganate chemistry and concentration-dependent `Cu + HNO3` products.
 - Persistent synthesized-product inventory. Every collected batch records mass, purity, phase, color, hazards, and source equation in JSON; reused material is mass-accounted and generated ionic products re-enter the dynamic reaction engine.
 - Safety system for toxic, corrosive, flammable, oxidising, and asphyxiant gas outcomes. Unsafe reactions are allowed to happen, but the player pays health and credit consequences if they do not use the fume hood, respirator, or gas trap correctly.
-- Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, main menu, ESC pause menu, diagnostics, and a persistent settings screen for audio, reduced motion, and window mode.
+- Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, main menu, ESC pause menu, diagnostics, and persistent language, audio, reduced-motion, and window-mode settings.
 - Physical sample staging: a held chemical must be placed on the preparation
   tray beside a vessel before it can be loaded; the staged bottle remains
   visible and remote loading is rejected.
@@ -110,26 +106,20 @@ chemistryLAB/
 |   |   |   |-- Safety/              Hazard classifier, gas catalog, player consequence model
 |   |   |   `-- UI/                  HUD, main/pause/settings menus, inspector, buttons
 |   |   `-- Scenes/                  DesktopChemistryLab Unity scene
-|   `-- _Game/                       Earlier 2D Unity architecture prototype
+|   `-- TextMesh Pro/                Required fonts, shaders, and runtime resources
 |-- BuildReports/                    Committed structured JSON reports
-|-- Builds/                          Local portable releases, ignored by git
+|-- docs/                            Architecture, chemistry, gameplay, design, and release docs
 |-- Packages/                        Unity package manifest and lock file
-|-- SourceAssets/                    Archived licensed third-party source files
 |-- ProjectSettings/                 Unity project settings
-|-- NativeChemistryLab/              Historical standalone snapshot
+|-- SourceAssets/                    Licensed third-party source files and provenance
+|-- .github/workflows/               Documentation deployment
 `-- README.md
 ```
 
-The root repository also contains older planning/prototype material:
-
-```text
-docs/                            Project documentation and structured logs
-LAB-animated/                    Earlier web/React prototype
-ChemistryLabGame/                Earlier mobile/Unity project
-PlanCoreGame/                    Design and gameplay planning documents
-```
-
-For new desktop game work, open the repository root in Unity and use `Assets/ChemistryLab`. Do not build `Assets/_Game/Scenes/MainLab.unity`; that scene belongs to the earlier 2D prototype.
+Open the repository root in Unity and use `Assets/ChemistryLab`. The
+documentation index is [`docs/README.md`](docs/README.md). Coding agents should
+start with [`AGENTS.md`](AGENTS.md), which records the persistent product
+contracts, repository map, skill routing, and validation rules for new sessions.
 
 ## Architecture Notes
 
@@ -144,7 +134,7 @@ The runtime uses regular Unity `MonoBehaviour` components at the scene edge, whi
 - `CompoundGenerationMatrix` models the enriched X/Y/Z idea: cation or metal, nonmetal or anion family, oxygen count, and explicit oxidation state. It charge-balances candidate compounds, estimates physical/safety classes, applies reviewed overrides, and rejects known unstable combinations.
 - `DynamicReactionEngine` models species, reaction families, activity series, and bounded stoichiometry balancing. It consumes compound-matrix results instead of maintaining a second formula/solubility truth source.
 - `LabSafetySystem` converts hazardous reaction outcomes into player consequences: health loss, credit loss, incident history, and emergency evacuation.
-- `DesktopLabHud` renders the in-game information layer and owns the main, pause, and settings menu states. Settings can return to the menu that opened them; audio and reduced-motion preferences persist through `PlayerPrefs`.
+- `DesktopLabHud` renders the in-game information layer and owns the main, pause, and settings menu states. Settings can return to the menu that opened them; language, audio, reduced-motion, and display preferences persist through `PlayerPrefs`.
 - `ModelAssetAudit` measures imported geometry, scale, materials, embedded scene objects, and collider state, then writes a JSON report. `ApprovedModelIntegration` normalizes reviewed native meshes, assigns the lightweight glass material, adds simple colliders, and regenerates runtime prefabs before a scene or Windows build is created.
 
 A more visual explanation of OOP, data structures, algorithms, and runtime flow is available at:
@@ -163,6 +153,11 @@ The physical sample-placement and reaction-camera contract is recorded in
 [`docs/gameplay/staged-sample-reaction-presentation.md`](docs/gameplay/staged-sample-reaction-presentation.md)
 and its machine-readable
 [`JSON manifest`](docs/gameplay/staged-sample-reaction-presentation.json).
+The bilingual Vietnamese–English in-game workflow and complete control reference are
+available in the
+[`VI/EN player guide`](docs/gameplay/player-guide-vi-en.md)
+and its machine-readable
+[`JSON guide`](docs/gameplay/player-guide-vi-en.json).
 
 ## Controls
 
@@ -188,8 +183,9 @@ Esc           Open pause; return from Settings; resume from pause
 ```
 
 The game opens on its main menu. During play, press `Esc` for Resume, Settings,
-or Back to Main Menu. Settings provides audio, reduced-motion, and
-fullscreen/windowed controls and saves them for the next launch.
+or Back to Main Menu. Settings provides Vietnamese/English, audio,
+reduced-motion, and fullscreen/windowed controls and saves them for the next
+launch.
 
 ## Windows Portable Build
 
@@ -246,14 +242,15 @@ Reviewed overrides:     45
 Fume hood rules:        11
 Effect classes:         4
 Audio signal classes:   5
-Build result:           Succeeded
+Validation result:      Succeeded
 Errors:                 0
 ```
 
 Structured reports and documentation artifacts:
 
-- `BuildReports/desktop-build-report.json`
-- `BuildReports/desktop-smoke-report.json`
+- `BuildReports/desktop-validation-report.json`
+- `BuildReports/approved-model-integration.json`
+- `docs/README.md`
 - `docs/chemistry/compound-generation-matrix.md`
 - `docs/chemistry/compound-generation-matrix.json`
 - `docs/chemistry/compound-matrix-3d.html`
@@ -263,4 +260,5 @@ Structured reports and documentation artifacts:
 - `docs/chemistry/reaction-condition-engine.json`
 - `docs/release/windows-portable-layout.md`
 
-Raw Unity logs are temporary and ignored. Important logs should be converted to JSON or Markdown before being committed.
+Raw Unity logs and local build outputs are temporary and ignored. Commit a
+structured report only when it describes the current source state.

@@ -7,9 +7,9 @@ this revision. Their source pages and license are verified. The other files
 remain in the original download folder and are not included in the game or
 repository until their source licenses are supplied.
 
-The machine-readable technical audit is
-`BuildReports/model-asset-audit.json`. Unity generated a preview for every
-candidate before the decision was made.
+The approved production selection is recorded in
+[`model-asset-selection.json`](model-asset-selection.json). The broader
+candidate audit was temporary and is summarized below.
 
 ## Review matrix
 

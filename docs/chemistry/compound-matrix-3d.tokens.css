@@ -664,7 +664,7 @@ button[data-state="error"] {
   font-size: var(--text-xs);
   font-weight: 600;
   pointer-events: none;
-  transform: translate(-50%, -50%);
+  transform: translate3d(var(--overlay-x, 0), var(--overlay-y, 0), 0) translate(-50%, -50%);
   white-space: nowrap;
 }
 
@@ -1341,7 +1341,7 @@ button[data-state="error"] {
 /* Projection line axis badges on X, Y, Z axes */
 .projection-badge {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate3d(var(--overlay-x, 0), var(--overlay-y, 0), 0) translate(-50%, -50%);
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
@@ -1381,7 +1381,7 @@ button[data-state="error"] {
 /* 3D Floating Compound Callout Card */
 .floating-callout {
   position: absolute;
-  transform: translate(-50%, -120%);
+  transform: translate3d(var(--overlay-x, 0), var(--overlay-y, 0), 0) translate(-50%, -120%);
   display: flex;
   flex-direction: column;
   gap: var(--space-2xs);
@@ -1483,12 +1483,10 @@ button[data-state="error"] {
 @keyframes badgePopIn {
   from {
     opacity: 0;
-    transform: translate(-50%, -50%) scale(0.6);
   }
 
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
   }
 }
 
@@ -1508,12 +1506,10 @@ button[data-state="error"] {
 @keyframes calloutSlideUp {
   from {
     opacity: 0;
-    transform: translate(-50%, -90%) scale(0.95);
   }
 
   to {
     opacity: 1;
-    transform: translate(-50%, -120%) scale(1);
   }
 }
 
@@ -1528,7 +1524,7 @@ button[data-state="error"] {
 
 .axis-ion-badge {
   position: absolute;
-  transform: translate(-50%, -50%);
+  transform: translate3d(var(--overlay-x, 0), var(--overlay-y, 0), 0) translate(-50%, -50%) scale(var(--badge-scale, 1));
   display: inline-flex;
   align-items: center;
   gap: 0.2rem;
@@ -1546,7 +1542,7 @@ button[data-state="error"] {
 }
 
 .axis-ion-badge:hover {
-  transform: translate(-50%, -50%) scale(1.2);
+  --badge-scale: 1.12;
   z-index: 15;
 }
 

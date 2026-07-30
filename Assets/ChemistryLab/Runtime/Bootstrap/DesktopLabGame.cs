@@ -209,13 +209,15 @@ namespace ChemistryLab.Desktop
             RefreshOutcome(LabStation.Workbench);
 
             hud.SetSelectedChemical(null, selectedAmountGrams, null, SynthesizedBatchCount);
-            hud.SetMission("Tạo kết tủa xanh Cu(OH)₂", false);
+            hud.SetMission(MissionTitle(), false);
             hud.SetZone(ZoneLabel(currentZone));
             hud.SetAudioState(audioSystem != null && !audioSystem.IsMuted);
             hud.SetFullscreenState(Screen.fullScreenMode != FullScreenMode.Windowed);
             hud.SetSafetySystem(labSafety);
             hud.ShowTransient(
-                "Quy trình: lấy hóa chất → đặt xuống khay cạnh bình bằng E → nhấn E tại bình để nạp.");
+                LabLocalization.Text(
+                    "Quy trình: lấy hóa chất → đặt xuống khay cạnh bình bằng E → nhấn E tại bình để nạp.",
+                    "Workflow: take a chemical → press E to stage it on the tray → press E at the vessel to load it."));
 
             if (HasCommandLineFlag("-captureTest"))
             {
@@ -239,7 +241,10 @@ namespace ChemistryLab.Desktop
             var next = RuntimeChemicalRegistry.GetChemical(chemicalId);
             if (next == null)
             {
-                hud.ShowTransient("Không tìm thấy dữ liệu hóa chất: " + chemicalId, true);
+                hud.ShowTransient(
+                    LabLocalization.Text("Không tìm thấy dữ liệu hóa chất: ", "Chemical data not found: ")
+                    + chemicalId,
+                    true);
                 audioSystem.PlayError();
                 return;
             }
@@ -258,12 +263,18 @@ namespace ChemistryLab.Desktop
             if (hazard.Severity >= HazardSeverity.Dangerous)
             {
                 hud.SetSafety(false, hazard.Message);
-                hud.ShowTransient("CẢNH BÁO HÓA CHẤT · " + hazard.Message, true);
+                hud.ShowTransient(
+                    LabLocalization.Text(
+                        "CẢNH BÁO HÓA CHẤT · " + hazard.Message,
+                        "CHEMICAL WARNING · PPE and ventilation may be required."),
+                    true);
                 audioSystem.PlayError();
             }
             else
             {
-                hud.ShowTransient("Đã lấy " + next.Formula + " · " + next.Name);
+                hud.ShowTransient(
+                    LabLocalization.Text("Đã lấy ", "Picked up ")
+                    + next.Formula + " · " + next.Name);
                 audioSystem.PlaySamplePickup();
             }
         }
@@ -274,7 +285,7 @@ namespace ChemistryLab.Desktop
             selectedBatchId = null;
             UpdateHeldSample();
             hud.SetSelectedChemical(null, selectedAmountGrams, null, SynthesizedBatchCount);
-            hud.ShowTransient("Đã cất mẫu đang cầm.");
+            hud.ShowTransient(LabLocalization.Text("Đã cất mẫu đang cầm.", "Returned the held sample."));
             audioSystem.PlayUiClick();
         }
 
@@ -285,8 +296,11 @@ namespace ChemistryLab.Desktop
                 if (stagedSamples.ContainsKey(station))
                 {
                     hud.ShowTransient(
-                        "Khay đã có " + GetStagedSampleLabel(station)
-                        + ". Hãy cầm lại hoặc nạp mẫu đó trước.",
+                        LabLocalization.Text("Khay đã có ", "The tray already holds ")
+                        + GetStagedSampleLabel(station)
+                        + LabLocalization.Text(
+                            ". Hãy cầm lại hoặc nạp mẫu đó trước.",
+                            ". Pick it up again or load it first."),
                         true);
                     audioSystem.PlayError();
                     return;
@@ -305,7 +319,11 @@ namespace ChemistryLab.Desktop
                 UpdateStagedSampleVisual(station);
                 hud.SetSelectedChemical(null, selectedAmountGrams, null, SynthesizedBatchCount);
                 hud.ShowTransient(
-                    "Đã đặt " + placedFormula + " xuống khay. Bây giờ hãy nhắm vào bình và nhấn E.");
+                    LabLocalization.Text("Đã đặt ", "Placed ")
+                    + placedFormula
+                    + LabLocalization.Text(
+                        " xuống khay. Bây giờ hãy nhắm vào bình và nhấn E.",
+                        " on the tray. Now aim at the vessel and press E."));
                 audioSystem.PlayUiClick();
                 return;
             }
@@ -313,7 +331,9 @@ namespace ChemistryLab.Desktop
             StagedSample staged;
             if (!stagedSamples.TryGetValue(station, out staged))
             {
-                hud.ShowTransient("Khay đặt mẫu đang trống.", true);
+                hud.ShowTransient(LabLocalization.Text(
+                    "Khay đặt mẫu đang trống.",
+                    "The preparation tray is empty."), true);
                 audioSystem.PlayError();
                 return;
             }
@@ -331,8 +351,9 @@ namespace ChemistryLab.Desktop
                 SynthesizedBatchCount);
             hud.ShowChemicalSection();
             hud.ShowTransient(
-                "Đã cầm lại " + (selectedChemical == null ? staged.ChemicalId : selectedChemical.Formula)
-                + " từ khay.");
+                LabLocalization.Text("Đã cầm lại ", "Picked up ")
+                + (selectedChemical == null ? staged.ChemicalId : selectedChemical.Formula)
+                + LabLocalization.Text(" từ khay.", " from the tray."));
             audioSystem.PlaySamplePickup();
         }
 
@@ -352,9 +373,13 @@ namespace ChemistryLab.Desktop
             if (selectedChemical != null)
             {
                 hud.ShowTransient(
-                    "Không nạp trực tiếp từ tay. Hãy đặt "
+                    LabLocalization.Text(
+                        "Không nạp trực tiếp từ tay. Hãy đặt ",
+                        "You cannot load directly from your hand. Place ")
                     + selectedChemical.Formula
-                    + " xuống khay cạnh bình trước.",
+                    + LabLocalization.Text(
+                        " xuống khay cạnh bình trước.",
+                        " on the tray beside the vessel first."),
                     true);
                 audioSystem.PlayError();
                 return;
@@ -363,7 +388,9 @@ namespace ChemistryLab.Desktop
             StagedSample staged;
             if (!stagedSamples.TryGetValue(station, out staged))
             {
-                hud.ShowTransient("Hãy đặt một mẫu xuống khay cạnh bình trước khi nạp.", true);
+                hud.ShowTransient(LabLocalization.Text(
+                    "Hãy đặt một mẫu xuống khay cạnh bình trước khi nạp.",
+                    "Place a sample on the tray beside the vessel before loading it."), true);
                 audioSystem.PlayError();
                 return;
             }
@@ -371,7 +398,9 @@ namespace ChemistryLab.Desktop
             var stagedChemical = RuntimeChemicalRegistry.GetChemical(staged.ChemicalId);
             if (stagedChemical == null)
             {
-                hud.ShowTransient("Dữ liệu mẫu trên khay không còn hợp lệ.", true);
+                hud.ShowTransient(LabLocalization.Text(
+                    "Dữ liệu mẫu trên khay không còn hợp lệ.",
+                    "The staged sample data is no longer valid."), true);
                 audioSystem.PlayError();
                 return;
             }
@@ -379,7 +408,9 @@ namespace ChemistryLab.Desktop
             List<VesselAddition> additions;
             if (!vesselAdditions.TryGetValue(station, out additions))
             {
-                hud.ShowTransient("Vị trí này không có cốc phản ứng.", true);
+                hud.ShowTransient(LabLocalization.Text(
+                    "Vị trí này không có cốc phản ứng.",
+                    "There is no reaction vessel at this station."), true);
                 audioSystem.PlayError();
                 return;
             }
@@ -398,7 +429,9 @@ namespace ChemistryLab.Desktop
                 additionGrams = (float)Math.Min(additionGrams, sourceBatch.AvailableGrams);
                 if (additionGrams <= .0001f)
                 {
-                    hud.ShowTransient("Lô sản phẩm này đã hết.", true);
+                    hud.ShowTransient(LabLocalization.Text(
+                        "Lô sản phẩm này đã hết.",
+                        "This product batch is depleted."), true);
                     audioSystem.PlayError();
                     return;
                 }
@@ -453,22 +486,26 @@ namespace ChemistryLab.Desktop
                 else
                 {
                     hud.ShowTransient(
-                        nextOutcome.Title + " · " + nextOutcome.Message
-                        + (nextOutcome.GeneratedByRule ? " · suy diễn " + nextOutcome.RuleFamily : string.Empty));
+                        LabLocalization.IsEnglish
+                            ? "Reaction detected · " + nextOutcome.Equation
+                            : nextOutcome.Title + " · " + nextOutcome.Message
+                              + (nextOutcome.GeneratedByRule ? " · suy diễn " + nextOutcome.RuleFamily : string.Empty));
                 }
                 if (!missionComplete
                     && nextOutcome.Reaction != null
                     && string.Equals(nextOutcome.Reaction.Id, MissionReactionId, StringComparison.Ordinal))
                 {
                     missionComplete = true;
-                    hud.SetMission("Tạo kết tủa xanh Cu(OH)₂", true);
+                    hud.SetMission(MissionTitle(), true);
                 }
             }
             else
             {
                 hud.ShowTransient(
-                    "Đã nạp " + additionGrams.ToString("0.#")
-                    + " g " + stagedChemical.Formula + " từ khay.",
+                    LabLocalization.Text("Đã nạp ", "Loaded ")
+                    + additionGrams.ToString("0.#")
+                    + " g " + stagedChemical.Formula
+                    + LabLocalization.Text(" từ khay.", " from the tray."),
                     nextOutcome.Status == ReactionStatus.Blocked);
             }
         }
@@ -494,7 +531,9 @@ namespace ChemistryLab.Desktop
             if (!vesselAdditions.TryGetValue(station, out additions)
                 || !vesselEnvironments.TryGetValue(station, out environment))
             {
-                hud.ShowTransient("Không tìm thấy bình phản ứng để thu sản phẩm.", true);
+                hud.ShowTransient(LabLocalization.Text(
+                    "Không tìm thấy bình phản ứng để thu sản phẩm.",
+                    "No reaction vessel is available for product collection."), true);
                 audioSystem.PlayError();
                 return;
             }
@@ -507,7 +546,9 @@ namespace ChemistryLab.Desktop
             var outcome = ReactionSimulator.Evaluate(additions, station, environment);
             if (outcome.Status != ReactionStatus.Reaction || !outcome.CanCollectProduct)
             {
-                hud.ShowTransient("Chưa có sản phẩm đủ điều kiện để thu hồi.", true);
+                hud.ShowTransient(LabLocalization.Text(
+                    "Chưa có sản phẩm đủ điều kiện để thu hồi.",
+                    "No product is ready for collection."), true);
                 audioSystem.PlayError();
                 return;
             }
@@ -518,7 +559,9 @@ namespace ChemistryLab.Desktop
                     || !labSafety.GasTrapConnected))
             {
                 hud.ShowTransient(
-                    "Sản phẩm khí chỉ được thu trong tủ hút khi hệ rửa khí đã nối. Đến thiết bị và nhấn E.",
+                    LabLocalization.Text(
+                        "Sản phẩm khí chỉ được thu trong tủ hút khi hệ rửa khí đã nối. Đến thiết bị và nhấn E.",
+                        "Gas products may only be collected in the fume hood with the gas trap connected. Go to the device and press E."),
                     true);
                 audioSystem.PlayHazardAlarm();
                 return;
@@ -527,7 +570,9 @@ namespace ChemistryLab.Desktop
             var batch = synthesizedInventory.AddProduct(outcome);
             if (batch == null)
             {
-                hud.ShowTransient("Không thể tạo lô sản phẩm từ kết quả hiện tại.", true);
+                hud.ShowTransient(LabLocalization.Text(
+                    "Không thể tạo lô sản phẩm từ kết quả hiện tại.",
+                    "A product batch cannot be created from the current result."), true);
                 audioSystem.PlayError();
                 return;
             }
@@ -548,8 +593,9 @@ namespace ChemistryLab.Desktop
             hud.ShowChemicalSection();
             ToggleInspector(true);
             hud.ShowTransient(
-                "Đã lưu lô " + batch.Formula + " · "
-                + batch.AvailableGrams.ToString("0.000") + " g · độ tinh khiết "
+                LabLocalization.Text("Đã lưu lô ", "Saved batch ") + batch.Formula + " · "
+                + batch.AvailableGrams.ToString("0.000")
+                + LabLocalization.Text(" g · độ tinh khiết ", " g · purity ")
                 + (batch.PurityFraction * 100f).ToString("0.0") + "%.");
             audioSystem.PlaySamplePickup();
         }
@@ -572,7 +618,9 @@ namespace ChemistryLab.Desktop
             RefreshOutcome(currentVesselStation);
             hud.ShowVesselSection();
             hud.ShowTransient(
-                (deltaC >= 0f ? "Đã gia nhiệt · " : "Đã làm nguội · ")
+                (deltaC >= 0f
+                    ? LabLocalization.Text("Đã gia nhiệt · ", "Heated · ")
+                    : LabLocalization.Text("Đã làm nguội · ", "Cooled · "))
                 + environment.TemperatureC.ToString("0.#") + " °C.");
             audioSystem.PlayUiClick();
         }
@@ -601,7 +649,7 @@ namespace ChemistryLab.Desktop
             RefreshOutcome(currentVesselStation);
             hud.ShowVesselSection();
             hud.ShowTransient(
-                "Đã thêm dung môi · thể tích "
+                LabLocalization.Text("Đã thêm dung môi · thể tích ", "Added solvent · volume ")
                 + (environment.VolumeLitres * 1000d).ToString("0") + " mL.");
             audioSystem.PlayPour(GetVesselPosition(currentVesselStation));
         }
@@ -610,7 +658,9 @@ namespace ChemistryLab.Desktop
         {
             if (synthesizedInventory == null || synthesizedInventory.Count == 0)
             {
-                hud.ShowTransient("Kho sản phẩm điều chế đang trống.", true);
+                hud.ShowTransient(LabLocalization.Text(
+                    "Kho sản phẩm điều chế đang trống.",
+                    "The synthesized-product inventory is empty."), true);
                 audioSystem.PlayError();
                 return;
             }
@@ -643,8 +693,10 @@ namespace ChemistryLab.Desktop
             hud.ShowChemicalSection();
             ToggleInspector(true);
             hud.ShowTransient(
-                "Kho " + (nextIndex + 1) + "/" + synthesizedInventory.Count + " · "
-                + batch.Formula + " · còn " + batch.AvailableGrams.ToString("0.000") + " g.");
+                LabLocalization.Text("Kho ", "Inventory ")
+                + (nextIndex + 1) + "/" + synthesizedInventory.Count + " · "
+                + batch.Formula + LabLocalization.Text(" · còn ", " · remaining ")
+                + batch.AvailableGrams.ToString("0.000") + " g.");
             audioSystem.PlaySamplePickup();
         }
 
@@ -665,7 +717,9 @@ namespace ChemistryLab.Desktop
             RefreshOutcome(currentVesselStation);
             hud.ShowVesselSection();
             ToggleInspector(true);
-            hud.ShowTransient("Cốc đã được rửa và đưa về 24 °C.");
+            hud.ShowTransient(LabLocalization.Text(
+                "Cốc đã được rửa và đưa về 24 °C.",
+                "Vessels were washed and reset to 24 °C."));
             audioSystem.PlayWash(new Vector3(-5.75f, 1.1f, 3.9f));
         }
 
@@ -782,6 +836,19 @@ namespace ChemistryLab.Desktop
         {
             LabAccessibility.ReducedMotion = !LabAccessibility.ReducedMotion;
             hud.SetAccessibilityState(LabAccessibility.ReducedMotion);
+        }
+
+        public void ToggleLanguage()
+        {
+            LabLocalization.Toggle();
+            RefreshLocalizedPresentation();
+            hud.ShowTransient(LabLocalization.Text(
+                "Đã chuyển sang Tiếng Việt.",
+                "Language changed to English."));
+            if (audioSystem != null)
+            {
+                audioSystem.PlayUiClick();
+            }
         }
 
         public void SkipReactionCamera()
@@ -917,11 +984,55 @@ namespace ChemistryLab.Desktop
         {
             switch (station)
             {
-                case LabStation.FumeHood: return "Tủ hút khí độc";
-                case LabStation.Sink: return "Bồn rửa";
-                case LabStation.Storage: return "Kho hóa chất";
-                case LabStation.Analysis: return "Bàn phân tích";
-                default: return "Bàn phản ứng";
+                case LabStation.FumeHood:
+                    return LabLocalization.Text("Tủ hút khí độc", "Fume hood");
+                case LabStation.Sink:
+                    return LabLocalization.Text("Bồn rửa", "Wash station");
+                case LabStation.Storage:
+                    return LabLocalization.Text("Kho hóa chất", "Chemical storage");
+                case LabStation.Analysis:
+                    return LabLocalization.Text("Bàn phân tích", "Analysis bench");
+                default:
+                    return LabLocalization.Text("Bàn phản ứng", "Reaction bench");
+            }
+        }
+
+        private static string MissionTitle()
+        {
+            return LabLocalization.Text(
+                "Tạo kết tủa xanh Cu(OH)₂",
+                "Create blue Cu(OH)₂ precipitate");
+        }
+
+        private void RefreshLocalizedPresentation()
+        {
+            if (hud == null)
+            {
+                return;
+            }
+
+            hud.RefreshLanguage();
+            hud.SetMission(MissionTitle(), missionComplete);
+            hud.SetZone(ZoneLabel(currentZone));
+            hud.SetAudioState(audioSystem != null && !audioSystem.IsMuted);
+            hud.SetAccessibilityState(LabAccessibility.ReducedMotion);
+            hud.SetFullscreenState(Screen.fullScreenMode != FullScreenMode.Windowed);
+            hud.SetSafetySystem(labSafety);
+            hud.SetSelectedChemical(
+                selectedChemical,
+                selectedAmountGrams,
+                GetSelectedBatch(),
+                SynthesizedBatchCount);
+
+            List<VesselAddition> additions;
+            if (currentOutcome != null
+                && vesselAdditions.TryGetValue(currentVesselStation, out additions))
+            {
+                hud.SetVessel(additions, currentOutcome, currentVesselStation);
+                if (reactionCameraActive)
+                {
+                    hud.ShowReactionPresentation(currentOutcome, currentVesselStation);
+                }
             }
         }
 
@@ -2878,6 +2989,20 @@ namespace ChemistryLab.Desktop
         private IEnumerator RunSmokeTest()
         {
             yield return null;
+            var originalLanguage = LabLocalization.Current;
+            LabLocalization.Current = LabLanguage.Vietnamese;
+            RefreshLocalizedPresentation();
+            var vietnameseLanguageVerified = hud.LanguageUiReady
+                && hud.DisplayLanguage == LabLanguage.Vietnamese
+                && string.Equals(ZoneLabel(LabStation.Workbench), "Bàn phản ứng", StringComparison.Ordinal);
+            LabLocalization.Current = LabLanguage.English;
+            RefreshLocalizedPresentation();
+            var englishLanguageVerified = hud.LanguageUiReady
+                && hud.DisplayLanguage == LabLanguage.English
+                && string.Equals(ZoneLabel(LabStation.Workbench), "Reaction bench", StringComparison.Ordinal);
+            LabLocalization.Current = LabLanguage.Vietnamese;
+            RefreshLocalizedPresentation();
+
             player.SetPausedFromUi(true);
             hud.ShowMainMenu();
             var mainMenuReady = hud.MainMenuVisible && !hud.SettingsVisible && !hud.PauseMenuVisible;
@@ -2992,6 +3117,8 @@ namespace ChemistryLab.Desktop
                 && !ReactionCameraActive
                 && !hud.ReactionPresentationVisible
                 && Mathf.Abs(player.ViewCamera.fieldOfView - 66f) < .1f;
+            LabLocalization.Current = originalLanguage;
+            RefreshLocalizedPresentation();
 
             if (outcome.Status != ReactionStatus.Reaction
                 || outcome.Reaction == null
@@ -3019,6 +3146,8 @@ namespace ChemistryLab.Desktop
                 || !samplePlacementFlowVerified
                 || !reactionEquationPresentationVerified
                 || !reactionCameraVerified
+                || !vietnameseLanguageVerified
+                || !englishLanguageVerified
                 || diagnostics == null)
             {
                 WriteSmokeReport(
@@ -3033,7 +3162,9 @@ namespace ChemistryLab.Desktop
                     remoteVesselOperationBlocked,
                     samplePlacementFlowVerified,
                     reactionEquationPresentationVerified,
-                    reactionCameraVerified);
+                    reactionCameraVerified,
+                    vietnameseLanguageVerified,
+                    englishLanguageVerified);
                 Debug.LogError("DESKTOP_LAB_SMOKE_FAIL");
                 Application.Quit(2);
                 yield break;
@@ -3051,7 +3182,9 @@ namespace ChemistryLab.Desktop
                 remoteVesselOperationBlocked,
                 samplePlacementFlowVerified,
                 reactionEquationPresentationVerified,
-                reactionCameraVerified);
+                reactionCameraVerified,
+                vietnameseLanguageVerified,
+                englishLanguageVerified);
             Debug.Log(
                 "DESKTOP_LAB_SMOKE_PASS chemicals="
                 + DesktopChemistryDatabase.AllChemicals.Count
@@ -3078,6 +3211,7 @@ namespace ChemistryLab.Desktop
                 + " physicalSafetyStations=2"
                 + " stagedSampleFlow=true"
                 + " reactionCamera=true"
+                + " bilingualUi=true"
                 + " cameraFov="
                 + player.ViewCamera.fieldOfView.ToString("0.0"));
             yield return new WaitForSecondsRealtime(0.4f);
@@ -3096,7 +3230,9 @@ namespace ChemistryLab.Desktop
             bool remoteVesselOperationBlocked,
             bool samplePlacementFlowVerified,
             bool reactionEquationPresentationVerified,
-            bool reactionCameraVerified)
+            bool reactionCameraVerified,
+            bool vietnameseLanguageVerified,
+            bool englishLanguageVerified)
         {
             var reportPath = GetCommandLineValue("-reportPath");
             if (string.IsNullOrWhiteSpace(reportPath))
@@ -3140,6 +3276,9 @@ namespace ChemistryLab.Desktop
                 samplePlacementFlowVerified = samplePlacementFlowVerified,
                 reactionEquationPresentationVerified = reactionEquationPresentationVerified,
                 reactionCameraVerified = reactionCameraVerified,
+                supportedLanguages = 2,
+                vietnameseLanguageVerified = vietnameseLanguageVerified,
+                englishLanguageVerified = englishLanguageVerified,
                 starterChemicals = starterChemicalCount,
                 originalReferenceProps = proceduralReferencePropCount,
                 cameraFovDegrees = player == null || player.ViewCamera == null
@@ -3197,6 +3336,9 @@ namespace ChemistryLab.Desktop
             public bool samplePlacementFlowVerified;
             public bool reactionEquationPresentationVerified;
             public bool reactionCameraVerified;
+            public int supportedLanguages;
+            public bool vietnameseLanguageVerified;
+            public bool englishLanguageVerified;
             public int starterChemicals;
             public int originalReferenceProps;
             public float cameraFovDegrees;

@@ -244,7 +244,7 @@
         <div><strong>15</strong> procedural audio clips</div>
       </div>
       <p class="note">
-        Source: <code>NativeChemistryLab/BuildReports/desktop-validation-report.json</code>.
+        Source: <code>BuildReports/desktop-validation-report.json</code>.
       </p>
     </section>
 
@@ -616,28 +616,25 @@ Curated reaction exists?
     <section>
       <h2>Folder Structure</h2>
       <pre><code>chemistryLAB/
-|-- README.md
+|-- Assets/
+|   `-- ChemistryLab/
+|       |-- Editor/
+|       |-- ExternalAssets/
+|       |-- Resources/
+|       |-- Runtime/
+|       `-- Scenes/
+|-- BuildReports/
 |-- docs/
+|   |-- README.md
 |   |-- architecture/
-|   |   `-- oop-data-algorithms.html
 |   |-- chemistry/
-|   |   |-- compound-generation-matrix.md
-|   |   |-- compound-generation-matrix.json
-|   |   |-- dynamic-reaction-engine.md
-|   |   `-- dynamic-reaction-engine.json
-|   `-- logs/
-|       |-- validation-history.md
-|       `-- validation-history.json
-|-- NativeChemistryLab/
-|   |-- Assets/ChemistryLab/
-|   |-- BuildReports/
-|   |-- Packages/
-|   |-- ProjectSettings/
-|   `-- README.md
-|-- LAB-animated/
-|-- Assets/_Game/
-|-- ChemistryLabGame/
-`-- PlanCoreGame/</code></pre>
+|   |-- design/
+|   |-- gameplay/
+|   `-- release/
+|-- Packages/
+|-- ProjectSettings/
+|-- SourceAssets/
+`-- README.md</code></pre>
     </section>
 
     <section>
@@ -651,47 +648,47 @@ Curated reaction exists?
         </thead>
         <tbody>
           <tr>
-            <td><code>Runtime/Bootstrap/DesktopLabGame.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Bootstrap/DesktopLabGame.cs</code></td>
             <td>Game composition, procedural lab construction, vessel state, mission state, runtime smoke test.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Chemistry/ChemistryData.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Chemistry/ChemistryData.cs</code></td>
             <td>Chemical definitions, curated reactions, reaction outcomes, simulator entry point.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Chemistry/DynamicReactionEngine.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Chemistry/DynamicReactionEngine.cs</code></td>
             <td>Species model, reaction-family dispatch, stoichiometry balancing, and activity series.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Chemistry/ReactionConditions.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Chemistry/ReactionConditions.cs</code></td>
             <td>Per-vessel temperature/volume, molarity and pH estimation, catalyst gates, rate class, time, and yield trends.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Chemistry/RedoxReactionEngine.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Chemistry/RedoxReactionEngine.cs</code></td>
             <td>Reviewed oxidation-reduction branches and electron GCD/LCM validation.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Chemistry/SynthesizedInventory.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Chemistry/SynthesizedInventory.cs</code></td>
             <td>Runtime chemical registry, reusable product batches, exact mass consumption, and persistent JSON storage.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Chemistry/CompoundGenerationMatrix.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs</code></td>
             <td>JSON-backed element/ion graph, X/Y/Z compound generation, charge balancing, property estimation, confidence, overrides, and exclusions.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Safety/LabSafetySystem.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Safety/LabSafetySystem.cs</code></td>
             <td>Chemical hazard classification, airborne hazard profiles, respirator/gas-trap state, exposure consequences.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Player/LabInteractions.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Player/LabInteractions.cs</code></td>
             <td>Abstract interactables, concrete interaction objects, first-person movement, raycast focus, hotkeys.</td>
           </tr>
           <tr>
-            <td><code>Runtime/UI/DesktopLabHud.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/UI/DesktopLabHud.cs</code></td>
             <td>HUD, inspector, safety panel, pause menu, transient messages, UI button feedback.</td>
           </tr>
           <tr>
-            <td><code>Runtime/Audio/DesktopLabAudio.cs</code></td>
+            <td><code>Assets/ChemistryLab/Runtime/Audio/DesktopLabAudio.cs</code></td>
             <td>Procedural audio generation and playback for UI, movement, reactions, and hazards.</td>
           </tr>
           <tr>

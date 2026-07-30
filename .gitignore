@@ -1,4 +1,4 @@
-# Unity generated folders
+# Unity generated
 [Ll]ibrary/
 [Tt]emp/
 [Oo]bj/
@@ -6,11 +6,13 @@
 [Bb]uilds/
 [Ll]ogs/
 [Uu]serSettings/
-[MemoryCaptures]/
+[Mm]emoryCaptures/
+[Rr]ecordings/
 
-# Visual Studio / VS Code / Rider cache
+# IDE and editor state
 .vs/
 .idea/
+.fleet/
 .vscode/
 *.csproj
 *.unityproj
@@ -24,35 +26,28 @@
 *.pdb
 *.opendb
 *.db
-*.DS_Store
 
-# OS generated
+# OS metadata
+*.DS_Store
 [Tt]humbs.db
 ehthumbs.db
 [Dd]esktop.ini
 
-# Agent & temporary scratch logs
-skills-lock.json
-Plan/
-Step/
-
-# Generated raw logs
-# Preserve significant outcomes in docs/logs/*.json and docs/logs/*.md.
+# Logs and temporary files
 *.log
+*.tmp
+*.bak
 
-# Structured reports are source artifacts and remain commit-eligible.
-!docs/logs/
-!docs/logs/**/*.json
-!docs/logs/**/*.md
-!NativeChemistryLab/BuildReports/
-!NativeChemistryLab/BuildReports/**/*.json
-
-# Local automation caches and disposable captures
+# Local development tools and generated captures
+.agents/
+.ai_sync/
+.hallmark/
 .playwright-cli/
 .pnpm-store/
-**/.utmp/
+skills-lock.json
 output/
 node_modules/
 dist/
 coverage/
 .vite/
+**/.utmp/

@@ -1,8 +1,0 @@
-{
-  "date": "2026-07-28",
-  "font_stack": "Fredoka + Nunito (src/styles/fonts.css)",
-  "palette": "Chemistry Lab cyan, dark slate, green, purple (src/styles/theme.css)",
-  "motion": "motion/react 12.23.24 plus React Three Fiber frame loop (package.json)",
-  "framework": "React 18 + Vite 6 + Tailwind 4 + Three.js 0.185.1 + React Three Fiber 8.18.0",
-  "preserved": ["Vietnamese game copy", "currency and reaction data", "existing modal and LabView flows"]
-}

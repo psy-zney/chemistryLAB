@@ -6,10 +6,9 @@ on:
       - main
     paths:
       - "docs/**"
-      - "NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json"
+      - "Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json"
       - ".github/workflows/deploy-docs-pages.yml"
       - "README.md"
-      - "NativeChemistryLab/README.md"
   workflow_dispatch:
 
 permissions:
@@ -35,10 +34,10 @@ jobs:
         run: |
           set -euo pipefail
           rm -rf _site
-          mkdir -p _site/NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry
+          mkdir -p _site/Assets/ChemistryLab/Resources/Chemistry
           cp -R docs _site/docs
-          cp NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json \
-            _site/NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json
+          cp Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json \
+            _site/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json
           touch _site/.nojekyll
           cat > _site/index.html <<'HTML'
           <!doctype html>

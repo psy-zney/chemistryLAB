@@ -7,8 +7,8 @@
     "y": "nonmetal-or-anion-family",
     "z": "oxygen-count-and-explicit-oxidation-state"
   },
-  "sourceData": "NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json",
-  "runtimeImplementation": "NativeChemistryLab/Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs",
+  "sourceData": "Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json",
+  "runtimeImplementation": "Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs",
   "coverage": {
     "matrixElements": 27,
     "ions": 46,

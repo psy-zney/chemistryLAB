@@ -122,7 +122,7 @@
               <span class="check-row__count">XYZ</span>
             </label>
             <label class="check-row">
-              <input id="showFormulaLabels" type="checkbox" checked>
+              <input id="showFormulaLabels" type="checkbox">
               <span data-i18n="formulaLabelsLabel">Compound labels</span>
               <span class="check-row__count">Aa</span>
             </label>
@@ -266,7 +266,7 @@
     import * as THREE from "three";
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-    const DATA_URL = "../../NativeChemistryLab/Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json";
+    const DATA_URL = "../../Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json";
     const EXPECTED_ACCEPTED = 565;
     const EXPECTED_UNIQUE = 541;
     const X_SPAN = 152;      // 38 * 4x
@@ -809,8 +809,20 @@
       return new THREE.Color(pixel[0] / 255, pixel[1] / 255, pixel[2] / 255);
     }
 
+    function matrixCellScale(record, emphasis = "normal") {
+      const xStep = X_SPAN / Math.max(1, state.centralOrder.length - 1);
+      const zStep = Y_SPAN / Math.max(1, state.anionOrder.length - 1);
+      const baseHeight = record.confidence === "Reviewed" ? 0.34 : 0.22;
+      const height = emphasis === "selected" ? 0.9 : emphasis === "hovered" ? 0.56 : baseHeight;
+      return {
+        x: Math.max(1.25, xStep * 0.72),
+        y: height,
+        z: Math.max(1.25, zStep * 0.72)
+      };
+    }
+
     function makeFamilyGeometry(family) {
-      return new THREE.SphereGeometry(0.55, 20, 20);
+      return new THREE.BoxGeometry(1, 1, 1);
     }
 
     function buildGrid(documentData, generated) {
@@ -990,7 +1002,7 @@
       const selectionLight = new THREE.PointLight(0x3b82f6, 0, 60);
       scene.add(selectionLight);
 
-      const haloGeometry = new THREE.RingGeometry(0.6, 1.5, 32);
+      const haloGeometry = new THREE.RingGeometry(0.6, 1.5, 16);
       const haloMaterial = new THREE.MeshBasicMaterial({ color: 0x3b82f6, side: THREE.DoubleSide, transparent: true, opacity: 0 });
       const selectionHaloMesh = new THREE.Mesh(haloGeometry, haloMaterial);
       selectionHaloMesh.visible = false;
@@ -1004,15 +1016,17 @@
         const records = generated.records.filter(record => record.family === familyName);
         if (records.length === 0) continue;
         const geometry = makeFamilyGeometry(familyName);
-        // Emissive glowing material for universe theme
-        const material = new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          emissive: 0xffffff,
-          emissiveIntensity: 0.6,
-          roughness: 0.3,
-          metalness: 0.1,
-          toneMapped: false
-        });
+        const material = QUALITY.name === "low"
+          ? new THREE.MeshBasicMaterial({ color: 0xffffff, vertexColors: true, toneMapped: false })
+          : new THREE.MeshStandardMaterial({
+              color: 0xffffff,
+              emissive: 0x222222,
+              emissiveIntensity: 0.35,
+              roughness: 0.35,
+              metalness: 0.08,
+              vertexColors: true,
+              toneMapped: false
+            });
         const mesh = new THREE.InstancedMesh(geometry, material, records.length);
         mesh.name = familyName;
         mesh.userData.records = records;
@@ -1022,14 +1036,14 @@
       }
 
       const selectionMarker = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(1.1, 1),
+        new THREE.BoxGeometry(1, 1, 1),
         new THREE.MeshBasicMaterial({ color: cssTokenToThree("--color-accent"), wireframe: true })
       );
       selectionMarker.visible = false;
       scene.add(selectionMarker);
 
       const hoverMarker = new THREE.Mesh(
-        new THREE.IcosahedronGeometry(0.85, 1),
+        new THREE.BoxGeometry(1, 1, 1),
         new THREE.MeshBasicMaterial({ color: 0xeeeeff, wireframe: true })
       );
       hoverMarker.visible = false;
@@ -1229,9 +1243,10 @@
           if (!isVisible) return;
 
           world.dummy.position.copy(record.position);
-          world.dummy.rotation.set(0, record.isOxideRoute ? record.oxidationState * 0.09 : 0, 0);
-          const reviewedScale = record.confidence === "Reviewed" ? 1.25 : 0.85;
-          world.dummy.scale.setScalar(reviewedScale);
+          world.dummy.rotation.set(0, 0, 0);
+          const emphasis = record === state.selected ? "selected" : record === state.hovered ? "hovered" : "normal";
+          const cellScale = matrixCellScale(record, emphasis);
+          world.dummy.scale.set(cellScale.x, cellScale.y, cellScale.z);
           world.dummy.updateMatrix();
           mesh.setMatrixAt(slot, world.dummy.matrix);
           const neonColor = FAMILY_INFO[record.family]?.color || record.colour;
@@ -1302,20 +1317,21 @@
 
     function setHovered(record, event) {
       state.lastPointer = event;
-      if (state.hovered === record && record) {
-        if (els.hoverCard.classList.contains("is-visible")) positionTooltip(event);
+      if (state.hovered === record) {
+        if (record && els.hoverCard.classList.contains("is-visible")) positionTooltip(event);
         return;
       }
       window.clearTimeout(state.hoverTimer);
       state.hovered = record;
       state.world.hoverMarker.visible = Boolean(record);
+      updateInstances();
       els.hoverCard.classList.remove("is-visible");
       if (!record) {
         return;
       }
       state.world.hoverMarker.position.copy(record.position);
-      const scale = record.confidence === "Reviewed" ? 1.45 : 1.15;
-      state.world.hoverMarker.scale.setScalar(scale);
+      const hoverScale = matrixCellScale(record, "hovered");
+      state.world.hoverMarker.scale.set(hoverScale.x * 1.08, hoverScale.y * 1.18, hoverScale.z * 1.08);
       state.hoverTimer = window.setTimeout(() => {
         if (state.hovered !== record) return;
         els.hoverFormula.textContent = record.formula;
@@ -1347,7 +1363,8 @@
       const world = state.world;
 
       // Glowing Point Light & Halo Animation
-      const colorVal = record.colour ? (cssTokenToThree(record.colour) || new THREE.Color(record.colour)) : new THREE.Color(0x3b82f6);
+      const pointColor = record.neonColour || FAMILY_INFO[record.family]?.color || record.colour || "#3b82f6";
+      const colorVal = cssTokenToThree(pointColor) || new THREE.Color(pointColor);
       if (world.selectionLight) {
         world.selectionLight.color.copy(colorVal);
         world.selectionLight.position.copy(record.position);
@@ -1356,14 +1373,16 @@
 
       if (world.selectionHaloMesh) {
         world.selectionHaloMesh.position.copy(record.position);
-        world.selectionHaloMesh.visible = true;
+        world.selectionHaloMesh.visible = false;
         world.selectionHaloMesh.material.color.copy(colorVal);
-        world.selectionHaloMesh.material.opacity = 0.9;
+        world.selectionHaloMesh.material.opacity = 0;
       }
 
       world.selectionMarker.visible = true;
       world.selectionMarker.position.copy(record.position);
-      world.selectionMarker.scale.setScalar(record.confidence === "Reviewed" ? 1.4 : 1.1);
+      world.selectionMarker.material.color.copy(colorVal);
+      const selectedScale = matrixCellScale(record, "selected");
+      world.selectionMarker.scale.set(selectedScale.x * 1.1, selectedScale.y * 1.15, selectedScale.z * 1.1);
 
       // 3 Projection Lines to X, Y, Z axes
       const P = record.position.clone();
@@ -1488,10 +1507,10 @@
           if (projected.z > 1) {
             item.el.style.display = "none";
           } else {
-            const screenX = (projected.x * 0.5 + 0.5) * rect.width;
-            const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
-            item.el.style.left = `${screenX}px`;
-            item.el.style.top = `${screenY}px`;
+            const screenX = Math.round((projected.x * 0.5 + 0.5) * rect.width);
+            const screenY = Math.round((-projected.y * 0.5 + 0.5) * rect.height);
+            item.el.style.setProperty("--overlay-x", `${screenX}px`);
+            item.el.style.setProperty("--overlay-y", `${screenY}px`);
             item.el.style.display = "inline-flex";
           }
         }
@@ -1503,10 +1522,10 @@
         if (projected.z > 1) {
           els.floatingCallout.style.display = "none";
         } else {
-          const screenX = (projected.x * 0.5 + 0.5) * rect.width;
-          const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
-          els.floatingCallout.style.left = `${screenX}px`;
-          els.floatingCallout.style.top = `${screenY}px`;
+          const screenX = Math.round((projected.x * 0.5 + 0.5) * rect.width);
+          const screenY = Math.round((-projected.y * 0.5 + 0.5) * rect.height);
+          els.floatingCallout.style.setProperty("--overlay-x", `${screenX}px`);
+          els.floatingCallout.style.setProperty("--overlay-y", `${screenY}px`);
           els.floatingCallout.style.display = "flex";
         }
       }
@@ -1694,10 +1713,10 @@
         if (projected.z > 1 || projected.x < -1.15 || projected.x > 1.15 || projected.y < -1.15 || projected.y > 1.15) {
           item.el.style.display = "none";
         } else {
-          const screenX = (projected.x * 0.5 + 0.5) * rect.width;
-          const screenY = (-projected.y * 0.5 + 0.5) * rect.height;
-          item.el.style.left = `${screenX}px`;
-          item.el.style.top = `${screenY}px`;
+          const screenX = Math.round((projected.x * 0.5 + 0.5) * rect.width);
+          const screenY = Math.round((-projected.y * 0.5 + 0.5) * rect.height);
+          item.el.style.setProperty("--overlay-x", `${screenX}px`);
+          item.el.style.setProperty("--overlay-y", `${screenY}px`);
           item.el.style.display = "inline-flex";
         }
       }
@@ -1718,10 +1737,10 @@
       for (const [element, point] of labels) {
         if (!element) continue;
         const projected = point.clone().project(camera);
-        const x = (projected.x * 0.5 + 0.5) * rect.width;
-        const y = (-projected.y * 0.5 + 0.5) * rect.height;
-        element.style.left = `${x}px`;
-        element.style.top = `${y}px`;
+        const x = Math.round((projected.x * 0.5 + 0.5) * rect.width);
+        const y = Math.round((-projected.y * 0.5 + 0.5) * rect.height);
+        element.style.setProperty("--overlay-x", `${x}px`);
+        element.style.setProperty("--overlay-y", `${y}px`);
         element.hidden = projected.z > 1;
       }
     }
@@ -1972,7 +1991,11 @@
         if (!state.pointerDown) return;
         const distance = Math.hypot(event.clientX - state.pointerDown.x, event.clientY - state.pointerDown.y);
         state.pointerDown = null;
-        if (distance <= 5) selectRecord(pickRecord(event.clientX, event.clientY));
+        if (distance <= 5) {
+          const picked = pickRecord(event.clientX, event.clientY);
+          selectRecord(picked);
+          if (!picked) els.status.textContent = currentLang === "vi" ? "Không có chất tại ô này." : "No compound at this cell.";
+        }
       });
 
       els.familyFilters.addEventListener("change", event => {
@@ -2157,12 +2180,13 @@
         }
       }
 
+      updateAxisLabels();
+      updateAxisIonLabels();
+      updateProjectionBadgesAndCallout();
+
       if (now - state.lastOverlayUpdate >= QUALITY.overlayInterval) {
         state.lastOverlayUpdate = now;
-        updateAxisLabels();
-        updateAxisIonLabels();
         updateFormulaOverlayLabels();
-        updateProjectionBadgesAndCallout();
       }
 
       world.renderer.render(world.scene, camera);
