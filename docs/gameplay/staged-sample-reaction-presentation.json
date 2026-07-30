@@ -1,0 +1,44 @@
+{
+  "schemaVersion": "1.0",
+  "feature": "staged-sample-reaction-presentation",
+  "stations": [
+    "workbench",
+    "fume-hood"
+  ],
+  "interactionSequence": [
+    "pick-up-source-with-E",
+    "place-on-station-tray-with-E",
+    "load-vessel-from-staged-tray-with-E",
+    "observe-reaction-close-view",
+    "collect-product-separately"
+  ],
+  "physicalRules": {
+    "directHandToVesselAllowed": false,
+    "reactionWhileHeldAllowed": false,
+    "reactionWhenPlacedOnTrayAllowed": false,
+    "remoteTrayToVesselAllowed": false,
+    "failedLoadPreservesStagedSample": true,
+    "independentTrayPerStation": true
+  },
+  "reactionPresentation": {
+    "targetFieldOfViewDegrees": 42,
+    "showsBalancedEquation": true,
+    "showsConditionSummary": true,
+    "showsCatalystSummary": true,
+    "showsObservation": true,
+    "skipKeys": [
+      "Space",
+      "E",
+      "Escape"
+    ],
+    "reducedMotionMovesCamera": false,
+    "restoresOriginalCameraTransform": true
+  },
+  "runtimeAssertions": [
+    "handOnlyReactionBlocked",
+    "remoteVesselOperationBlocked",
+    "samplePlacementFlowVerified",
+    "reactionEquationPresentationVerified",
+    "reactionCameraVerified"
+  ]
+}

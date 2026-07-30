@@ -27,6 +27,11 @@ The game is built as an educational simulation, not as real laboratory operating
 - Persistent synthesized-product inventory. Every collected batch records mass, purity, phase, color, hazards, and source equation in JSON; reused material is mass-accounted and generated ionic products re-enter the dynamic reaction engine.
 - Safety system for toxic, corrosive, flammable, oxidising, and asphyxiant gas outcomes. Unsafe reactions are allowed to happen, but the player pays health and credit consequences if they do not use the fume hood, respirator, or gas trap correctly.
 - Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, main menu, ESC pause menu, diagnostics, and a persistent settings screen for audio, reduced motion, and window mode.
+- Physical sample staging: a held chemical must be placed on the preparation
+  tray beside a vessel before it can be loaded; the staged bottle remains
+  visible and remote loading is rejected.
+- Reaction close view with a balanced-equation card, live condition/catalyst
+  summary, observation text, skip controls, and reduced-motion fallback.
 - First-run onboarding with a visible help button and a four-bottle starter tray containing water, copper sulfate, sodium hydroxide, and hydrochloric acid.
 - Reviewed real-scale glassware assets: a 0.18 m Erlenmeyer reaction flask and 0.15 m test tubes, baked to lightweight native Unity meshes with simple physics colliders and recorded third-party provenance.
 - Four original procedural reference props: hotplate/stirrer, PPE suit display, reagent-bottle rack, and fume-hood gas-wash train. No unverified downloaded geometry is shipped.
@@ -131,7 +136,7 @@ For new desktop game work, open the repository root in Unity and use `Assets/Che
 The runtime uses regular Unity `MonoBehaviour` components at the scene edge, while chemistry data and algorithms are kept in plain C# classes where possible.
 
 - `DesktopLabGame` is the composition root. It validates data, creates the HUD, builds the procedural 3D room, owns selected chemical state, owns vessel state, and calls audio/VFX/safety systems.
-- `LabInteractable` is an abstract base class for world objects. `ChemicalBottleInteractable`, `VesselInteractable`, `SinkInteractable`, `AnalysisInteractable`, and `ElementTileInteractable` override the prompt and interaction behavior.
+- `LabInteractable` is an abstract base class for world objects. `ChemicalBottleInteractable`, `SamplePreparationInteractable`, `VesselInteractable`, `SinkInteractable`, `AnalysisInteractable`, and `ElementTileInteractable` override the prompt and interaction behavior.
 - `ReactionSimulator` evaluates vessel contents. It checks curated reactions, redox rules, then dynamic ionic rules; `ReactionConditionEngine` decides whether the matched reaction can run and scales its kinetics/yield.
 - `ReactionEnvironment` owns temperature and volume for each physical vessel, so heating and dilution persist independently of the ingredient list.
 - `RedoxReactionEngine` selects reviewed redox branches and verifies the shared electron count with a greatest-common-divisor/least-common-multiple algorithm.
@@ -154,6 +159,10 @@ and [`docs/gameplay/lab-model-requirements.json`](docs/gameplay/lab-model-requir
 The latest downloaded-model review and selection record are
 [`docs/gameplay/model-asset-review-2026-07-30.md`](docs/gameplay/model-asset-review-2026-07-30.md)
 and [`docs/gameplay/model-asset-selection.json`](docs/gameplay/model-asset-selection.json).
+The physical sample-placement and reaction-camera contract is recorded in
+[`docs/gameplay/staged-sample-reaction-presentation.md`](docs/gameplay/staged-sample-reaction-presentation.md)
+and its machine-readable
+[`JSON manifest`](docs/gameplay/staged-sample-reaction-presentation.json).
 
 ## Controls
 
@@ -161,10 +170,11 @@ and [`docs/gameplay/model-asset-selection.json`](docs/gameplay/model-asset-selec
 WASD          Move
 Mouse         Look around
 Shift         Sprint
-E             Interact with focused object
+E             Pick up, place on preparation tray, load vessel, or interact
 F             Open or close the inspector
 [ / ]         Decrease or increase selected sample mass
 Q             Put away the selected sample
+Space / E     Skip an active reaction close view
 Page Up/Down  Heat or cool the active vessel by 25 °C
 F8            Add 50 mL solvent / dilute the active vessel
 C             Collect the current product as a reusable batch

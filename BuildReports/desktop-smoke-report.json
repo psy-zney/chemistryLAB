@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-30T19:41:47.7735559Z",
+    "generatedAtUtc": "2026-07-30T20:19:34.0090778Z",
     "unityVersion": "6000.5.3f1",
     "result": "succeeded",
     "failure": "",
@@ -23,6 +23,9 @@
     "physicalGasTrapInteractionVerified": true,
     "handOnlyReactionBlocked": true,
     "remoteVesselOperationBlocked": true,
+    "samplePlacementFlowVerified": true,
+    "reactionEquationPresentationVerified": true,
+    "reactionCameraVerified": true,
     "starterChemicals": 4,
     "originalReferenceProps": 4,
     "cameraFovDegrees": 66.0,
