@@ -28,6 +28,7 @@ The game is built as an educational simulation, not as real laboratory operating
 - Safety system for toxic, corrosive, flammable, oxidising, and asphyxiant gas outcomes. Unsafe reactions are allowed to happen, but the player pays health and credit consequences if they do not use the fume hood, respirator, or gas trap correctly.
 - Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, main menu, ESC pause menu, diagnostics, and a persistent settings screen for audio, reduced motion, and window mode.
 - First-run onboarding with a visible help button and a four-bottle starter tray containing water, copper sulfate, sodium hydroxide, and hydrochloric acid.
+- Reviewed real-scale glassware assets: a 0.18 m Erlenmeyer reaction flask and 0.15 m test tubes, baked to lightweight native Unity meshes with simple physics colliders and recorded third-party provenance.
 - Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
 - JSON build, validation, and smoke-test reports under `BuildReports/`.
 
@@ -88,8 +89,10 @@ chemistryLAB/
 |-- Assets/
 |   |-- ChemistryLab/
 |   |   |-- Editor/
-|   |   |   `-- BuildPipeline/       Unity validation and Windows build entry points
-|   |   |-- Resources/               Runtime materials and chemistry JSON datasets
+|   |   |   |-- BuildPipeline/       Unity validation and Windows build entry points
+|   |   |   `-- *Model*.cs           Model audit and approved-prefab integration
+|   |   |-- ExternalAssets/          Reviewed native model assets and attribution
+|   |   |-- Resources/               Runtime materials, model prefabs, and chemistry JSON
 |   |   |-- Runtime/
 |   |   |   |-- Audio/               Procedural audio system and signal validation
 |   |   |   |-- Bootstrap/           Composition root and procedural 3D lab construction
@@ -104,6 +107,7 @@ chemistryLAB/
 |-- BuildReports/                    Committed structured JSON reports
 |-- Builds/                          Local portable releases, ignored by git
 |-- Packages/                        Unity package manifest and lock file
+|-- SourceAssets/                    Archived licensed third-party source files
 |-- ProjectSettings/                 Unity project settings
 |-- NativeChemistryLab/              Historical standalone snapshot
 `-- README.md
@@ -134,6 +138,7 @@ The runtime uses regular Unity `MonoBehaviour` components at the scene edge, whi
 - `DynamicReactionEngine` models species, reaction families, activity series, and bounded stoichiometry balancing. It consumes compound-matrix results instead of maintaining a second formula/solubility truth source.
 - `LabSafetySystem` converts hazardous reaction outcomes into player consequences: health loss, credit loss, incident history, and emergency evacuation.
 - `DesktopLabHud` renders the in-game information layer and owns the main, pause, and settings menu states. Settings can return to the menu that opened them; audio and reduced-motion preferences persist through `PlayerPrefs`.
+- `ModelAssetAudit` measures imported geometry, scale, materials, embedded scene objects, and collider state, then writes a JSON report. `ApprovedModelIntegration` normalizes reviewed native meshes, assigns the lightweight glass material, adds simple colliders, and regenerates runtime prefabs before a scene or Windows build is created.
 
 A more visual explanation of OOP, data structures, algorithms, and runtime flow is available at:
 
@@ -144,6 +149,9 @@ model requirements, scale rules, collider rules, and the "no reaction in hand"
 gameplay contract, is documented in
 [`docs/gameplay/lab-scene-production-plan.md`](docs/gameplay/lab-scene-production-plan.md)
 and [`docs/gameplay/lab-model-requirements.json`](docs/gameplay/lab-model-requirements.json).
+The latest downloaded-model review and selection record are
+[`docs/gameplay/model-asset-review-2026-07-30.md`](docs/gameplay/model-asset-review-2026-07-30.md)
+and [`docs/gameplay/model-asset-selection.json`](docs/gameplay/model-asset-selection.json).
 
 ## Controls
 

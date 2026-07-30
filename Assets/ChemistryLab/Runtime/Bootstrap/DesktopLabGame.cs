@@ -14,6 +14,8 @@ namespace ChemistryLab.Desktop
         private const int PreferredWindowWidth = 1600;
         private const int PreferredWindowHeight = 900;
         private const float VesselOperationReachMeters = 3.35f;
+        private const string ErlenmeyerModelResource = "Models/Glassware/ErlenmeyerFlask";
+        private const string TestTubeModelResource = "Models/Glassware/TestTube";
 
         private readonly Dictionary<LabStation, List<VesselAddition>> vesselAdditions =
             new Dictionary<LabStation, List<VesselAddition>>();
@@ -982,9 +984,9 @@ namespace ChemistryLab.Desktop
                 }
             }
 
-            BuildTestTubeRack(bench, new Vector3(-1.55f, 1.28f, 0.2f));
+            BuildTestTubeRack(bench, new Vector3(-1.55f, 1.145f, 0.2f));
             BuildHotplate(bench, new Vector3(1.45f, 1.23f, 0.18f));
-            BuildVessel(bench, LabStation.Workbench, new Vector3(0f, 1.26f, 0f));
+            BuildVessel(bench, LabStation.Workbench, new Vector3(0f, 1.145f, 0f));
             BuildStarterChemicalTray(bench);
         }
 
@@ -1090,7 +1092,7 @@ namespace ChemistryLab.Desktop
                 frame,
                 true);
 
-            BuildVessel(hood, LabStation.FumeHood, new Vector3(0f, 1.28f, -4.62f));
+            BuildVessel(hood, LabStation.FumeHood, new Vector3(0f, 1.13f, -4.62f));
             CreateWorldLabel(
                 "FUME HOOD · KHÍ / HƠI",
                 hood,
@@ -1490,27 +1492,62 @@ namespace ChemistryLab.Desktop
         {
             var rack = new GameObject("Test Tube Rack").transform;
             rack.SetParent(parent, false);
-            rack.position = position;
+            rack.localPosition = position;
             var frame = GetMaterial("Graphite", LabTheme.Graphite, 0.36f, 0.42f);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Rack Base",
                 rack,
                 Vector3.zero,
-                new Vector3(1.4f, 0.08f, 0.42f),
+                new Vector3(0.55f, 0.025f, 0.16f),
                 frame,
                 false);
+            CreatePrimitive(
+                PrimitiveType.Cube,
+                "Rack Upper Rail",
+                rack,
+                new Vector3(0f, 0.112f, 0f),
+                new Vector3(0.55f, 0.025f, 0.14f),
+                frame,
+                false);
+            foreach (var x in new[] { -0.26f, 0.26f })
+            {
+                CreatePrimitive(
+                    PrimitiveType.Cube,
+                    "Rack Support",
+                    rack,
+                    new Vector3(x, 0.06f, 0f),
+                    new Vector3(0.025f, 0.12f, 0.16f),
+                    frame,
+                    false);
+            }
+
             for (var index = 0; index < 4; index++)
             {
-                var x = -0.48f + index * 0.32f;
-                CreatePrimitive(
-                    PrimitiveType.Cylinder,
-                    "Tube " + index,
+                var x = -0.18f + index * 0.12f;
+                var tube = InstantiateApprovedModel(
+                    TestTubeModelResource,
+                    "Test Tube " + index,
                     rack,
-                    new Vector3(x, 0.32f, 0f),
-                    new Vector3(0.08f, 0.34f, 0.08f),
-                    GetMaterial("BottleGlass", LabTheme.WithAlpha(LabTheme.Glass, 0.3f), 0f, 0.9f, true),
-                    false);
+                    new Vector3(x, 0.014f, 0f),
+                    Quaternion.identity,
+                    Vector3.one);
+                if (tube == null)
+                {
+                    CreatePrimitive(
+                        PrimitiveType.Cylinder,
+                        "Test Tube Fallback " + index,
+                        rack,
+                        new Vector3(x, 0.089f, 0f),
+                        new Vector3(0.012f, 0.075f, 0.012f),
+                        GetMaterial(
+                            "BottleGlass",
+                            LabTheme.WithAlpha(LabTheme.Glass, 0.3f),
+                            0f,
+                            0.9f,
+                            true),
+                        false);
+                }
             }
         }
 
@@ -1518,24 +1555,24 @@ namespace ChemistryLab.Desktop
         {
             var plate = new GameObject("Hotplate").transform;
             plate.SetParent(parent, false);
-            plate.position = position;
+            plate.localPosition = position;
             var collider = plate.gameObject.AddComponent<BoxCollider>();
-            collider.size = new Vector3(1.1f, .36f, .82f);
-            collider.center = new Vector3(0f, .08f, 0f);
+            collider.size = new Vector3(0.5f, 0.14f, 0.38f);
+            collider.center = new Vector3(0f, 0.04f, 0f);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Hotplate Body",
                 plate,
                 Vector3.zero,
-                new Vector3(1.1f, 0.18f, 0.82f),
+                new Vector3(0.5f, 0.12f, 0.38f),
                 GetMaterial("Graphite", LabTheme.Graphite, 0.36f, 0.42f),
                 false);
             CreatePrimitive(
                 PrimitiveType.Cylinder,
                 "Hotplate Surface",
                 plate,
-                new Vector3(0f, 0.12f, 0f),
-                new Vector3(0.36f, 0.025f, 0.36f),
+                new Vector3(0f, 0.075f, 0f),
+                new Vector3(0.15f, 0.012f, 0.15f),
                 GetMaterial("SteelDark", LabTheme.SteelDark, 0.84f, 0.62f),
                 false);
             var interactable = plate.gameObject.AddComponent<ThermalControlInteractable>();
@@ -1549,31 +1586,47 @@ namespace ChemistryLab.Desktop
             vessel.transform.SetParent(parent, false);
             vessel.transform.position = worldPosition;
             var collider = vessel.AddComponent<BoxCollider>();
-            collider.size = new Vector3(0.95f, 1.2f, 0.95f);
-            collider.center = new Vector3(0f, 0.35f, 0f);
+            collider.size = new Vector3(0.42f, 0.46f, 0.42f);
+            collider.center = new Vector3(0f, 0.19f, 0f);
 
-            CreatePrimitive(
-                PrimitiveType.Cylinder,
-                "Beaker Glass",
+            var glass = InstantiateApprovedModel(
+                ErlenmeyerModelResource,
+                "Erlenmeyer Reaction Flask",
                 vessel.transform,
-                new Vector3(0f, 0.34f, 0f),
-                new Vector3(0.48f, 0.48f, 0.48f),
-                GetMaterial("BeakerGlass", LabTheme.WithAlpha(LabTheme.Glass, 0.26f), 0f, 0.92f, true),
-                false);
+                new Vector3(0f, 0.012f, 0f),
+                Quaternion.identity,
+                Vector3.one);
+            if (glass == null)
+            {
+                CreatePrimitive(
+                    PrimitiveType.Cylinder,
+                    "Reaction Flask Fallback",
+                    vessel.transform,
+                    new Vector3(0f, 0.092f, 0f),
+                    new Vector3(0.075f, 0.08f, 0.075f),
+                    GetMaterial(
+                        "BeakerGlass",
+                        LabTheme.WithAlpha(LabTheme.Glass, 0.26f),
+                        0f,
+                        0.92f,
+                        true),
+                    false);
+            }
+
             var liquid = CreatePrimitive(
                 PrimitiveType.Cylinder,
                 "Vessel Contents",
                 vessel.transform,
-                new Vector3(0f, 0.18f, 0f),
-                new Vector3(0.39f, 0.19f, 0.39f),
+                new Vector3(0f, 0.052f, 0f),
+                new Vector3(0.052f, 0.028f, 0.052f),
                 GetMaterial("EmptyLiquid", LabTheme.WithAlpha(LabTheme.Glass, 0.16f), 0f, 0.74f, true),
                 false);
             var highlight = CreatePrimitive(
                 PrimitiveType.Cylinder,
                 "Vessel Focus",
                 vessel.transform,
-                new Vector3(0f, -0.02f, 0f),
-                new Vector3(0.58f, 0.01f, 0.58f),
+                new Vector3(0f, 0.002f, 0f),
+                new Vector3(0.17f, 0.005f, 0.17f),
                 GetMaterial("Focus", LabTheme.Focus, 0f, 0.66f),
                 false);
             var particles = CreateReactionParticles(vessel.transform);
@@ -1594,7 +1647,7 @@ namespace ChemistryLab.Desktop
         {
             var particleObject = new GameObject("Reaction Particles");
             particleObject.transform.SetParent(parent, false);
-            particleObject.transform.localPosition = new Vector3(0f, 0.3f, 0f);
+            particleObject.transform.localPosition = new Vector3(0f, 0.145f, 0f);
             var particles = particleObject.AddComponent<ParticleSystem>();
             particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
@@ -1603,7 +1656,7 @@ namespace ChemistryLab.Desktop
             main.duration = 2.4f;
             main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.8f);
             main.startSpeed = new ParticleSystem.MinMaxCurve(0.12f, 0.42f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.035f, 0.09f);
+            main.startSize = new ParticleSystem.MinMaxCurve(0.012f, 0.032f);
             main.maxParticles = 80;
             main.simulationSpace = ParticleSystemSimulationSpace.Local;
 
@@ -2034,6 +2087,28 @@ namespace ChemistryLab.Desktop
                 }
             }
 
+            return instance;
+        }
+
+        private static GameObject InstantiateApprovedModel(
+            string resourcePath,
+            string name,
+            Transform parent,
+            Vector3 localPosition,
+            Quaternion localRotation,
+            Vector3 localScale)
+        {
+            var template = Resources.Load<GameObject>(resourcePath);
+            if (template == null)
+            {
+                return null;
+            }
+
+            var instance = Instantiate(template, parent, false);
+            instance.name = name;
+            instance.transform.localPosition = localPosition;
+            instance.transform.localRotation = localRotation;
+            instance.transform.localScale = localScale;
             return instance;
         }
 

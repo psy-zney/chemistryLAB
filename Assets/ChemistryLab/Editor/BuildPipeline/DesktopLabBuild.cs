@@ -29,6 +29,7 @@ namespace ChemistryLab.Desktop.Editor
         private static void CreateSceneAssets()
         {
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "ChemistryLab", "Scenes"));
+            ApprovedModelIntegration.Integrate();
             EnsureRuntimeMaterial();
 
             var scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
