@@ -22,7 +22,7 @@
       "referenceCategory": "hazmat suit",
       "dimensionsMetres": [1.2, 2.2, 0.38],
       "collider": "single cabinet box",
-      "interaction": "decorative safety context",
+      "interaction": "RespiratorStationInteractable: aim and press E to buy, wear, or remove",
       "placement": "safety station"
     },
     {
@@ -37,8 +37,8 @@
       "id": "original-gas-wash-train",
       "referenceCategory": "laboratory gas apparatus",
       "dimensionsMetres": [0.92, 0.6, 0.28],
-      "collider": "none",
-      "interaction": "visual gas-isolation context",
+      "collider": "single root box",
+      "interaction": "GasTrapInteractable: aim and press E to connect or disconnect",
       "placement": "fume hood"
     }
   ],
@@ -52,6 +52,8 @@
   },
   "runtimeAssertions": {
     "expectedOriginalReferenceProps": 4,
+    "expectedPhysicalSafetyStations": 2,
+    "physicalSafetyInteractionRequired": true,
     "reactionInHandAllowed": false,
     "remoteVesselOperationAllowed": false
   }
