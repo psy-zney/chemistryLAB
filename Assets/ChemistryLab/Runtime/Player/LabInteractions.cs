@@ -59,18 +59,39 @@ namespace ChemistryLab.Desktop
         {
             get
             {
-                if (Game == null || Game.SelectedChemical == null)
+                if (Game == null)
                 {
-                    if (Game != null && Game.CanCollectProduct(Station))
+                    return "E · Kiểm tra bình phản ứng";
+                }
+
+                if (Game.SelectedChemical != null)
+                {
+                    if (Game.HasStagedSample(Station))
+                    {
+                        return "Q · Cất mẫu đang cầm trước khi nạp "
+                            + Game.GetStagedSampleLabel(Station);
+                    }
+
+                    return "Cần đặt " + Game.SelectedChemical.Formula
+                        + " xuống khay trước khi nạp bình";
+                }
+
+                if (Game.HasStagedSample(Station))
+                {
+                    return "E · Nạp " + Game.GetStagedSampleLabel(Station) + " từ khay đặt mẫu";
+                }
+
+                if (Game.SelectedChemical == null)
+                {
+                    if (Game.CanCollectProduct(Station))
                     {
                         return "E · Thu và lưu sản phẩm vào kho";
                     }
 
-                    return "E · Cốc phản ứng — cần chọn hóa chất";
+                    return "E · Bình phản ứng — cần mẫu trên khay";
                 }
 
-                return "E · Nạp " + Game.SelectedAmountGrams.ToString("0.#")
-                    + " g " + Game.SelectedChemical.Formula;
+                return "E · Kiểm tra bình phản ứng";
             }
         }
 
@@ -78,7 +99,9 @@ namespace ChemistryLab.Desktop
         {
             if (Game != null)
             {
-                if (Game.SelectedChemical == null && Game.CanCollectProduct(Station))
+                if (!Game.HasStagedSample(Station)
+                    && Game.SelectedChemical == null
+                    && Game.CanCollectProduct(Station))
                 {
                     Game.CollectProduct(Station);
                 }
@@ -86,6 +109,46 @@ namespace ChemistryLab.Desktop
                 {
                     Game.AddSelectedToVessel(Station);
                 }
+            }
+        }
+    }
+
+    public sealed class SamplePreparationInteractable : LabInteractable
+    {
+        public LabStation Station { get; set; }
+
+        public override string Prompt
+        {
+            get
+            {
+                if (Game == null)
+                {
+                    return "E · Kiểm tra khay đặt mẫu";
+                }
+
+                if (Game.SelectedChemical != null)
+                {
+                    if (Game.HasStagedSample(Station))
+                    {
+                        return "Khay đã có " + Game.GetStagedSampleLabel(Station)
+                            + " · Q để cất mẫu đang cầm";
+                    }
+
+                    return "E · Đặt " + Game.SelectedChemical.Formula
+                        + " xuống khay · " + Game.SelectedAmountGrams.ToString("0.#") + " g";
+                }
+
+                return Game.HasStagedSample(Station)
+                    ? "E · Cầm lại " + Game.GetStagedSampleLabel(Station) + " từ khay"
+                    : "Khay đặt mẫu đang trống";
+            }
+        }
+
+        public override void Interact()
+        {
+            if (Game != null)
+            {
+                Game.ToggleSampleOnPreparationSurface(Station);
             }
         }
     }
@@ -241,6 +304,7 @@ namespace ChemistryLab.Desktop
         private float bobPhase;
         private float stepTimer;
         private bool paused;
+        private bool cinematic;
         private bool moving;
         private bool running;
 
@@ -269,6 +333,31 @@ namespace ChemistryLab.Desktop
             get { return running; }
         }
 
+        public void SetCinematicMode(bool value)
+        {
+            cinematic = value;
+            moving = false;
+            running = false;
+            if (handsRoot != null)
+            {
+                handsRoot.gameObject.SetActive(!value);
+            }
+
+            if (value)
+            {
+                if (focusedInteractable != null)
+                {
+                    focusedInteractable.SetFocused(false);
+                    focusedInteractable = null;
+                }
+
+                if (game != null && game.Hud != null)
+                {
+                    game.Hud.SetInteractionPrompt(string.Empty);
+                }
+            }
+        }
+
         public void Initialise(DesktopLabGame owner, Camera camera, Transform handRig)
         {
             game = owner;
@@ -284,6 +373,19 @@ namespace ChemistryLab.Desktop
         {
             if (game == null || viewCamera == null)
             {
+                return;
+            }
+
+            if (cinematic || game.ReactionCameraActive)
+            {
+                if (Input.GetKeyDown(KeyCode.Space)
+                    || Input.GetKeyDown(KeyCode.E)
+                    || Input.GetKeyDown(KeyCode.Escape))
+                {
+                    game.SkipReactionCamera();
+                }
+
+                AnimateHands(0f, 0f);
                 return;
             }
 
@@ -489,6 +591,11 @@ namespace ChemistryLab.Desktop
         private void UpdateCameraMotion()
         {
             if (viewCamera == null)
+            {
+                return;
+            }
+
+            if (cinematic)
             {
                 return;
             }

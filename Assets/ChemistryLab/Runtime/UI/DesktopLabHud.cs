@@ -35,12 +35,16 @@ namespace ChemistryLab.Desktop
         private Text playerSafetyText;
         private Text respiratorButtonText;
         private Text gasTrapButtonText;
+        private Text reactionTitleText;
+        private Text reactionEquationText;
+        private Text reactionDetailsText;
         private GameObject inspectorPanel;
         private CanvasGroup inspectorGroup;
         private RectTransform inspectorRect;
         private GameObject pauseOverlay;
         private GameObject mainMenuOverlay;
         private GameObject settingsOverlay;
+        private GameObject reactionOverlay;
         private GameObject debugPanel;
         private Button resumeButton;
         private Button mainMenuStartButton;
@@ -131,6 +135,7 @@ namespace ChemistryLab.Desktop
                     && mainMenuStartButton != null
                     && settingsBackButton != null
                     && playerSafetyText != null
+                    && reactionOverlay != null
                     && PauseButtonCount == 3
                     && MenuButtonCount == 10
                     && PointerInputReady;
@@ -315,6 +320,38 @@ namespace ChemistryLab.Desktop
             promptText.transform.parent.gameObject.SetActive(!string.IsNullOrWhiteSpace(prompt));
         }
 
+        public bool ReactionPresentationVisible
+        {
+            get { return reactionOverlay != null && reactionOverlay.activeSelf; }
+        }
+
+        public void ShowReactionPresentation(ReactionOutcome outcome, LabStation station)
+        {
+            if (reactionOverlay == null || outcome == null)
+            {
+                return;
+            }
+
+            reactionTitleText.text = outcome.Title + " · " + DesktopLabGame.ZoneLabel(station);
+            reactionEquationText.text = string.IsNullOrWhiteSpace(outcome.Equation)
+                ? "Chưa xác định phương trình"
+                : outcome.Equation;
+            reactionDetailsText.text =
+                "ĐIỀU KIỆN  " + outcome.ConditionSummary + "\n"
+                + "XÚC TÁC  " + outcome.CatalystSummary + "\n"
+                + "HIỆN TƯỢNG  " + outcome.Message + "\n"
+                + "SPACE / E · BỎ QUA GÓC CẬN";
+            reactionOverlay.SetActive(true);
+        }
+
+        public void HideReactionPresentation()
+        {
+            if (reactionOverlay != null)
+            {
+                reactionOverlay.SetActive(false);
+            }
+        }
+
         public void SetSelectedChemical(
             ChemicalDefinition chemical,
             float amountGrams,
@@ -483,7 +520,7 @@ namespace ChemistryLab.Desktop
                 builder.Append("%\n\nTHU SẢN PHẨM\n");
                 builder.Append(outcome.Effect == ReactionEffect.Gas
                     ? "C · cần tủ hút + hệ rửa khí đã nối"
-                    : "C hoặc bỏ mẫu đang cầm rồi nhấn E tại cốc");
+                    : "C hoặc nhấn E tại bình khi tay trống");
                 builder.Append("\n\nQUAN SÁT\n");
                 builder.Append(outcome.Message);
                 if (outcome.Hazard != null)
@@ -877,9 +914,69 @@ namespace ChemistryLab.Desktop
             CreateCrosshair(canvasObject.transform);
             CreateFooter(canvasObject.transform);
             CreateInspector(canvasObject.transform);
+            CreateReactionPresentation(canvasObject.transform);
             CreateMainMenuOverlay(canvasObject.transform);
             CreatePauseOverlay(canvasObject.transform);
             CreateSettingsOverlay(canvasObject.transform);
+        }
+
+        private void CreateReactionPresentation(Transform parent)
+        {
+            reactionOverlay = CreatePanel(
+                "Reaction Presentation",
+                parent,
+                new Vector2(0.25f, 0.66f),
+                new Vector2(0.78f, 0.93f),
+                new Vector2(0.5f, 0.5f),
+                Vector2.zero,
+                Vector2.zero,
+                LabTheme.WithAlpha(LabTheme.Graphite, 0.92f));
+            reactionOverlay.GetComponent<Image>().raycastTarget = false;
+
+            reactionTitleText = CreateText(
+                "Reaction Presentation Title",
+                reactionOverlay.transform,
+                "PHẢN ỨNG",
+                displayFont,
+                20,
+                FontStyle.Bold,
+                LabTheme.GraphiteInk,
+                TextAnchor.UpperLeft,
+                new Vector2(0f, 1f),
+                Vector2.one,
+                new Vector2(26f, -48f),
+                new Vector2(-26f, -14f));
+            reactionEquationText = CreateText(
+                "Reaction Presentation Equation",
+                reactionOverlay.transform,
+                "—",
+                monoFont,
+                27,
+                FontStyle.Bold,
+                LabTheme.Focus,
+                TextAnchor.MiddleCenter,
+                new Vector2(0f, 0.38f),
+                new Vector2(1f, 0.78f),
+                new Vector2(24f, 0f),
+                new Vector2(-24f, 0f));
+            reactionDetailsText = CreateText(
+                "Reaction Presentation Details",
+                reactionOverlay.transform,
+                string.Empty,
+                bodyFont,
+                15,
+                FontStyle.Normal,
+                LabTheme.GraphiteInk,
+                TextAnchor.UpperLeft,
+                Vector2.zero,
+                new Vector2(1f, 0.38f),
+                new Vector2(26f, 10f),
+                new Vector2(-26f, -8f));
+
+            reactionTitleText.raycastTarget = false;
+            reactionEquationText.raycastTarget = false;
+            reactionDetailsText.raycastTarget = false;
+            reactionOverlay.SetActive(false);
         }
 
         private void CreateFooter(Transform parent)
@@ -897,7 +994,7 @@ namespace ChemistryLab.Desktop
             CreateText(
                 "Movement Controls",
                 footer.transform,
-                "WASD  DI CHUYỂN   E  TƯƠNG TÁC   PG↑/↓  NHIỆT   F8  PHA LOÃNG   C  THU   I  KHO   ESC  DỪNG",
+                "WASD  DI CHUYỂN   E  LẤY / ĐẶT / NẠP   PG↑/↓  NHIỆT   C  THU   I  KHO   ESC  DỪNG",
                 bodyFont,
                 13,
                 FontStyle.Bold,
@@ -1213,10 +1310,13 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "MỤC TIÊU HIỆN TẠI\n"
                 + "Tạo kết tủa xanh Cu(OH)₂ từ CuSO₄·5H₂O và NaOH trên bàn giữa.\n\n"
+                + "QUY TRÌNH VẬT LÝ\n"
+                + "Lấy chai → đặt xuống khay cạnh bình → nhấn E tại bình để nạp.\n"
+                + "Phản ứng không xảy ra khi hóa chất còn trên tay.\n\n"
                 + "ĐIỀU KHIỂN\n"
                 + "Chuột — nhìn    WASD — đi    Shift — chạy    E — tương tác\n"
                 + "[ / ] — định lượng    F — dữ liệu    C — thu sản phẩm\n"
-                + "Page Up / Down — nhiệt độ    F8 — pha loãng    ESC — tiếp tục",
+                + "Page Up / Down — nhiệt độ    F8 — pha loãng    SPACE — bỏ qua góc cận",
                 bodyFont,
                 16,
                 FontStyle.Normal,
@@ -1308,7 +1408,7 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "Tự do khám phá hóa chất, điều kiện phản ứng và an toàn phòng thí nghiệm.\n\n"
                 + "NHIỆM VỤ KHỞI ĐẦU\n"
-                + "Lấy CuSO₄·5H₂O và NaOH trên bàn giữa để tạo Cu(OH)₂ màu xanh.",
+                + "Lấy CuSO₄·5H₂O và NaOH, đặt từng mẫu lên khay cạnh bình rồi nạp để tạo Cu(OH)₂ màu xanh.",
                 bodyFont,
                 16,
                 FontStyle.Normal,

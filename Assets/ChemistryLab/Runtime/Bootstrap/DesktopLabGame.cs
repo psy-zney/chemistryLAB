@@ -23,6 +23,10 @@ namespace ChemistryLab.Desktop
             new Dictionary<LabStation, ReactionEnvironment>();
         private readonly Dictionary<LabStation, VesselVisual> vesselVisuals =
             new Dictionary<LabStation, VesselVisual>();
+        private readonly Dictionary<LabStation, StagedSample> stagedSamples =
+            new Dictionary<LabStation, StagedSample>();
+        private readonly Dictionary<LabStation, Transform> stagedSampleVisualRoots =
+            new Dictionary<LabStation, Transform>();
 
         private readonly Dictionary<string, Material> materials =
             new Dictionary<string, Material>(StringComparer.Ordinal);
@@ -45,6 +49,9 @@ namespace ChemistryLab.Desktop
         private int proceduralReferencePropCount;
         private RespiratorStationInteractable respiratorStation;
         private GasTrapInteractable gasTrapStation;
+        private Coroutine reactionPresentation;
+        private bool reactionCameraActive;
+        private bool skipReactionCamera;
         private bool missionComplete;
         private bool inspectorOpen;
 
@@ -106,6 +113,29 @@ namespace ChemistryLab.Desktop
         public int StarterChemicalCount
         {
             get { return starterChemicalCount; }
+        }
+
+        public bool ReactionCameraActive
+        {
+            get { return reactionCameraActive; }
+        }
+
+        public bool HasStagedSample(LabStation station)
+        {
+            return stagedSamples.ContainsKey(station);
+        }
+
+        public string GetStagedSampleLabel(LabStation station)
+        {
+            StagedSample staged;
+            if (!stagedSamples.TryGetValue(station, out staged))
+            {
+                return "mẫu";
+            }
+
+            var chemical = RuntimeChemicalRegistry.GetChemical(staged.ChemicalId);
+            return staged.Grams.ToString("0.#") + " g "
+                + (chemical == null ? staged.ChemicalId : chemical.Formula);
         }
 
         public ReactionEnvironment CurrentEnvironment
@@ -184,7 +214,8 @@ namespace ChemistryLab.Desktop
             hud.SetAudioState(audioSystem != null && !audioSystem.IsMuted);
             hud.SetFullscreenState(Screen.fullScreenMode != FullScreenMode.Windowed);
             hud.SetSafetySystem(labSafety);
-            hud.ShowTransient("Bắt đầu tại khay hóa chất trên bàn giữa: lấy CuSO₄·5H₂O và NaOH bằng phím E.");
+            hud.ShowTransient(
+                "Quy trình: lấy hóa chất → đặt xuống khay cạnh bình bằng E → nhấn E tại bình để nạp.");
 
             if (HasCommandLineFlag("-captureTest"))
             {
@@ -247,6 +278,64 @@ namespace ChemistryLab.Desktop
             audioSystem.PlayUiClick();
         }
 
+        public void ToggleSampleOnPreparationSurface(LabStation station)
+        {
+            if (selectedChemical != null)
+            {
+                if (stagedSamples.ContainsKey(station))
+                {
+                    hud.ShowTransient(
+                        "Khay đã có " + GetStagedSampleLabel(station)
+                        + ". Hãy cầm lại hoặc nạp mẫu đó trước.",
+                        true);
+                    audioSystem.PlayError();
+                    return;
+                }
+
+                stagedSamples[station] = new StagedSample
+                {
+                    ChemicalId = selectedChemical.Id,
+                    BatchId = selectedBatchId,
+                    Grams = selectedAmountGrams
+                };
+                var placedFormula = selectedChemical.Formula;
+                selectedChemical = null;
+                selectedBatchId = null;
+                UpdateHeldSample();
+                UpdateStagedSampleVisual(station);
+                hud.SetSelectedChemical(null, selectedAmountGrams, null, SynthesizedBatchCount);
+                hud.ShowTransient(
+                    "Đã đặt " + placedFormula + " xuống khay. Bây giờ hãy nhắm vào bình và nhấn E.");
+                audioSystem.PlayUiClick();
+                return;
+            }
+
+            StagedSample staged;
+            if (!stagedSamples.TryGetValue(station, out staged))
+            {
+                hud.ShowTransient("Khay đặt mẫu đang trống.", true);
+                audioSystem.PlayError();
+                return;
+            }
+
+            selectedChemical = RuntimeChemicalRegistry.GetChemical(staged.ChemicalId);
+            selectedBatchId = staged.BatchId;
+            selectedAmountGrams = staged.Grams;
+            stagedSamples.Remove(station);
+            UpdateStagedSampleVisual(station);
+            UpdateHeldSample();
+            hud.SetSelectedChemical(
+                selectedChemical,
+                selectedAmountGrams,
+                GetSelectedBatch(),
+                SynthesizedBatchCount);
+            hud.ShowChemicalSection();
+            hud.ShowTransient(
+                "Đã cầm lại " + (selectedChemical == null ? staged.ChemicalId : selectedChemical.Formula)
+                + " từ khay.");
+            audioSystem.PlaySamplePickup();
+        }
+
         public void AdjustSelectedAmount(float deltaGrams)
         {
             selectedAmountGrams = Mathf.Clamp(selectedAmountGrams + deltaGrams, 1f, 25f);
@@ -260,9 +349,29 @@ namespace ChemistryLab.Desktop
 
         public void AddSelectedToVessel(LabStation station)
         {
-            if (selectedChemical == null)
+            if (selectedChemical != null)
             {
-                hud.ShowTransient("Hãy lấy một chai hóa chất trước khi nạp cốc.", true);
+                hud.ShowTransient(
+                    "Không nạp trực tiếp từ tay. Hãy đặt "
+                    + selectedChemical.Formula
+                    + " xuống khay cạnh bình trước.",
+                    true);
+                audioSystem.PlayError();
+                return;
+            }
+
+            StagedSample staged;
+            if (!stagedSamples.TryGetValue(station, out staged))
+            {
+                hud.ShowTransient("Hãy đặt một mẫu xuống khay cạnh bình trước khi nạp.", true);
+                audioSystem.PlayError();
+                return;
+            }
+
+            var stagedChemical = RuntimeChemicalRegistry.GetChemical(staged.ChemicalId);
+            if (stagedChemical == null)
+            {
+                hud.ShowTransient("Dữ liệu mẫu trên khay không còn hợp lệ.", true);
                 audioSystem.PlayError();
                 return;
             }
@@ -280,8 +389,10 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
-            var additionGrams = selectedAmountGrams;
-            var sourceBatch = GetSelectedBatch();
+            var additionGrams = staged.Grams;
+            var sourceBatch = synthesizedInventory == null || string.IsNullOrWhiteSpace(staged.BatchId)
+                ? null
+                : synthesizedInventory.Find(staged.BatchId);
             if (sourceBatch != null)
             {
                 additionGrams = (float)Math.Min(additionGrams, sourceBatch.AvailableGrams);
@@ -302,7 +413,7 @@ namespace ChemistryLab.Desktop
 
             var candidate = new List<VesselAddition>(additions)
             {
-                new VesselAddition(selectedChemical.Id, additionGrams)
+                new VesselAddition(stagedChemical.Id, additionGrams)
             };
             var nextOutcome = ReactionSimulator.Evaluate(candidate, station, environment);
             currentVesselStation = station;
@@ -315,17 +426,11 @@ namespace ChemistryLab.Desktop
                 synthesizedInventory.TryConsume(sourceBatch.BatchId, additionGrams, out consumed);
                 if (synthesizedInventory.Find(sourceBatch.BatchId) == null)
                 {
-                    selectedBatchId = null;
-                    selectedChemical = null;
-                    UpdateHeldSample();
+                    staged.BatchId = null;
                 }
-
-                hud.SetSelectedChemical(
-                    selectedChemical,
-                    selectedAmountGrams,
-                    GetSelectedBatch(),
-                    SynthesizedBatchCount);
             }
+            stagedSamples.Remove(station);
+            UpdateStagedSampleVisual(station);
             UpdateVesselVisual(station, additions, nextOutcome);
             audioSystem.PlayPour(GetVesselPosition(station));
             hud.SetVessel(additions, nextOutcome, station);
@@ -339,6 +444,7 @@ namespace ChemistryLab.Desktop
                 var incident = labSafety.Apply(nextOutcome, station);
                 hud.SetSafetySystem(labSafety);
                 PlayReactionEffect(station, nextOutcome);
+                StartReactionPresentation(station, nextOutcome);
                 if (!incident.Controlled)
                 {
                     hud.ShowTransient(incident.Title + " · " + incident.Message, true);
@@ -362,7 +468,7 @@ namespace ChemistryLab.Desktop
             {
                 hud.ShowTransient(
                     "Đã nạp " + additionGrams.ToString("0.#")
-                    + " g " + (selectedChemical == null ? "sản phẩm từ kho" : selectedChemical.Formula) + ".",
+                    + " g " + stagedChemical.Formula + " từ khay.",
                     nextOutcome.Status == ReactionStatus.Blocked);
             }
         }
@@ -678,6 +784,11 @@ namespace ChemistryLab.Desktop
             hud.SetAccessibilityState(LabAccessibility.ReducedMotion);
         }
 
+        public void SkipReactionCamera()
+        {
+            skipReactionCamera = true;
+        }
+
         public void ToggleFullscreen()
         {
             var fullscreen = Screen.fullScreenMode == FullScreenMode.Windowed;
@@ -843,6 +954,8 @@ namespace ChemistryLab.Desktop
             worldRoot = new GameObject("Procedural Laboratory").transform;
             worldRoot.SetParent(transform, false);
             proceduralReferencePropCount = 0;
+            stagedSamples.Clear();
+            stagedSampleVisualRoots.Clear();
             respiratorStation = null;
             gasTrapStation = null;
 
@@ -1014,6 +1127,10 @@ namespace ChemistryLab.Desktop
             BuildTestTubeRack(bench, new Vector3(-1.55f, 1.02f, 0.2f));
             BuildHotplate(bench, new Vector3(1.45f, 1.02f, 0.18f));
             BuildVessel(bench, LabStation.Workbench, new Vector3(0f, 1.02f, 0f));
+            BuildSamplePreparationSurface(
+                bench,
+                LabStation.Workbench,
+                new Vector3(-0.82f, 1.025f, -0.72f));
             BuildStarterChemicalTray(bench);
         }
 
@@ -1054,12 +1171,12 @@ namespace ChemistryLab.Desktop
             }
 
             CreateWorldLabel(
-                "KHAY KHỞI ĐỘNG · ĐẶT TÂM NGẮM VÀ NHẤN E",
+                "KHAY HÓA CHẤT KHỞI ĐỘNG · E",
                 bench,
-                new Vector3(0f, 1.48f, 0.78f),
+                new Vector3(0f, 1.35f, 0.78f),
                 Quaternion.Euler(0f, 180f, 0f),
-                LabTheme.GraphiteInk,
-                0.014f);
+                LabTheme.Graphite,
+                0.006f);
         }
 
         private void BuildFumeHood()
@@ -1120,6 +1237,10 @@ namespace ChemistryLab.Desktop
                 true);
 
             BuildVessel(hood, LabStation.FumeHood, new Vector3(0f, 1.02f, -4.62f));
+            BuildSamplePreparationSurface(
+                hood,
+                LabStation.FumeHood,
+                new Vector3(-1.18f, 1.025f, -4.62f));
             var gasWashTrain = ProceduralLabPropFactory.CreateGasWashTrain(
                 hood,
                 new Vector3(1.25f, 1.02f, -4.62f),
@@ -1777,6 +1898,116 @@ namespace ChemistryLab.Desktop
             };
         }
 
+        private void BuildSamplePreparationSurface(
+            Transform parent,
+            LabStation station,
+            Vector3 worldPosition)
+        {
+            var root = new GameObject(
+                station == LabStation.FumeHood
+                    ? "Fume Hood Sample Preparation Tray"
+                    : "Workbench Sample Preparation Tray");
+            root.transform.SetParent(parent, false);
+            root.transform.position = worldPosition;
+
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, 0.06f, 0f);
+            collider.size = new Vector3(0.86f, 0.14f, 0.58f);
+            CreatePrimitive(
+                PrimitiveType.Cube,
+                "Preparation Mat",
+                root.transform,
+                new Vector3(0f, 0.015f, 0f),
+                new Vector3(0.78f, 0.03f, 0.5f),
+                GetMaterial("PreparationMat", new Color(0.14f, 0.20f, 0.22f), 0.18f, 0.36f),
+                false);
+            CreatePrimitive(
+                PrimitiveType.Cube,
+                "Preparation Mat Accent",
+                root.transform,
+                new Vector3(0f, 0.038f, 0.245f),
+                new Vector3(0.78f, 0.018f, 0.02f),
+                GetMaterial("Focus", LabTheme.Focus, 0f, 0.66f),
+                false);
+            var focus = CreatePrimitive(
+                PrimitiveType.Cube,
+                "Preparation Mat Focus",
+                root.transform,
+                new Vector3(0f, 0.034f, 0f),
+                new Vector3(0.84f, 0.012f, 0.56f),
+                GetMaterial("Focus", LabTheme.Focus, 0f, 0.66f),
+                false);
+
+            var visualRoot = new GameObject("Placed Sample Visual").transform;
+            visualRoot.SetParent(root.transform, false);
+            visualRoot.localPosition = new Vector3(0f, 0.045f, 0f);
+            visualRoot.gameObject.SetActive(false);
+            stagedSampleVisualRoots[station] = visualRoot;
+
+            var interactable = root.AddComponent<SamplePreparationInteractable>();
+            interactable.Station = station;
+            interactable.Initialise(this, focus);
+        }
+
+        private void UpdateStagedSampleVisual(LabStation station)
+        {
+            Transform visualRoot;
+            if (!stagedSampleVisualRoots.TryGetValue(station, out visualRoot) || visualRoot == null)
+            {
+                return;
+            }
+
+            for (var index = visualRoot.childCount - 1; index >= 0; index--)
+            {
+                Destroy(visualRoot.GetChild(index).gameObject);
+            }
+
+            StagedSample staged;
+            if (!stagedSamples.TryGetValue(station, out staged))
+            {
+                visualRoot.gameObject.SetActive(false);
+                return;
+            }
+
+            var chemical = RuntimeChemicalRegistry.GetChemical(staged.ChemicalId);
+            if (chemical == null)
+            {
+                visualRoot.gameObject.SetActive(false);
+                return;
+            }
+
+            visualRoot.gameObject.SetActive(true);
+            CreatePrimitive(
+                PrimitiveType.Cylinder,
+                "Placed Sample Bottle Base",
+                visualRoot,
+                new Vector3(0f, 0.012f, 0f),
+                new Vector3(0.085f, 0.012f, 0.085f),
+                GetMaterial("GraphiteRaised", LabTheme.GraphiteRaised, 0.48f, 0.44f),
+                false);
+            CreatePrimitive(
+                PrimitiveType.Cylinder,
+                "Placed Sample Bottle",
+                visualRoot,
+                new Vector3(0f, 0.13f, 0f),
+                new Vector3(0.075f, 0.13f, 0.075f),
+                GetMaterial("HeldGlass", LabTheme.WithAlpha(LabTheme.Glass, 0.28f), 0f, 0.92f, true),
+                false);
+            CreatePrimitive(
+                PrimitiveType.Cylinder,
+                "Placed Sample Cap",
+                visualRoot,
+                new Vector3(0f, 0.285f, 0f),
+                new Vector3(0.064f, 0.026f, 0.064f),
+                GetMaterial("BottleCap", LabTheme.Graphite, 0.12f, 0.34f),
+                false);
+            CreateChemicalContents(
+                visualRoot,
+                chemical,
+                new Vector3(0f, 0.095f, 0f),
+                0.26f);
+        }
+
         private ParticleSystem CreateReactionParticles(Transform parent)
         {
             var particleObject = new GameObject("Reaction Particles");
@@ -2132,6 +2363,146 @@ namespace ChemistryLab.Desktop
             particles.Play(true);
         }
 
+        private void StartReactionPresentation(LabStation station, ReactionOutcome outcome)
+        {
+            if (outcome == null || outcome.Status != ReactionStatus.Reaction)
+            {
+                return;
+            }
+
+            if (reactionPresentation != null)
+            {
+                StopCoroutine(reactionPresentation);
+            }
+
+            reactionPresentation = StartCoroutine(ShowReactionPresentation(station, outcome));
+        }
+
+        private IEnumerator ShowReactionPresentation(LabStation station, ReactionOutcome outcome)
+        {
+            reactionCameraActive = true;
+            skipReactionCamera = false;
+            hud.ShowReactionPresentation(outcome, station);
+
+            var camera = player == null ? null : player.ViewCamera;
+            VesselVisual visual;
+            if (camera == null || !vesselVisuals.TryGetValue(station, out visual) || visual.Root == null)
+            {
+                yield return WaitForReactionPresentation(2.8f);
+                FinishReactionPresentation();
+                yield break;
+            }
+
+            player.SetCinematicMode(true);
+            var startLocalPosition = camera.transform.localPosition;
+            var startLocalRotation = camera.transform.localRotation;
+            var startFov = camera.fieldOfView;
+
+            if (!LabAccessibility.ReducedMotion)
+            {
+                var vesselPosition = visual.Root.position + new Vector3(0f, 0.13f, 0f);
+                var targetPosition = vesselPosition + new Vector3(0.58f, 0.43f, 0.92f);
+                var targetRotation = Quaternion.LookRotation(
+                    vesselPosition - targetPosition,
+                    Vector3.up);
+                yield return MoveReactionCamera(
+                    camera,
+                    camera.transform.position,
+                    camera.transform.rotation,
+                    camera.fieldOfView,
+                    targetPosition,
+                    targetRotation,
+                    42f,
+                    0.58f);
+                yield return WaitForReactionPresentation(2.35f);
+                if (!skipReactionCamera)
+                {
+                    yield return RestoreReactionCamera(
+                        camera,
+                        startLocalPosition,
+                        startLocalRotation,
+                        startFov,
+                        0.46f);
+                }
+            }
+            else
+            {
+                yield return WaitForReactionPresentation(2.8f);
+            }
+
+            camera.transform.localPosition = startLocalPosition;
+            camera.transform.localRotation = startLocalRotation;
+            camera.fieldOfView = startFov;
+            FinishReactionPresentation();
+        }
+
+        private IEnumerator MoveReactionCamera(
+            Camera camera,
+            Vector3 startPosition,
+            Quaternion startRotation,
+            float startFov,
+            Vector3 targetPosition,
+            Quaternion targetRotation,
+            float targetFov,
+            float duration)
+        {
+            var elapsed = 0f;
+            while (elapsed < duration && !skipReactionCamera)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                var t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                camera.transform.position = Vector3.Lerp(startPosition, targetPosition, t);
+                camera.transform.rotation = Quaternion.Slerp(startRotation, targetRotation, t);
+                camera.fieldOfView = Mathf.Lerp(startFov, targetFov, t);
+                yield return null;
+            }
+        }
+
+        private IEnumerator RestoreReactionCamera(
+            Camera camera,
+            Vector3 targetLocalPosition,
+            Quaternion targetLocalRotation,
+            float targetFov,
+            float duration)
+        {
+            var startPosition = camera.transform.localPosition;
+            var startRotation = camera.transform.localRotation;
+            var startFov = camera.fieldOfView;
+            var elapsed = 0f;
+            while (elapsed < duration && !skipReactionCamera)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                var t = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(elapsed / duration));
+                camera.transform.localPosition = Vector3.Lerp(startPosition, targetLocalPosition, t);
+                camera.transform.localRotation = Quaternion.Slerp(startRotation, targetLocalRotation, t);
+                camera.fieldOfView = Mathf.Lerp(startFov, targetFov, t);
+                yield return null;
+            }
+        }
+
+        private IEnumerator WaitForReactionPresentation(float duration)
+        {
+            var elapsed = 0f;
+            while (elapsed < duration && !skipReactionCamera)
+            {
+                elapsed += Time.unscaledDeltaTime;
+                yield return null;
+            }
+        }
+
+        private void FinishReactionPresentation()
+        {
+            hud.HideReactionPresentation();
+            if (player != null)
+            {
+                player.SetCinematicMode(false);
+            }
+
+            reactionCameraActive = false;
+            skipReactionCamera = false;
+            reactionPresentation = null;
+        }
+
         private Vector3 GetVesselPosition(LabStation station)
         {
             VesselVisual visual;
@@ -2402,6 +2773,7 @@ namespace ChemistryLab.Desktop
         private IEnumerator RunCaptureTest()
         {
             var captureView = GetCommandLineValue("-captureView");
+            var reactionCapture = false;
             if (string.Equals(captureView, "periodic", StringComparison.OrdinalIgnoreCase))
             {
                 player.SetPausedFromUi(false);
@@ -2419,6 +2791,28 @@ namespace ChemistryLab.Desktop
                 player.SetPausedFromUi(false);
                 player.transform.position = new Vector3(3.8f, 0.02f, -4.6f);
                 player.transform.rotation = Quaternion.Euler(0f, 43f, 0f);
+            }
+            else if (string.Equals(captureView, "reaction", StringComparison.OrdinalIgnoreCase))
+            {
+                reactionCapture = true;
+                player.SetPausedFromUi(false);
+                player.transform.position = new Vector3(0f, 0.02f, 2.1f);
+                player.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+                SelectChemical("copper-sulfate");
+                ToggleSampleOnPreparationSurface(LabStation.Workbench);
+                AddSelectedToVessel(LabStation.Workbench);
+                SelectChemical("sodium-hydroxide");
+                ToggleSampleOnPreparationSurface(LabStation.Workbench);
+                AddSelectedToVessel(LabStation.Workbench);
+            }
+            else if (string.Equals(captureView, "staged", StringComparison.OrdinalIgnoreCase))
+            {
+                player.SetPausedFromUi(false);
+                player.transform.position = new Vector3(0f, 0.02f, 2.1f);
+                player.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+                SelectChemical("copper-sulfate");
+                ToggleSampleOnPreparationSurface(LabStation.Workbench);
+                ToggleInspector(false);
             }
             else if (string.Equals(captureView, "pause", StringComparison.OrdinalIgnoreCase))
             {
@@ -2446,7 +2840,14 @@ namespace ChemistryLab.Desktop
                 player.SetPausedFromUi(false);
             }
 
-            yield return null;
+            if (reactionCapture)
+            {
+                yield return new WaitForSecondsRealtime(0.85f);
+            }
+            else
+            {
+                yield return null;
+            }
             yield return new WaitForEndOfFrame();
             var capturePath = GetCommandLineValue("-capturePath");
             if (string.IsNullOrWhiteSpace(capturePath))
@@ -2543,13 +2944,28 @@ namespace ChemistryLab.Desktop
 
             var workbenchAdditionsBeforeHandTest = GetVesselAdditionCount(LabStation.Workbench);
             SelectChemical("copper-sulfate");
+            AddSelectedToVessel(LabStation.Workbench);
             var handOnlyReactionBlocked = SelectedChemical != null
                 && GetVesselAdditionCount(LabStation.Workbench) == workbenchAdditionsBeforeHandTest
                 && !CanCollectProduct(LabStation.Workbench);
+
+            ToggleSampleOnPreparationSurface(LabStation.Workbench);
+            var samplePlacedOnTable = SelectedChemical == null
+                && HasStagedSample(LabStation.Workbench);
             AddSelectedToVessel(LabStation.Workbench);
             var remoteVesselOperationBlocked =
-                GetVesselAdditionCount(LabStation.Workbench) == workbenchAdditionsBeforeHandTest;
-            ClearSelectedChemical();
+                GetVesselAdditionCount(LabStation.Workbench) == workbenchAdditionsBeforeHandTest
+                && HasStagedSample(LabStation.Workbench);
+
+            var playerPositionBeforePlacementTest = player.transform.position;
+            player.transform.position = new Vector3(0f, 0.02f, 2.1f);
+            AddSelectedToVessel(LabStation.Workbench);
+            var samplePlacementFlowVerified = samplePlacedOnTable
+                && GetVesselAdditionCount(LabStation.Workbench) == workbenchAdditionsBeforeHandTest + 1
+                && !HasStagedSample(LabStation.Workbench);
+            vesselAdditions[LabStation.Workbench].Clear();
+            RefreshVesselVisual(LabStation.Workbench);
+            player.transform.position = playerPositionBeforePlacementTest;
 
             var additions = new List<VesselAddition>
             {
@@ -2557,6 +2973,26 @@ namespace ChemistryLab.Desktop
                 new VesselAddition("sodium-hydroxide", 10d)
             };
             var outcome = ReactionSimulator.Evaluate(additions, LabStation.Workbench, BaselineTemperatureC);
+            hud.ShowReactionPresentation(outcome, LabStation.Workbench);
+            var reactionEquationPresentationVerified = hud.ReactionPresentationVisible
+                && !string.IsNullOrWhiteSpace(outcome.Equation)
+                && outcome.Equation.IndexOf("→", StringComparison.Ordinal) >= 0
+                && !string.IsNullOrWhiteSpace(outcome.ConditionSummary);
+            hud.HideReactionPresentation();
+            StartReactionPresentation(LabStation.Workbench, outcome);
+            yield return null;
+            var reactionCameraStarted = ReactionCameraActive
+                && hud.ReactionPresentationVisible;
+            SkipReactionCamera();
+            for (var frame = 0; frame < 8 && ReactionCameraActive; frame++)
+            {
+                yield return null;
+            }
+            var reactionCameraVerified = reactionCameraStarted
+                && !ReactionCameraActive
+                && !hud.ReactionPresentationVisible
+                && Mathf.Abs(player.ViewCamera.fieldOfView - 66f) < .1f;
+
             if (outcome.Status != ReactionStatus.Reaction
                 || outcome.Reaction == null
                 || !string.Equals(outcome.Reaction.Id, MissionReactionId, StringComparison.Ordinal)
@@ -2580,6 +3016,9 @@ namespace ChemistryLab.Desktop
                 || !physicalGasTrapInteractionVerified
                 || !handOnlyReactionBlocked
                 || !remoteVesselOperationBlocked
+                || !samplePlacementFlowVerified
+                || !reactionEquationPresentationVerified
+                || !reactionCameraVerified
                 || diagnostics == null)
             {
                 WriteSmokeReport(
@@ -2591,7 +3030,10 @@ namespace ChemistryLab.Desktop
                     physicalPpeInteractionVerified,
                     physicalGasTrapInteractionVerified,
                     handOnlyReactionBlocked,
-                    remoteVesselOperationBlocked);
+                    remoteVesselOperationBlocked,
+                    samplePlacementFlowVerified,
+                    reactionEquationPresentationVerified,
+                    reactionCameraVerified);
                 Debug.LogError("DESKTOP_LAB_SMOKE_FAIL");
                 Application.Quit(2);
                 yield break;
@@ -2606,7 +3048,10 @@ namespace ChemistryLab.Desktop
                 physicalPpeInteractionVerified,
                 physicalGasTrapInteractionVerified,
                 handOnlyReactionBlocked,
-                remoteVesselOperationBlocked);
+                remoteVesselOperationBlocked,
+                samplePlacementFlowVerified,
+                reactionEquationPresentationVerified,
+                reactionCameraVerified);
             Debug.Log(
                 "DESKTOP_LAB_SMOKE_PASS chemicals="
                 + DesktopChemistryDatabase.AllChemicals.Count
@@ -2631,6 +3076,8 @@ namespace ChemistryLab.Desktop
                 + " originalReferenceProps="
                 + proceduralReferencePropCount
                 + " physicalSafetyStations=2"
+                + " stagedSampleFlow=true"
+                + " reactionCamera=true"
                 + " cameraFov="
                 + player.ViewCamera.fieldOfView.ToString("0.0"));
             yield return new WaitForSecondsRealtime(0.4f);
@@ -2646,7 +3093,10 @@ namespace ChemistryLab.Desktop
             bool physicalPpeInteractionVerified,
             bool physicalGasTrapInteractionVerified,
             bool handOnlyReactionBlocked,
-            bool remoteVesselOperationBlocked)
+            bool remoteVesselOperationBlocked,
+            bool samplePlacementFlowVerified,
+            bool reactionEquationPresentationVerified,
+            bool reactionCameraVerified)
         {
             var reportPath = GetCommandLineValue("-reportPath");
             if (string.IsNullOrWhiteSpace(reportPath))
@@ -2687,6 +3137,9 @@ namespace ChemistryLab.Desktop
                 physicalGasTrapInteractionVerified = physicalGasTrapInteractionVerified,
                 handOnlyReactionBlocked = handOnlyReactionBlocked,
                 remoteVesselOperationBlocked = remoteVesselOperationBlocked,
+                samplePlacementFlowVerified = samplePlacementFlowVerified,
+                reactionEquationPresentationVerified = reactionEquationPresentationVerified,
+                reactionCameraVerified = reactionCameraVerified,
                 starterChemicals = starterChemicalCount,
                 originalReferenceProps = proceduralReferencePropCount,
                 cameraFovDegrees = player == null || player.ViewCamera == null
@@ -2705,6 +3158,13 @@ namespace ChemistryLab.Desktop
             public Transform Root;
             public Renderer LiquidRenderer;
             public ParticleSystem Particles;
+        }
+
+        private sealed class StagedSample
+        {
+            public string ChemicalId;
+            public string BatchId;
+            public float Grams;
         }
 
         [Serializable]
@@ -2734,6 +3194,9 @@ namespace ChemistryLab.Desktop
             public bool physicalGasTrapInteractionVerified;
             public bool handOnlyReactionBlocked;
             public bool remoteVesselOperationBlocked;
+            public bool samplePlacementFlowVerified;
+            public bool reactionEquationPresentationVerified;
+            public bool reactionCameraVerified;
             public int starterChemicals;
             public int originalReferenceProps;
             public float cameraFovDegrees;
