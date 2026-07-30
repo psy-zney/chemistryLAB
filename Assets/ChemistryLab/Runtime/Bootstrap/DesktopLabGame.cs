@@ -42,6 +42,7 @@ namespace ChemistryLab.Desktop
         private ReactionOutcome currentOutcome;
         private LabSafetySystem labSafety;
         private int starterChemicalCount;
+        private int proceduralReferencePropCount;
         private bool missionComplete;
         private bool inspectorOpen;
 
@@ -839,6 +840,7 @@ namespace ChemistryLab.Desktop
         {
             worldRoot = new GameObject("Procedural Laboratory").transform;
             worldRoot.SetParent(transform, false);
+            proceduralReferencePropCount = 0;
 
             ConfigureEnvironment();
             BuildRoomShell();
@@ -881,34 +883,55 @@ namespace ChemistryLab.Desktop
                 PrimitiveType.Cube,
                 "Back Wall",
                 worldRoot,
-                new Vector3(0f, 3.2f, -6f),
-                new Vector3(14f, 6.4f, 0.24f),
+                new Vector3(0f, 1.8f, -6f),
+                new Vector3(14f, 3.6f, 0.24f),
                 GetMaterial("Wall", LabTheme.Wall, 0f, 0.18f),
                 true);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Left Wall",
                 worldRoot,
-                new Vector3(-7f, 3.2f, 0f),
-                new Vector3(0.24f, 6.4f, 12f),
+                new Vector3(-7f, 1.8f, 0f),
+                new Vector3(0.24f, 3.6f, 12f),
                 GetMaterial("WallSecondary", LabTheme.WallSecondary, 0f, 0.16f),
                 true);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Right Wall",
                 worldRoot,
-                new Vector3(7f, 3.2f, 0f),
-                new Vector3(0.24f, 6.4f, 12f),
+                new Vector3(7f, 1.8f, 0f),
+                new Vector3(0.24f, 3.6f, 12f),
                 GetMaterial("WallSecondary", LabTheme.WallSecondary, 0f, 0.16f),
                 true);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Front Collision",
                 worldRoot,
-                new Vector3(0f, 2f, 6f),
-                new Vector3(14f, 4f, 0.2f),
+                new Vector3(0f, 1.8f, 6f),
+                new Vector3(14f, 3.6f, 0.2f),
                 GetMaterial("InvisibleBarrier", LabTheme.WithAlpha(LabTheme.Wall, 0f), 0f, 0f, true),
                 true);
+            CreatePrimitive(
+                PrimitiveType.Cube,
+                "Ceiling",
+                worldRoot,
+                new Vector3(0f, 3.58f, 0f),
+                new Vector3(14f, 0.16f, 12f),
+                GetMaterial("Ceiling", LabTheme.PaperRaised, 0f, 0.24f),
+                true);
+
+            var trimMaterial = GetMaterial("ArchitecturalTrim", LabTheme.SteelDark, 0.36f, 0.34f);
+            foreach (var x in new[] { -6.84f, 6.84f })
+            {
+                CreatePrimitive(
+                    PrimitiveType.Cube,
+                    "Wall Base Trim",
+                    worldRoot,
+                    new Vector3(x, 0.12f, 0f),
+                    new Vector3(0.08f, 0.24f, 11.7f),
+                    trimMaterial,
+                    false);
+            }
 
             var ruleMaterial = GetMaterial("FloorRule", LabTheme.FloorRule, 0.1f, 0.35f);
             for (var x = -6; x <= 6; x++)
@@ -947,8 +970,8 @@ namespace ChemistryLab.Desktop
                     PrimitiveType.Cube,
                     "Back Window " + index,
                     worldRoot,
-                    new Vector3(index * 2.05f, 4.05f, -5.82f),
-                    new Vector3(1.8f, 1.55f, 0.08f),
+                    new Vector3(index * 2.05f, 2.48f, -5.82f),
+                    new Vector3(1.8f, 1.45f, 0.08f),
                     windowMaterial,
                     false);
             }
@@ -965,8 +988,8 @@ namespace ChemistryLab.Desktop
                 PrimitiveType.Cube,
                 "Bench Top",
                 bench,
-                new Vector3(0f, 1.02f, 0f),
-                new Vector3(5.4f, 0.22f, 2.2f),
+                new Vector3(0f, 0.92f, 0f),
+                new Vector3(5.4f, 0.18f, 2.2f),
                 topMaterial,
                 true);
             foreach (var x in new[] { -2.25f, 2.25f })
@@ -977,16 +1000,16 @@ namespace ChemistryLab.Desktop
                         PrimitiveType.Cube,
                         "Bench Leg",
                         bench,
-                        new Vector3(x, 0.47f, z),
-                        new Vector3(0.18f, 0.94f, 0.18f),
+                        new Vector3(x, 0.44f, z),
+                        new Vector3(0.18f, 0.88f, 0.18f),
                         frameMaterial,
                         true);
                 }
             }
 
-            BuildTestTubeRack(bench, new Vector3(-1.55f, 1.145f, 0.2f));
-            BuildHotplate(bench, new Vector3(1.45f, 1.23f, 0.18f));
-            BuildVessel(bench, LabStation.Workbench, new Vector3(0f, 1.145f, 0f));
+            BuildTestTubeRack(bench, new Vector3(-1.55f, 1.02f, 0.2f));
+            BuildHotplate(bench, new Vector3(1.45f, 1.02f, 0.18f));
+            BuildVessel(bench, LabStation.Workbench, new Vector3(0f, 1.02f, 0f));
             BuildStarterChemicalTray(bench);
         }
 
@@ -997,7 +1020,7 @@ namespace ChemistryLab.Desktop
                 PrimitiveType.Cube,
                 "Starter Chemical Tray",
                 bench,
-                new Vector3(0f, 1.16f, 0.78f),
+                new Vector3(0f, 1.035f, 0.78f),
                 new Vector3(4.1f, 0.08f, 0.55f),
                 GetMaterial("StarterTray", LabTheme.GraphiteRaised, 0.32f, 0.38f),
                 false);
@@ -1020,7 +1043,7 @@ namespace ChemistryLab.Desktop
                 BuildChemicalBottle(
                     bench,
                     chemical,
-                    new Vector3(-1.35f + index * 0.9f, 1.22f, 0.78f),
+                    new Vector3(-0.72f + index * 0.48f, 1.075f, 0.78f),
                     0,
                     true);
                 starterChemicalCount++;
@@ -1029,10 +1052,10 @@ namespace ChemistryLab.Desktop
             CreateWorldLabel(
                 "KHAY KHỞI ĐỘNG · ĐẶT TÂM NGẮM VÀ NHẤN E",
                 bench,
-                new Vector3(0f, 2.18f, 0.78f),
+                new Vector3(0f, 1.48f, 0.78f),
                 Quaternion.Euler(0f, 180f, 0f),
                 LabTheme.GraphiteInk,
-                0.022f);
+                0.014f);
         }
 
         private void BuildFumeHood()
@@ -1047,59 +1070,67 @@ namespace ChemistryLab.Desktop
                 PrimitiveType.Cube,
                 "Hood Back",
                 hood,
-                new Vector3(0f, 2.55f, -5.35f),
-                new Vector3(4.3f, 3.1f, 0.38f),
+                new Vector3(0f, 1.87f, -5.35f),
+                new Vector3(4.3f, 1.82f, 0.38f),
                 interior,
                 true);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Hood Header",
                 hood,
-                new Vector3(0f, 4.25f, -4.78f),
-                new Vector3(4.5f, 0.55f, 1.5f),
+                new Vector3(0f, 3.08f, -4.78f),
+                new Vector3(4.5f, 0.46f, 1.5f),
                 frame,
                 true);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Hood Base",
                 hood,
-                new Vector3(0f, 1.0f, -4.65f),
-                new Vector3(4.5f, 0.24f, 1.75f),
+                new Vector3(0f, 0.92f, -4.65f),
+                new Vector3(4.5f, 0.18f, 1.75f),
                 GetMaterial("Bench", LabTheme.Bench, 0.08f, 0.44f),
                 true);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Hood Sash",
                 hood,
-                new Vector3(0f, 2.72f, -4.15f),
-                new Vector3(3.95f, 1.45f, 0.06f),
+                new Vector3(0f, 2.08f, -4.15f),
+                new Vector3(3.95f, 1.12f, 0.06f),
                 glass,
                 false);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Hood Left",
                 hood,
-                new Vector3(-2.1f, 2.55f, -4.65f),
-                new Vector3(0.22f, 3.3f, 1.75f),
+                new Vector3(-2.1f, 1.98f, -4.65f),
+                new Vector3(0.22f, 2.16f, 1.75f),
                 frame,
                 true);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Hood Right",
                 hood,
-                new Vector3(2.1f, 2.55f, -4.65f),
-                new Vector3(0.22f, 3.3f, 1.75f),
+                new Vector3(2.1f, 1.98f, -4.65f),
+                new Vector3(0.22f, 2.16f, 1.75f),
                 frame,
                 true);
 
-            BuildVessel(hood, LabStation.FumeHood, new Vector3(0f, 1.13f, -4.62f));
+            BuildVessel(hood, LabStation.FumeHood, new Vector3(0f, 1.02f, -4.62f));
+            ProceduralLabPropFactory.CreateGasWashTrain(
+                hood,
+                new Vector3(1.25f, 1.02f, -4.62f),
+                frame,
+                glass,
+                GetMaterial("GasTubing", LabTheme.WithAlpha(LabTheme.Glass, 0.72f), 0f, 0.76f, true),
+                GetMaterial("ScrubberLiquid", LabTheme.WithAlpha(LabTheme.Safe, 0.76f), 0f, 0.64f, true));
+            proceduralReferencePropCount++;
             CreateWorldLabel(
                 "FUME HOOD · KHÍ / HƠI",
                 hood,
-                new Vector3(0f, 4.28f, -4.0f),
+                new Vector3(0f, 3.12f, -4.0f),
                 Quaternion.Euler(0f, 180f, 0f),
                 LabTheme.GraphiteInk,
-                0.055f);
+                0.04f);
         }
 
         private void BuildChemicalStorage(int side)
@@ -1115,8 +1146,8 @@ namespace ChemistryLab.Desktop
                 PrimitiveType.Cube,
                 "Cabinet Back",
                 storage,
-                new Vector3(x, 2.55f, -0.9f),
-                new Vector3(0.38f, 5.1f, 9.2f),
+                new Vector3(x, 1.55f, -0.9f),
+                new Vector3(0.38f, 3.1f, 9.2f),
                 frame,
                 true);
             for (var row = 0; row < 4; row++)
@@ -1125,9 +1156,21 @@ namespace ChemistryLab.Desktop
                     PrimitiveType.Cube,
                     "Shelf " + row,
                     storage,
-                    new Vector3(x - side * 0.38f, 0.42f + row * 1.08f, -0.9f),
+                    new Vector3(x - side * 0.38f, 0.42f + row * 0.72f, -0.9f),
                     new Vector3(0.72f, 0.08f, 9.0f),
                     shelf,
+                    true);
+            }
+
+            foreach (var z in new[] { -5.1f, 3.3f })
+            {
+                CreatePrimitive(
+                    PrimitiveType.Cube,
+                    "Cabinet End",
+                    storage,
+                    new Vector3(x - side * 0.38f, 1.55f, z),
+                    new Vector3(0.72f, 3.1f, 0.12f),
+                    frame,
                     true);
             }
 
@@ -1140,18 +1183,18 @@ namespace ChemistryLab.Desktop
                 var chemical = DesktopChemistryDatabase.AllChemicals[chemicalIndex];
                 var row = localIndex / 5;
                 var column = localIndex % 5;
-                var z = -4.2f + column * 1.65f;
-                var position = new Vector3(x - side * 0.88f, 0.48f + row * 1.08f, z);
+                var z = -2.5f + column * 0.8f;
+                var position = new Vector3(x - side * 0.78f, 0.47f + row * 0.72f, z);
                 BuildChemicalBottle(storage, chemical, position, side);
             }
 
             CreateWorldLabel(
                 side < 0 ? "KHO A · DUNG DỊCH / MUỐI" : "KHO B · KIM LOẠI / CHẤT OXI HÓA",
                 storage,
-                new Vector3(x - side * 0.72f, 4.72f, -0.8f),
+                new Vector3(x - side * 0.62f, 3.26f, -0.8f),
                 Quaternion.Euler(0f, side < 0 ? -90f : 90f, 0f),
                 LabTheme.GraphiteInk,
-                0.045f);
+                0.032f);
         }
 
         private void BuildPeriodicTableWall()
@@ -1162,10 +1205,10 @@ namespace ChemistryLab.Desktop
             CreateWorldLabel(
                 "BẢNG TUẦN HOÀN · " + elements.Count + " NGUYÊN TỐ THPT",
                 table,
-                new Vector3(0f, 5.62f, 5.76f),
+                new Vector3(0f, 3.22f, 5.76f),
                 Quaternion.identity,
                 LabTheme.GraphiteInk,
-                0.042f);
+                0.031f);
 
             for (var index = 0; index < elements.Count; index++)
             {
@@ -1173,7 +1216,7 @@ namespace ChemistryLab.Desktop
                 var displayGroup = element.Group <= 0 ? 8 : element.Group;
                 var position = new Vector3(
                     -5.53f + (displayGroup - 1) * 0.65f,
-                    5.12f - (element.Period - 1) * 0.57f,
+                    2.88f - (element.Period - 1) * 0.43f,
                     5.82f);
                 var categoryColour = HighSchoolPeriodicTable.CategoryColour(element.Category);
                 var tile = CreatePrimitive(
@@ -1181,7 +1224,7 @@ namespace ChemistryLab.Desktop
                     "Element " + element.AtomicNumber + " " + element.Symbol,
                     table,
                     position,
-                    new Vector3(0.56f, 0.47f, 0.07f),
+                    new Vector3(0.56f, 0.36f, 0.07f),
                     GetMaterial(
                         "ElementCategory_" + element.Category,
                         categoryColour,
@@ -1203,7 +1246,7 @@ namespace ChemistryLab.Desktop
                     position + new Vector3(0f, 0f, -0.055f),
                     Quaternion.identity,
                     LabTheme.GraphiteInk,
-                    0.026f);
+                    0.021f);
 
                 var interaction = tile.AddComponent<ElementTileInteractable>();
                 interaction.AtomicNumber = element.AtomicNumber;
@@ -1229,12 +1272,12 @@ namespace ChemistryLab.Desktop
         {
             var bottle = new GameObject("Bottle " + chemical.Formula);
             bottle.transform.SetParent(parent, false);
-            bottle.transform.position = position;
+            bottle.transform.localPosition = position;
 
             var collider = bottle.AddComponent<CapsuleCollider>();
-            collider.radius = 0.28f;
-            collider.height = 0.92f;
-            collider.center = new Vector3(0f, 0.36f, 0f);
+            collider.radius = 0.09f;
+            collider.height = 0.34f;
+            collider.center = new Vector3(0f, 0.17f, 0f);
 
             var glass = GetMaterial(
                 "BottleGlass",
@@ -1244,32 +1287,48 @@ namespace ChemistryLab.Desktop
                 true);
             CreatePrimitive(
                 PrimitiveType.Cylinder,
-                "Glass Bottle",
+                "Reagent Bottle Body",
                 bottle.transform,
-                new Vector3(0f, 0.34f, 0f),
-                new Vector3(0.25f, 0.36f, 0.25f),
+                new Vector3(0f, 0.115f, 0f),
+                new Vector3(0.085f, 0.105f, 0.085f),
+                glass,
+                false);
+            CreatePrimitive(
+                PrimitiveType.Sphere,
+                "Reagent Bottle Shoulder",
+                bottle.transform,
+                new Vector3(0f, 0.215f, 0f),
+                new Vector3(0.088f, 0.042f, 0.088f),
+                glass,
+                false);
+            CreatePrimitive(
+                PrimitiveType.Cylinder,
+                "Reagent Bottle Neck",
+                bottle.transform,
+                new Vector3(0f, 0.255f, 0f),
+                new Vector3(0.04f, 0.04f, 0.04f),
                 glass,
                 false);
             CreatePrimitive(
                 PrimitiveType.Cylinder,
                 "Cap",
                 bottle.transform,
-                new Vector3(0f, 0.78f, 0f),
-                new Vector3(0.18f, 0.09f, 0.18f),
+                new Vector3(0f, 0.305f, 0f),
+                new Vector3(0.048f, 0.022f, 0.048f),
                 GetMaterial("BottleCap", LabTheme.Graphite, 0.12f, 0.34f),
                 false);
             CreateChemicalContents(
                 bottle.transform,
                 chemical,
-                new Vector3(0f, 0.27f, 0f),
-                0.82f);
+                new Vector3(0f, 0.105f, 0f),
+                0.11f);
 
             var highlight = CreatePrimitive(
                 PrimitiveType.Cylinder,
                 "Focus Ring",
                 bottle.transform,
-                new Vector3(0f, 0.015f, 0f),
-                new Vector3(0.34f, 0.008f, 0.34f),
+                new Vector3(0f, 0.008f, 0f),
+                new Vector3(0.12f, 0.004f, 0.12f),
                 GetMaterial("Focus", LabTheme.Focus, 0f, 0.66f),
                 false);
 
@@ -1278,18 +1337,29 @@ namespace ChemistryLab.Desktop
             interactable.Initialise(this, highlight);
 
             var labelOffset = facePlayer
-                ? new Vector3(0f, 0.36f, 0.29f)
-                : new Vector3(-wallSide * 0.29f, 0.36f, 0f);
+                ? new Vector3(0f, 0.135f, 0.091f)
+                : new Vector3(-wallSide * 0.091f, 0.135f, 0f);
             var labelRotation = facePlayer
                 ? Quaternion.Euler(0f, 180f, 0f)
                 : Quaternion.Euler(0f, wallSide < 0 ? -90f : 90f, 0f);
+            var labelPlate = CreatePrimitive(
+                PrimitiveType.Cube,
+                "Bottle Label Plate",
+                bottle.transform,
+                labelOffset - (facePlayer
+                    ? new Vector3(0f, 0f, 0.003f)
+                    : new Vector3(-wallSide * 0.003f, 0f, 0f)),
+                new Vector3(0.115f, 0.078f, 0.008f),
+                GetMaterial("BottleLabel", LabTheme.PaperRaised, 0f, 0.24f),
+                false);
+            labelPlate.transform.localRotation = labelRotation;
             CreateWorldLabel(
                 chemical.Formula,
                 bottle.transform,
                 labelOffset,
                 labelRotation,
-                LabTheme.GraphiteInk,
-                facePlayer ? 0.024f : 0.037f);
+                LabTheme.Ink,
+                facePlayer ? 0.010f : 0.011f);
         }
 
         private void BuildAnalysisBench()
@@ -1350,6 +1420,21 @@ namespace ChemistryLab.Desktop
                 new Vector3(0.01f, 0.78f, 1.15f),
                 GetMaterial("ScreenSignal", LabTheme.Accent, 0f, 0.55f),
                 false);
+            ProceduralLabPropFactory.CreateReagentRack(
+                analysis,
+                new Vector3(5.72f, 1.04f, -3.42f),
+                Quaternion.identity,
+                dark,
+                GetMaterial("ReferenceClearGlass", LabTheme.WithAlpha(LabTheme.Glass, 0.24f), 0f, 0.9f, true),
+                GetMaterial(
+                    "ReferenceAmberGlass",
+                    LabTheme.WithAlpha(new Color(0.43f, 0.21f, 0.08f), 0.64f),
+                    0f,
+                    0.82f,
+                    true),
+                GetMaterial("BottleCap", LabTheme.Graphite, 0.12f, 0.34f),
+                GetMaterial("BottleLabel", LabTheme.PaperRaised, 0f, 0.24f));
+            proceduralReferencePropCount++;
 
             var interaction = new GameObject("Analysis Interaction");
             interaction.transform.SetParent(analysis, false);
@@ -1426,26 +1511,43 @@ namespace ChemistryLab.Desktop
                 PrimitiveType.Cylinder,
                 "Emergency Shower Pipe",
                 safety,
-                new Vector3(-5.8f, 2.9f, 4.65f),
-                new Vector3(0.08f, 2.6f, 0.08f),
+                new Vector3(-5.25f, 1.65f, 4.95f),
+                new Vector3(0.055f, 1.5f, 0.055f),
                 steel,
                 false);
             CreatePrimitive(
                 PrimitiveType.Cylinder,
                 "Emergency Shower Head",
                 safety,
-                new Vector3(-5.8f, 5.25f, 4.65f),
-                new Vector3(0.45f, 0.12f, 0.45f),
+                new Vector3(-5.25f, 3.12f, 4.95f),
+                new Vector3(0.28f, 0.06f, 0.28f),
                 safeMaterial,
                 false);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Safety Sign",
                 safety,
-                new Vector3(-6.82f, 3.6f, 4.2f),
-                new Vector3(0.05f, 0.72f, 0.72f),
+                new Vector3(-6.82f, 2.55f, 5.42f),
+                new Vector3(0.05f, 0.52f, 0.52f),
                 safeMaterial,
                 false);
+            ProceduralLabPropFactory.CreatePpeDisplay(
+                safety,
+                new Vector3(-6.72f, 0.04f, 4.65f),
+                Quaternion.Euler(0f, -90f, 0f),
+                GetMaterial("PpeCabinet", LabTheme.GraphiteRaised, 0.4f, 0.4f),
+                GetMaterial("HazmatSuit", new Color(0.94f, 0.72f, 0.16f), 0f, 0.36f),
+                GetMaterial("HazmatDark", LabTheme.Graphite, 0.22f, 0.36f),
+                GetMaterial("HazmatVisor", LabTheme.WithAlpha(LabTheme.Glass, 0.58f), 0f, 0.9f, true),
+                safeMaterial);
+            proceduralReferencePropCount++;
+            CreateWorldLabel(
+                "PPE / TẮM KHẨN CẤP",
+                safety,
+                new Vector3(-6.75f, 2.55f, 5.42f),
+                Quaternion.Euler(0f, -90f, 0f),
+                LabTheme.GraphiteInk,
+                0.018f);
         }
 
         private void BuildCeilingLights()
@@ -1455,7 +1557,7 @@ namespace ChemistryLab.Desktop
             {
                 for (var zIndex = -1; zIndex <= 1; zIndex++)
                 {
-                    var position = new Vector3(xIndex * 4f, 5.85f, zIndex * 3.6f);
+                    var position = new Vector3(xIndex * 4f, 3.46f, zIndex * 3.6f);
                     CreatePrimitive(
                         PrimitiveType.Cube,
                         "Ceiling Panel",
@@ -1553,29 +1655,15 @@ namespace ChemistryLab.Desktop
 
         private void BuildHotplate(Transform parent, Vector3 position)
         {
-            var plate = new GameObject("Hotplate").transform;
-            plate.SetParent(parent, false);
-            plate.localPosition = position;
-            var collider = plate.gameObject.AddComponent<BoxCollider>();
-            collider.size = new Vector3(0.5f, 0.14f, 0.38f);
-            collider.center = new Vector3(0f, 0.04f, 0f);
-            CreatePrimitive(
-                PrimitiveType.Cube,
-                "Hotplate Body",
-                plate,
-                Vector3.zero,
-                new Vector3(0.5f, 0.12f, 0.38f),
+            var plate = ProceduralLabPropFactory.CreateHotplateStirrer(
+                parent,
+                position,
                 GetMaterial("Graphite", LabTheme.Graphite, 0.36f, 0.42f),
-                false);
-            CreatePrimitive(
-                PrimitiveType.Cylinder,
-                "Hotplate Surface",
-                plate,
-                new Vector3(0f, 0.075f, 0f),
-                new Vector3(0.15f, 0.012f, 0.15f),
                 GetMaterial("SteelDark", LabTheme.SteelDark, 0.84f, 0.62f),
-                false);
-            var interactable = plate.gameObject.AddComponent<ThermalControlInteractable>();
+                GetMaterial("HotplateDisplay", new Color(0.05f, 0.09f, 0.10f), 0.1f, 0.58f),
+                GetMaterial("HotplateAccent", LabTheme.Accent, 0f, 0.62f));
+            proceduralReferencePropCount++;
+            var interactable = plate.AddComponent<ThermalControlInteractable>();
             interactable.Station = LabStation.Workbench;
             interactable.Initialise(this);
         }
@@ -2274,6 +2362,18 @@ namespace ChemistryLab.Desktop
                 player.transform.position = new Vector3(0f, 0.02f, -1.7f);
                 player.transform.rotation = Quaternion.identity;
             }
+            else if (string.Equals(captureView, "safety", StringComparison.OrdinalIgnoreCase))
+            {
+                player.SetPausedFromUi(false);
+                player.transform.position = new Vector3(-3.9f, 0.02f, 4.65f);
+                player.transform.rotation = Quaternion.Euler(0f, 270f, 0f);
+            }
+            else if (string.Equals(captureView, "analysis", StringComparison.OrdinalIgnoreCase))
+            {
+                player.SetPausedFromUi(false);
+                player.transform.position = new Vector3(3.8f, 0.02f, -4.6f);
+                player.transform.rotation = Quaternion.Euler(0f, 43f, 0f);
+            }
             else if (string.Equals(captureView, "pause", StringComparison.OrdinalIgnoreCase))
             {
                 player.SetPausedFromUi(true);
@@ -2395,6 +2495,7 @@ namespace ChemistryLab.Desktop
                 || player.ViewCamera == null
                 || player.ViewCamera.GetComponent<AudioListener>() == null
                 || starterChemicalCount != 4
+                || proceduralReferencePropCount != 4
                 || !menuFlowReady
                 || !handOnlyReactionBlocked
                 || !remoteVesselOperationBlocked
@@ -2440,6 +2541,8 @@ namespace ChemistryLab.Desktop
                 + hud.MenuButtonCount
                 + " starterChemicals="
                 + starterChemicalCount
+                + " originalReferenceProps="
+                + proceduralReferencePropCount
                 + " cameraFov="
                 + player.ViewCamera.fieldOfView.ToString("0.0"));
             yield return new WaitForSecondsRealtime(0.4f);
@@ -2489,6 +2592,7 @@ namespace ChemistryLab.Desktop
                 handOnlyReactionBlocked = handOnlyReactionBlocked,
                 remoteVesselOperationBlocked = remoteVesselOperationBlocked,
                 starterChemicals = starterChemicalCount,
+                originalReferenceProps = proceduralReferencePropCount,
                 cameraFovDegrees = player == null || player.ViewCamera == null
                     ? 0f
                     : player.ViewCamera.fieldOfView,
@@ -2531,6 +2635,7 @@ namespace ChemistryLab.Desktop
             public bool handOnlyReactionBlocked;
             public bool remoteVesselOperationBlocked;
             public int starterChemicals;
+            public int originalReferenceProps;
             public float cameraFovDegrees;
             public string graphicsDevice;
         }

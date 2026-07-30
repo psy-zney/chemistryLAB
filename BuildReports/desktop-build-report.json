@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-30T17:41:56.7876183Z",
+    "generatedAtUtc": "2026-07-30T18:16:22.6206216Z",
     "unityVersion": "6000.5.3f1",
     "phase": "windows-portable-package",
     "result": "succeeded",
@@ -9,17 +9,17 @@
     "output": "Builds/ChemistryLab3D/Windows-x64/ChemistryLab3D.exe",
     "warnings": 485,
     "errors": 0,
-    "sizeBytes": 140176709,
+    "sizeBytes": 140184629,
     "package": {
         "distributionPath": "Builds/ChemistryLab3D/Windows-x64",
         "executablePath": "Builds/ChemistryLab3D/Windows-x64/ChemistryLab3D.exe",
         "dataDirectory": "Builds/ChemistryLab3D/Windows-x64/ChemistryLab3D_Data",
         "archivePath": "Builds/ChemistryLab3D/Packages/ChemistryLab3D-Windows-x64-v1.0.zip",
         "checksumPath": "Builds/ChemistryLab3D/Packages/ChemistryLab3D-Windows-x64-v1.0.zip.sha256",
-        "archiveSha256": "079ea7baa72dd286b5824ff0898795b7702aaf066baad032ecc35a4aa0a99483",
+        "archiveSha256": "ca86a619c44f76a64b1199d51b1ce13f1af6c7cc55a9667aa2c78039bee8cddc",
         "runtimeFileCount": 175,
-        "runtimeSizeBytes": 140177648,
-        "archiveSizeBytes": 52603009
+        "runtimeSizeBytes": 140185568,
+        "archiveSizeBytes": 52606026
     },
     "validation": {
         "elements": 52,

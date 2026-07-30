@@ -122,6 +122,7 @@ namespace ChemistryLab.Desktop.Editor
             material.SetFloat("_Metallic", 0f);
             material.SetFloat("_Glossiness", 0.92f);
             material.SetFloat("_Mode", 3f);
+            material.SetOverrideTag("RenderType", "Transparent");
             material.SetInt("_SrcBlend", (int)BlendMode.SrcAlpha);
             material.SetInt("_DstBlend", (int)BlendMode.OneMinusSrcAlpha);
             material.SetInt("_ZWrite", 0);
