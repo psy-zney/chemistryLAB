@@ -139,6 +139,12 @@ A more visual explanation of OOP, data structures, algorithms, and runtime flow 
 
 `docs/architecture/oop-data-algorithms.html`
 
+The current production target for a polished authored Unity lab scene, including
+model requirements, scale rules, collider rules, and the "no reaction in hand"
+gameplay contract, is documented in
+[`docs/gameplay/lab-scene-production-plan.md`](docs/gameplay/lab-scene-production-plan.md)
+and [`docs/gameplay/lab-model-requirements.json`](docs/gameplay/lab-model-requirements.json).
+
 ## Controls
 
 ```text

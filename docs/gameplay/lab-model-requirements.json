@@ -1,0 +1,136 @@
+{
+  "schemaVersion": "1.0",
+  "project": "Chemistry Lab 3D",
+  "unitScale": "1 Unity unit = 1 meter",
+  "coreRule": {
+    "handState": "transport-only",
+    "reactionAllowedOnlyIn": [
+      "workbench vessel station",
+      "fume hood vessel station",
+      "future authored tube slots"
+    ],
+    "forbidden": [
+      "reaction while held in player hand",
+      "remote heating",
+      "remote dilution",
+      "remote product collection"
+    ]
+  },
+  "modelRequirements": [
+    {
+      "id": "modular_lab_room",
+      "priority": 1,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Floor, walls, ceiling, windows, trim; clean scale over high detail.",
+      "collider": "box colliders for floor and walls"
+    },
+    {
+      "id": "central_workbench",
+      "priority": 1,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Flat surface around 0.9-1.05 m high for vessels and tube rack.",
+      "collider": "simple box collider"
+    },
+    {
+      "id": "fume_hood",
+      "priority": 1,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Glass sash, interior work surface, visible exhaust/safety context.",
+      "collider": "simple box colliders plus interaction trigger"
+    },
+    {
+      "id": "glassware_set",
+      "priority": 1,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Beaker, test tube, Erlenmeyer flask, graduated cylinder.",
+      "collider": "simplified convex or primitive colliders only"
+    },
+    {
+      "id": "chemical_bottle_set",
+      "priority": 1,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Brown glass, clear glass, plastic bottle, caps, label surfaces.",
+      "collider": "capsule or box trigger"
+    },
+    {
+      "id": "tube_rack_slots",
+      "priority": 2,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Rack must expose stable slots so tubes visibly sit on the table.",
+      "collider": "rack box collider plus authored slot transforms"
+    },
+    {
+      "id": "hotplate_stirrer",
+      "priority": 2,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Used for heating vessel contents; should have a clear heat surface.",
+      "collider": "interaction trigger"
+    },
+    {
+      "id": "sink_eyewash",
+      "priority": 2,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Used for washing vessels and safety feedback.",
+      "collider": "counter collider plus interaction trigger"
+    },
+    {
+      "id": "safety_props",
+      "priority": 2,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Respirator, gas trap, gloves, goggles, hazard cabinet.",
+      "collider": "interaction triggers for gameplay props"
+    },
+    {
+      "id": "storage_cabinets",
+      "priority": 2,
+      "formats": ["fbx", "glb"],
+      "required": true,
+      "notes": "Repeated shelf space for runtime-spawned chemical bottles.",
+      "collider": "box colliders for shelves and cabinet body"
+    },
+    {
+      "id": "analysis_devices",
+      "priority": 3,
+      "formats": ["fbx", "glb"],
+      "required": false,
+      "notes": "Microscope, display, scale, meter; mostly decorative plus one analysis trigger.",
+      "collider": "decorative or simple trigger"
+    },
+    {
+      "id": "hazard_signage",
+      "priority": 3,
+      "formats": ["png", "fbx", "glb"],
+      "required": false,
+      "notes": "Toxic, corrosive, flammable, oxidizer, PPE decals.",
+      "collider": "none"
+    }
+  ],
+  "licensePolicy": {
+    "preferred": ["CC0", "public domain", "Unity Asset Store free with commercial use"],
+    "allowedWithCredits": ["CC-BY"],
+    "avoid": [
+      "unclear license",
+      "editor-only license",
+      "non-commercial only",
+      "assets requiring paid runtime plugins"
+    ]
+  },
+  "importChecklist": [
+    "Verify model scale in meters",
+    "Remove unnecessary mesh colliders",
+    "Assign simple gameplay colliders",
+    "Compress textures to 1K or 2K unless hero asset",
+    "Place decorative meshes under stable gameplay anchors",
+    "Record source URL, author, license, and attribution",
+    "Run Unity validation and desktop smoke test"
+  ]
+}

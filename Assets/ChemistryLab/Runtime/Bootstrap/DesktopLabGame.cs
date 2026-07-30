@@ -13,6 +13,7 @@ namespace ChemistryLab.Desktop
         private const string FullscreenPreferenceKey = "chemistryLab.desktop.fullscreen";
         private const int PreferredWindowWidth = 1600;
         private const int PreferredWindowHeight = 900;
+        private const float VesselOperationReachMeters = 3.35f;
 
         private readonly Dictionary<LabStation, List<VesselAddition>> vesselAdditions =
             new Dictionary<LabStation, List<VesselAddition>>();
@@ -111,6 +112,27 @@ namespace ChemistryLab.Desktop
                     ? environment
                     : null;
             }
+        }
+
+        public bool CanOperateVesselStation(LabStation station)
+        {
+            VesselVisual visual;
+            if (!vesselVisuals.TryGetValue(station, out visual) || visual.Root == null)
+            {
+                return false;
+            }
+
+            if (player == null)
+            {
+                return false;
+            }
+
+            var playerPosition = player.transform.position;
+            var vesselPosition = visual.Root.position;
+            playerPosition.y = 0f;
+            vesselPosition.y = 0f;
+            return (playerPosition - vesselPosition).sqrMagnitude
+                <= VesselOperationReachMeters * VesselOperationReachMeters;
         }
 
         public int GetVesselAdditionCount(LabStation station)
@@ -248,6 +270,11 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
+            if (!EnsureCanOperateVesselStation(station, "nạp hóa chất vào bình"))
+            {
+                return;
+            }
+
             var additionGrams = selectedAmountGrams;
             var sourceBatch = GetSelectedBatch();
             if (sourceBatch != null)
@@ -361,6 +388,11 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
+            if (!EnsureCanOperateVesselStation(station, "thu sản phẩm"))
+            {
+                return;
+            }
+
             var outcome = ReactionSimulator.Evaluate(additions, station, environment);
             if (outcome.Status != ReactionStatus.Reaction || !outcome.CanCollectProduct)
             {
@@ -419,6 +451,11 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
+            if (!EnsureCanOperateVesselStation(currentVesselStation, "điều chỉnh nhiệt độ"))
+            {
+                return;
+            }
+
             environment.ChangeTemperature(deltaC);
             RefreshVesselVisual(currentVesselStation);
             RefreshOutcome(currentVesselStation);
@@ -439,6 +476,11 @@ namespace ChemistryLab.Desktop
         {
             ReactionEnvironment environment;
             if (!vesselEnvironments.TryGetValue(currentVesselStation, out environment))
+            {
+                return;
+            }
+
+            if (!EnsureCanOperateVesselStation(currentVesselStation, "pha loãng"))
             {
                 return;
             }
@@ -1911,6 +1953,29 @@ namespace ChemistryLab.Desktop
                 : Vector3.zero;
         }
 
+        private bool EnsureCanOperateVesselStation(LabStation station, string operation)
+        {
+            if (CanOperateVesselStation(station))
+            {
+                return true;
+            }
+
+            if (hud != null)
+            {
+                hud.ShowTransient(
+                    "Không thể " + operation
+                    + " từ xa. Hãy đứng cạnh bình/cốc đặt trên bàn hoặc trong tủ hút.",
+                    true);
+            }
+
+            if (audioSystem != null)
+            {
+                audioSystem.PlayError();
+            }
+
+            return false;
+        }
+
         private LabStation GetZone(Vector3 position)
         {
             if (position.z < -3.35f)
@@ -2223,6 +2288,16 @@ namespace ChemistryLab.Desktop
                 && pointerClickReady
                 && hud.PointerInputReady;
 
+            var workbenchAdditionsBeforeHandTest = GetVesselAdditionCount(LabStation.Workbench);
+            SelectChemical("copper-sulfate");
+            var handOnlyReactionBlocked = SelectedChemical != null
+                && GetVesselAdditionCount(LabStation.Workbench) == workbenchAdditionsBeforeHandTest
+                && !CanCollectProduct(LabStation.Workbench);
+            AddSelectedToVessel(LabStation.Workbench);
+            var remoteVesselOperationBlocked =
+                GetVesselAdditionCount(LabStation.Workbench) == workbenchAdditionsBeforeHandTest;
+            ClearSelectedChemical();
+
             var additions = new List<VesselAddition>
             {
                 new VesselAddition("copper-sulfate", 10d),
@@ -2246,19 +2321,29 @@ namespace ChemistryLab.Desktop
                 || player.ViewCamera.GetComponent<AudioListener>() == null
                 || starterChemicalCount != 4
                 || !menuFlowReady
+                || !handOnlyReactionBlocked
+                || !remoteVesselOperationBlocked
                 || diagnostics == null)
             {
                 WriteSmokeReport(
                     "failed",
                     "One or more runtime assertions failed.",
                     outcome,
-                    menuFlowReady);
+                    menuFlowReady,
+                    handOnlyReactionBlocked,
+                    remoteVesselOperationBlocked);
                 Debug.LogError("DESKTOP_LAB_SMOKE_FAIL");
                 Application.Quit(2);
                 yield break;
             }
 
-            WriteSmokeReport("succeeded", null, outcome, menuFlowReady);
+            WriteSmokeReport(
+                "succeeded",
+                null,
+                outcome,
+                menuFlowReady,
+                handOnlyReactionBlocked,
+                remoteVesselOperationBlocked);
             Debug.Log(
                 "DESKTOP_LAB_SMOKE_PASS chemicals="
                 + DesktopChemistryDatabase.AllChemicals.Count
@@ -2290,7 +2375,9 @@ namespace ChemistryLab.Desktop
             string result,
             string failure,
             ReactionOutcome outcome,
-            bool menuFlowVerified)
+            bool menuFlowVerified,
+            bool handOnlyReactionBlocked,
+            bool remoteVesselOperationBlocked)
         {
             var reportPath = GetCommandLineValue("-reportPath");
             if (string.IsNullOrWhiteSpace(reportPath))
@@ -2324,6 +2411,8 @@ namespace ChemistryLab.Desktop
                 menuFlowVerified = menuFlowVerified,
                 pointerInputReady = hud != null && hud.PointerInputReady,
                 pointerClickVerified = hud != null && menuFlowVerified,
+                handOnlyReactionBlocked = handOnlyReactionBlocked,
+                remoteVesselOperationBlocked = remoteVesselOperationBlocked,
                 starterChemicals = starterChemicalCount,
                 cameraFovDegrees = player == null || player.ViewCamera == null
                     ? 0f
@@ -2364,6 +2453,8 @@ namespace ChemistryLab.Desktop
             public bool menuFlowVerified;
             public bool pointerInputReady;
             public bool pointerClickVerified;
+            public bool handOnlyReactionBlocked;
+            public bool remoteVesselOperationBlocked;
             public int starterChemicals;
             public float cameraFovDegrees;
             public string graphicsDevice;

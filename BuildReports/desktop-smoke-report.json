@@ -1,6 +1,6 @@
 {
     "schemaVersion": "1.0",
-    "generatedAtUtc": "2026-07-29T17:36:14.4826247Z",
+    "generatedAtUtc": "2026-07-30T15:15:14.2415666Z",
     "unityVersion": "6000.5.3f1",
     "result": "succeeded",
     "failure": "",
@@ -17,6 +17,8 @@
     "menuFlowVerified": true,
     "pointerInputReady": true,
     "pointerClickVerified": true,
+    "handOnlyReactionBlocked": true,
+    "remoteVesselOperationBlocked": true,
     "starterChemicals": 4,
     "cameraFovDegrees": 66.0,
     "graphicsDevice": "NVIDIA GeForce RTX 3050 6GB Laptop GPU"
