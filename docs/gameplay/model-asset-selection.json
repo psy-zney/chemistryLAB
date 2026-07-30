@@ -1,0 +1,64 @@
+{
+  "schemaVersion": 1,
+  "reviewedAtUtc": "2026-07-30T16:57:51.8665312Z",
+  "sourceDirectory": "C:\\Users\\admin\\Downloads\\model",
+  "policy": {
+    "requireVerifiedLicenseForCommit": true,
+    "requireSimpleColliders": true,
+    "requireMetreScale": true,
+    "rejectUnknownScripts": true,
+    "rejectDemoAndPipelineSwitchContent": true
+  },
+  "approved": [
+    {
+      "id": "pixabay-erlenmeyer-1885",
+      "sourceFile": "SourceAssets/ThirdParty/Pixabay/ArunangshuBanerjee/Models/ErlenmeyerFlask.glb",
+      "nativeMesh": "Assets/ChemistryLab/ExternalAssets/Pixabay/ArunangshuBanerjee/Native/ErlenmeyerFlaskMesh.asset",
+      "sha256": "725C5039309E0D684E3321AB895E1DACADC20DE0594F8C78F98853025873A10A",
+      "source": "https://pixabay.com/3d-models/erlenmeyer-flask-chemistry-science-1885/",
+      "license": "Pixabay Content License",
+      "usage": [
+        "workbench-reaction-vessel",
+        "fume-hood-reaction-vessel"
+      ]
+    },
+    {
+      "id": "pixabay-test-tube-1888",
+      "sourceFile": "SourceAssets/ThirdParty/Pixabay/ArunangshuBanerjee/Models/TestTube.glb",
+      "nativeMesh": "Assets/ChemistryLab/ExternalAssets/Pixabay/ArunangshuBanerjee/Native/TestTubeMesh.asset",
+      "sha256": "6119FC1D95352489CD23023ED2ECA26E80C3E602151F07E8A769EE485A45933F",
+      "source": "https://pixabay.com/3d-models/test-tube-glass-science-chemistry-1888/",
+      "license": "Pixabay Content License",
+      "usage": [
+        "workbench-test-tube-rack"
+      ]
+    }
+  ],
+  "heldOrRejected": [
+    {
+      "file": "HazmatSuit-Asset.unitypackage",
+      "decision": "hold",
+      "reason": "Technically suitable mesh, but no source or redistribution license was supplied."
+    },
+    {
+      "file": "3d-model.fbx",
+      "decision": "hold",
+      "reason": "Efficient hotplate model, but source and license are unverified."
+    },
+    {
+      "file": "chemistry_bottles.glb",
+      "decision": "hold",
+      "reason": "Visually suitable but needs verified rights, separation, scale correction and LODs."
+    },
+    {
+      "file": "chemical laboratory.fbx",
+      "decision": "reject-current",
+      "reason": "Duplicate identifiers, self-intersecting polygons, 400420 triangles and incorrect scale."
+    },
+    {
+      "file": "Laboratory.fbx",
+      "decision": "reject-current",
+      "reason": "1092218 triangles, extreme bounds, embedded camera/light and no verified rights."
+    }
+  ]
+}
