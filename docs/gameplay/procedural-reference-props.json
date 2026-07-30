@@ -1,0 +1,58 @@
+{
+  "schemaVersion": "1.0",
+  "policy": {
+    "thirdPartyGeometryCopied": false,
+    "thirdPartyTexturesCopied": false,
+    "thirdPartyMaterialsCopied": false,
+    "thirdPartyRigOrAnimationCopied": false,
+    "referenceUse": "functional category and general laboratory context only",
+    "generator": "Assets/ChemistryLab/Runtime/Environment/ProceduralLabPropFactory.cs"
+  },
+  "props": [
+    {
+      "id": "original-hotplate-stirrer",
+      "referenceCategory": "bench hotplate",
+      "dimensionsMetres": [0.44, 0.16, 0.36],
+      "collider": "single root box",
+      "interaction": "ThermalControlInteractable",
+      "placement": "central workbench"
+    },
+    {
+      "id": "original-ppe-suit-display",
+      "referenceCategory": "hazmat suit",
+      "dimensionsMetres": [1.2, 2.2, 0.38],
+      "collider": "single cabinet box",
+      "interaction": "decorative safety context",
+      "placement": "safety station"
+    },
+    {
+      "id": "original-reagent-bottle-rack",
+      "referenceCategory": "chemistry bottle collection",
+      "dimensionsMetres": [0.82, 0.3, 0.3],
+      "collider": "none",
+      "interaction": "decorative analysis context",
+      "placement": "analysis bench"
+    },
+    {
+      "id": "original-gas-wash-train",
+      "referenceCategory": "laboratory gas apparatus",
+      "dimensionsMetres": [0.92, 0.6, 0.28],
+      "collider": "none",
+      "interaction": "visual gas-isolation context",
+      "placement": "fume hood"
+    }
+  ],
+  "sceneScaleMetres": {
+    "ceilingHeight": 3.6,
+    "workbenchSurfaceHeight": 1.01,
+    "fumeHoodSurfaceHeight": 1.01,
+    "interactiveBottleHeight": 0.34,
+    "erlenmeyerHeight": 0.18,
+    "testTubeHeight": 0.15
+  },
+  "runtimeAssertions": {
+    "expectedOriginalReferenceProps": 4,
+    "reactionInHandAllowed": false,
+    "remoteVesselOperationAllowed": false
+  }
+}

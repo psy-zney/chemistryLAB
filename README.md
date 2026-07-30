@@ -29,6 +29,7 @@ The game is built as an educational simulation, not as real laboratory operating
 - Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, main menu, ESC pause menu, diagnostics, and a persistent settings screen for audio, reduced motion, and window mode.
 - First-run onboarding with a visible help button and a four-bottle starter tray containing water, copper sulfate, sodium hydroxide, and hydrochloric acid.
 - Reviewed real-scale glassware assets: a 0.18 m Erlenmeyer reaction flask and 0.15 m test tubes, baked to lightweight native Unity meshes with simple physics colliders and recorded third-party provenance.
+- Four original procedural reference props: hotplate/stirrer, PPE suit display, reagent-bottle rack, and fume-hood gas-wash train. No unverified downloaded geometry is shipped.
 - Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
 - JSON build, validation, and smoke-test reports under `BuildReports/`.
 
@@ -99,6 +100,7 @@ chemistryLAB/
 |   |   |   |-- Chemistry/           Chemicals, elements, curated reactions, dynamic rules
 |   |   |   |-- Core/                Theme colors, fonts, and accessibility flags
 |   |   |   |-- Diagnostics/         Runtime F3 diagnostics panel
+|   |   |   |-- Environment/         Original procedural lab prop builders
 |   |   |   |-- Player/              First-person controller and interactable objects
 |   |   |   |-- Safety/              Hazard classifier, gas catalog, player consequence model
 |   |   |   `-- UI/                  HUD, main/pause/settings menus, inspector, buttons

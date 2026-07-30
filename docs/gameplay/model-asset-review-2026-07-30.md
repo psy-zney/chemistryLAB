@@ -51,3 +51,13 @@ candidate before the decision was made.
 5. Add LODs and simple colliders; do not use the visual mesh as a room collider.
 6. Normalize to metres and remove embedded cameras, lights, demo scenes and
    render-pipeline switch packages.
+
+## Original procedural replacements
+
+The held/rejected files are no longer needed for the current room. Their broad
+equipment categories were used to define four independently built replacements:
+the hotplate/stirrer, PPE suit display, reagent-bottle rack, and gas-wash train.
+No geometry, texture, material, rig, or animation from an unverified download is
+included. See
+[`procedural-reference-props.md`](procedural-reference-props.md) and
+[`procedural-reference-props.json`](procedural-reference-props.json).

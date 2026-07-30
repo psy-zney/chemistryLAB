@@ -38,27 +38,32 @@
     {
       "file": "HazmatSuit-Asset.unitypackage",
       "decision": "hold",
-      "reason": "Technically suitable mesh, but no source or redistribution license was supplied."
+      "reason": "Technically suitable mesh, but no source or redistribution license was supplied.",
+      "replacement": "Original procedural PPE suit display; downloaded mesh is not used."
     },
     {
       "file": "3d-model.fbx",
       "decision": "hold",
-      "reason": "Efficient hotplate model, but source and license are unverified."
+      "reason": "Efficient hotplate model, but source and license are unverified.",
+      "replacement": "Original procedural hotplate/stirrer with thermal interaction."
     },
     {
       "file": "chemistry_bottles.glb",
       "decision": "hold",
-      "reason": "Visually suitable but needs verified rights, separation, scale correction and LODs."
+      "reason": "Visually suitable but needs verified rights, separation, scale correction and LODs.",
+      "replacement": "Original procedural reagent rack with clear and amber bottles."
     },
     {
       "file": "chemical laboratory.fbx",
       "decision": "reject-current",
-      "reason": "Duplicate identifiers, self-intersecting polygons, 400420 triangles and incorrect scale."
+      "reason": "Duplicate identifiers, self-intersecting polygons, 400420 triangles and incorrect scale.",
+      "replacement": "Room proportions and modular furniture are built independently in Unity."
     },
     {
       "file": "Laboratory.fbx",
       "decision": "reject-current",
-      "reason": "1092218 triangles, extreme bounds, embedded camera/light and no verified rights."
+      "reason": "1092218 triangles, extreme bounds, embedded camera/light and no verified rights.",
+      "replacement": "Room proportions and modular furniture are built independently in Unity."
     }
   ]
 }
