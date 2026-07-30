@@ -43,6 +43,8 @@ namespace ChemistryLab.Desktop
         private LabSafetySystem labSafety;
         private int starterChemicalCount;
         private int proceduralReferencePropCount;
+        private RespiratorStationInteractable respiratorStation;
+        private GasTrapInteractable gasTrapStation;
         private bool missionComplete;
         private bool inspectorOpen;
 
@@ -410,7 +412,7 @@ namespace ChemistryLab.Desktop
                     || !labSafety.GasTrapConnected))
             {
                 hud.ShowTransient(
-                    "Sản phẩm khí chỉ được thu trong tủ hút khi bình cách ly đã nối (F7).",
+                    "Sản phẩm khí chỉ được thu trong tủ hút khi hệ rửa khí đã nối. Đến thiết bị và nhấn E.",
                     true);
                 audioSystem.PlayHazardAlarm();
                 return;
@@ -841,6 +843,8 @@ namespace ChemistryLab.Desktop
             worldRoot = new GameObject("Procedural Laboratory").transform;
             worldRoot.SetParent(transform, false);
             proceduralReferencePropCount = 0;
+            respiratorStation = null;
+            gasTrapStation = null;
 
             ConfigureEnvironment();
             BuildRoomShell();
@@ -1116,13 +1120,23 @@ namespace ChemistryLab.Desktop
                 true);
 
             BuildVessel(hood, LabStation.FumeHood, new Vector3(0f, 1.02f, -4.62f));
-            ProceduralLabPropFactory.CreateGasWashTrain(
+            var gasWashTrain = ProceduralLabPropFactory.CreateGasWashTrain(
                 hood,
                 new Vector3(1.25f, 1.02f, -4.62f),
                 frame,
                 glass,
                 GetMaterial("GasTubing", LabTheme.WithAlpha(LabTheme.Glass, 0.72f), 0f, 0.76f, true),
                 GetMaterial("ScrubberLiquid", LabTheme.WithAlpha(LabTheme.Safe, 0.76f), 0f, 0.64f, true));
+            var gasTrapFocus = CreatePrimitive(
+                PrimitiveType.Cube,
+                "Gas Wash Focus",
+                gasWashTrain.transform,
+                new Vector3(0f, 0.035f, 0.17f),
+                new Vector3(0.84f, 0.025f, 0.04f),
+                GetMaterial("Focus", LabTheme.Focus, 0f, 0.66f),
+                false);
+            gasTrapStation = gasWashTrain.AddComponent<GasTrapInteractable>();
+            gasTrapStation.Initialise(this, gasTrapFocus);
             proceduralReferencePropCount++;
             CreateWorldLabel(
                 "FUME HOOD · KHÍ / HƠI",
@@ -1531,7 +1545,7 @@ namespace ChemistryLab.Desktop
                 new Vector3(0.05f, 0.52f, 0.52f),
                 safeMaterial,
                 false);
-            ProceduralLabPropFactory.CreatePpeDisplay(
+            var ppeDisplay = ProceduralLabPropFactory.CreatePpeDisplay(
                 safety,
                 new Vector3(-6.72f, 0.04f, 4.65f),
                 Quaternion.Euler(0f, -90f, 0f),
@@ -1540,6 +1554,38 @@ namespace ChemistryLab.Desktop
                 GetMaterial("HazmatDark", LabTheme.Graphite, 0.22f, 0.36f),
                 GetMaterial("HazmatVisor", LabTheme.WithAlpha(LabTheme.Glass, 0.58f), 0f, 0.9f, true),
                 safeMaterial);
+            var ppeFocus = new GameObject("PPE Focus Outline");
+            ppeFocus.transform.SetParent(ppeDisplay.transform, false);
+            var focusMaterial = GetMaterial("Focus", LabTheme.Focus, 0f, 0.66f);
+            CreatePrimitive(
+                PrimitiveType.Cube,
+                "PPE Focus Top",
+                ppeFocus.transform,
+                new Vector3(0f, 2.16f, -0.22f),
+                new Vector3(1.18f, 0.025f, 0.025f),
+                focusMaterial,
+                false);
+            CreatePrimitive(
+                PrimitiveType.Cube,
+                "PPE Focus Bottom",
+                ppeFocus.transform,
+                new Vector3(0f, 0.04f, -0.22f),
+                new Vector3(1.18f, 0.025f, 0.025f),
+                focusMaterial,
+                false);
+            foreach (var focusX in new[] { -0.58f, 0.58f })
+            {
+                CreatePrimitive(
+                    PrimitiveType.Cube,
+                    "PPE Focus Side",
+                    ppeFocus.transform,
+                    new Vector3(focusX, 1.1f, -0.22f),
+                    new Vector3(0.025f, 2.1f, 0.025f),
+                    focusMaterial,
+                    false);
+            }
+            respiratorStation = ppeDisplay.AddComponent<RespiratorStationInteractable>();
+            respiratorStation.Initialise(this, ppeFocus);
             proceduralReferencePropCount++;
             CreateWorldLabel(
                 "PPE / TẮM KHẨN CẤP",
@@ -2463,6 +2509,38 @@ namespace ChemistryLab.Desktop
                 && pointerClickReady
                 && hud.PointerInputReady;
 
+            var physicalSafetyCollidersReady = respiratorStation != null
+                && respiratorStation.GetComponent<Collider>() != null
+                && gasTrapStation != null
+                && gasTrapStation.GetComponent<Collider>() != null;
+            var creditsBeforePpeInteraction = labSafety == null ? 0 : labSafety.Credits;
+            if (respiratorStation != null)
+            {
+                respiratorStation.Interact();
+            }
+
+            var physicalPpeInteractionVerified = labSafety != null
+                && labSafety.RespiratorOwned
+                && labSafety.RespiratorEquipped
+                && labSafety.Credits == creditsBeforePpeInteraction - LabSafetySystem.RespiratorPrice
+                && respiratorStation.Prompt.IndexOf("Tháo", StringComparison.Ordinal) >= 0;
+            var gasTrapWasConnected = labSafety != null && labSafety.GasTrapConnected;
+            if (gasTrapStation != null)
+            {
+                gasTrapStation.Interact();
+            }
+
+            var gasTrapChangedState = labSafety != null
+                && labSafety.GasTrapConnected != gasTrapWasConnected;
+            if (gasTrapStation != null)
+            {
+                gasTrapStation.Interact();
+            }
+
+            var physicalGasTrapInteractionVerified = labSafety != null
+                && gasTrapChangedState
+                && labSafety.GasTrapConnected == gasTrapWasConnected;
+
             var workbenchAdditionsBeforeHandTest = GetVesselAdditionCount(LabStation.Workbench);
             SelectChemical("copper-sulfate");
             var handOnlyReactionBlocked = SelectedChemical != null
@@ -2497,6 +2575,9 @@ namespace ChemistryLab.Desktop
                 || starterChemicalCount != 4
                 || proceduralReferencePropCount != 4
                 || !menuFlowReady
+                || !physicalSafetyCollidersReady
+                || !physicalPpeInteractionVerified
+                || !physicalGasTrapInteractionVerified
                 || !handOnlyReactionBlocked
                 || !remoteVesselOperationBlocked
                 || diagnostics == null)
@@ -2506,6 +2587,9 @@ namespace ChemistryLab.Desktop
                     "One or more runtime assertions failed.",
                     outcome,
                     menuFlowReady,
+                    physicalSafetyCollidersReady,
+                    physicalPpeInteractionVerified,
+                    physicalGasTrapInteractionVerified,
                     handOnlyReactionBlocked,
                     remoteVesselOperationBlocked);
                 Debug.LogError("DESKTOP_LAB_SMOKE_FAIL");
@@ -2518,6 +2602,9 @@ namespace ChemistryLab.Desktop
                 null,
                 outcome,
                 menuFlowReady,
+                physicalSafetyCollidersReady,
+                physicalPpeInteractionVerified,
+                physicalGasTrapInteractionVerified,
                 handOnlyReactionBlocked,
                 remoteVesselOperationBlocked);
             Debug.Log(
@@ -2543,6 +2630,7 @@ namespace ChemistryLab.Desktop
                 + starterChemicalCount
                 + " originalReferenceProps="
                 + proceduralReferencePropCount
+                + " physicalSafetyStations=2"
                 + " cameraFov="
                 + player.ViewCamera.fieldOfView.ToString("0.0"));
             yield return new WaitForSecondsRealtime(0.4f);
@@ -2554,6 +2642,9 @@ namespace ChemistryLab.Desktop
             string failure,
             ReactionOutcome outcome,
             bool menuFlowVerified,
+            bool physicalSafetyCollidersReady,
+            bool physicalPpeInteractionVerified,
+            bool physicalGasTrapInteractionVerified,
             bool handOnlyReactionBlocked,
             bool remoteVesselOperationBlocked)
         {
@@ -2589,6 +2680,11 @@ namespace ChemistryLab.Desktop
                 menuFlowVerified = menuFlowVerified,
                 pointerInputReady = hud != null && hud.PointerInputReady,
                 pointerClickVerified = hud != null && menuFlowVerified,
+                physicalSafetyStations = (respiratorStation == null ? 0 : 1)
+                    + (gasTrapStation == null ? 0 : 1),
+                physicalSafetyCollidersReady = physicalSafetyCollidersReady,
+                physicalPpeInteractionVerified = physicalPpeInteractionVerified,
+                physicalGasTrapInteractionVerified = physicalGasTrapInteractionVerified,
                 handOnlyReactionBlocked = handOnlyReactionBlocked,
                 remoteVesselOperationBlocked = remoteVesselOperationBlocked,
                 starterChemicals = starterChemicalCount,
@@ -2632,6 +2728,10 @@ namespace ChemistryLab.Desktop
             public bool menuFlowVerified;
             public bool pointerInputReady;
             public bool pointerClickVerified;
+            public int physicalSafetyStations;
+            public bool physicalSafetyCollidersReady;
+            public bool physicalPpeInteractionVerified;
+            public bool physicalGasTrapInteractionVerified;
             public bool handOnlyReactionBlocked;
             public bool remoteVesselOperationBlocked;
             public int starterChemicals;

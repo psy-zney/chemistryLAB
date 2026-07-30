@@ -314,6 +314,9 @@ namespace ChemistryLab.Desktop
             Material liquid)
         {
             var root = CreateRoot("Original Gas Wash Train", parent, localPosition);
+            var collider = root.AddComponent<BoxCollider>();
+            collider.center = new Vector3(0f, 0.3f, 0f);
+            collider.size = new Vector3(0.96f, 0.62f, 0.42f);
             CreatePrimitive(
                 PrimitiveType.Cube,
                 "Wash Train Base",

@@ -273,15 +273,15 @@ namespace ChemistryLab.Desktop
             if (respiratorButtonText != null)
             {
                 respiratorButtonText.text = !state.RespiratorOwned
-                    ? "F6 · MUA MẶT NẠ · " + LabSafetySystem.RespiratorPrice
-                    : state.RespiratorEquipped ? "F6 · THÁO MẶT NẠ" : "F6 · ĐEO MẶT NẠ";
+                    ? "PPE / F6 · MUA · " + LabSafetySystem.RespiratorPrice
+                    : state.RespiratorEquipped ? "PPE / F6 · THÁO" : "PPE / F6 · ĐEO";
             }
 
             if (gasTrapButtonText != null)
             {
                 gasTrapButtonText.text = state.GasTrapConnected
-                    ? "F7 · THÁO BÌNH CÁCH LY"
-                    : "F7 · NỐI BÌNH CÁCH LY";
+                    ? "HỆ RỬA KHÍ / F7 · THÁO"
+                    : "HỆ RỬA KHÍ / F7 · NỐI";
             }
 
             if (safetyText != null)
@@ -482,7 +482,7 @@ namespace ChemistryLab.Desktop
                 builder.Append((outcome.ProductPurity * 100f).ToString("0.0"));
                 builder.Append("%\n\nTHU SẢN PHẨM\n");
                 builder.Append(outcome.Effect == ReactionEffect.Gas
-                    ? "C · cần tủ hút + bình cách ly F7"
+                    ? "C · cần tủ hút + hệ rửa khí đã nối"
                     : "C hoặc bỏ mẫu đang cầm rồi nhấn E tại cốc");
                 builder.Append("\n\nQUAN SÁT\n");
                 builder.Append(outcome.Message);
@@ -1022,7 +1022,7 @@ namespace ChemistryLab.Desktop
             var respiratorButton = CreateButton(
                 "Respirator Button",
                 panel.transform,
-                "F6 · MUA MẶT NẠ · 250",
+                "PPE / F6 · MUA · 250",
                 new Vector2(14f, 12f),
                 new Vector2(187f, 50f),
                 game.ToggleRespirator);
@@ -1031,7 +1031,7 @@ namespace ChemistryLab.Desktop
             var trapButton = CreateButton(
                 "Gas Trap Button",
                 panel.transform,
-                "F7 · NỐI BÌNH CÁCH LY",
+                "HỆ RỬA KHÍ / F7 · NỐI",
                 new Vector2(199f, 12f),
                 new Vector2(376f, 50f),
                 game.ToggleGasTrap);

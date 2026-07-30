@@ -164,6 +164,62 @@ namespace ChemistryLab.Desktop
         }
     }
 
+    public sealed class RespiratorStationInteractable : LabInteractable
+    {
+        public override string Prompt
+        {
+            get
+            {
+                var safety = Game == null ? null : Game.SafetySystem;
+                if (safety == null)
+                {
+                    return "E · Kiểm tra tủ PPE";
+                }
+
+                if (!safety.RespiratorOwned)
+                {
+                    return "E · Mua và đeo mặt nạ lọc độc · "
+                        + LabSafetySystem.RespiratorPrice
+                        + " tín dụng";
+                }
+
+                return safety.RespiratorEquipped
+                    ? "E · Tháo mặt nạ lọc độc"
+                    : "E · Đeo mặt nạ lọc độc";
+            }
+        }
+
+        public override void Interact()
+        {
+            if (Game != null)
+            {
+                Game.ToggleRespirator();
+            }
+        }
+    }
+
+    public sealed class GasTrapInteractable : LabInteractable
+    {
+        public override string Prompt
+        {
+            get
+            {
+                var safety = Game == null ? null : Game.SafetySystem;
+                return safety != null && safety.GasTrapConnected
+                    ? "E · Tháo bình cách ly khỏi hệ rửa khí"
+                    : "E · Nối bình cách ly vào hệ rửa khí";
+            }
+        }
+
+        public override void Interact()
+        {
+            if (Game != null)
+            {
+                Game.ToggleGasTrap();
+            }
+        }
+    }
+
     [RequireComponent(typeof(CharacterController))]
     public sealed class FirstPersonChemistController : MonoBehaviour
     {
