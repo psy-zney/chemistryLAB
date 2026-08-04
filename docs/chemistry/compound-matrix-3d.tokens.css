@@ -654,18 +654,20 @@ button[data-state="error"] {
 .axis-label {
   position: absolute;
   z-index: var(--z-raised);
-  padding: var(--space-2xs) var(--space-xs);
-  border: var(--rule-thin) solid var(--color-rule);
-  border-radius: var(--radius-xs);
-  background: var(--color-label);
-  backdrop-filter: blur(6px);
+  padding: var(--space-xs) var(--space-md);
+  border: 1px solid var(--color-rule-2);
+  border-radius: var(--radius-md);
+  background: var(--color-glass);
+  backdrop-filter: blur(12px);
   color: var(--color-ink);
-  font-family: var(--font-mono);
-  font-size: var(--text-xs);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  font-weight: 700;
   pointer-events: none;
   transform: translate3d(var(--overlay-x, 0), var(--overlay-y, 0), 0) translate(-50%, -50%);
   white-space: nowrap;
+  box-shadow: 0 4px 16px var(--color-shadow);
+  letter-spacing: 0.02em;
 }
 
 .hover-card {
@@ -1527,42 +1529,44 @@ button[data-state="error"] {
   transform: translate3d(var(--overlay-x, 0), var(--overlay-y, 0), 0) translate(-50%, -50%) scale(var(--badge-scale, 1));
   display: inline-flex;
   align-items: center;
-  gap: 0.2rem;
-  padding: 0.12rem 0.35rem;
-  border-radius: var(--radius-xs);
+  gap: 0.25rem;
+  padding: 0.2rem 0.5rem;
+  border-radius: var(--radius-sm);
   font-family: var(--font-mono);
-  font-size: 0.65rem;
-  font-weight: 600;
+  font-size: 0.75rem;
+  font-weight: 700;
   pointer-events: auto;
   cursor: pointer;
   white-space: nowrap;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 2px 8px var(--color-shadow);
   backdrop-filter: blur(4px);
-  transition: transform var(--dur-micro) var(--ease-out);
+  transition: transform var(--dur-short) var(--ease-out), z-index 0s;
+  z-index: 10;
 }
 
 .axis-ion-badge:hover {
-  --badge-scale: 1.12;
+  --badge-scale: 1.15;
   z-index: 15;
+  box-shadow: 0 4px 12px var(--color-shadow);
 }
 
 .axis-ion-badge--x {
-  background: oklch(30% 0.12 25 / 0.85);
-  color: oklch(80% 0.12 25);
-  border: 1px solid oklch(55% 0.18 25 / 0.5);
-  text-shadow: 0 0 6px oklch(65% 0.2 25 / 0.4);
+  background: var(--color-axis-x);
+  color: #ffffff;
+  border: 1px solid oklch(100% 0 0 / 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .axis-ion-badge--y {
-  background: oklch(25% 0.1 155 / 0.85);
-  color: oklch(75% 0.14 155);
-  border: 1px solid oklch(50% 0.15 155 / 0.5);
-  text-shadow: 0 0 6px oklch(60% 0.18 155 / 0.4);
+  background: var(--color-axis-y);
+  color: #ffffff;
+  border: 1px solid oklch(100% 0 0 / 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
 
 .axis-ion-badge--z {
-  background: oklch(25% 0.1 256 / 0.85);
-  color: oklch(75% 0.18 256);
-  border: 1px solid oklch(55% 0.2 256 / 0.5);
-  text-shadow: 0 0 6px oklch(65% 0.22 256 / 0.4);
+  background: var(--color-axis-z);
+  color: #ffffff;
+  border: 1px solid oklch(100% 0 0 / 0.2);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
 }
