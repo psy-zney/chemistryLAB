@@ -45,6 +45,30 @@ namespace ChemistryLab.Desktop
         public static readonly Color Coat = FromHex("#E7EEEC");
         public static readonly Color Glove = FromHex("#63BEB7");
 
+        // UI Presentation Tokens (High-Tech Laboratory Dark Glassmorphism)
+        public static readonly Color UiBackground = FromHex("#070D18");
+        public static readonly Color UiPanel = FromHex("#0B1320");
+        public static readonly Color UiCard = FromHex("#0C1524");
+        public static readonly Color UiCardHeader = FromHex("#121D2F");
+        public static readonly Color UiBorder = FromHex("#1E3654");
+        public static readonly Color UiBorderGlow = FromHex("#38BDF8");
+        public static readonly Color UiCyan = FromHex("#38BDF8");
+        public static readonly Color UiCyanDim = FromHex("#0284C7");
+        public static readonly Color UiText = FromHex("#F8FAFC");
+        public static readonly Color UiTextDim = FromHex("#CBD5E1");
+        public static readonly Color UiTextMuted = FromHex("#94A3B8");
+        public static readonly Color UiButton = FromHex("#131F32");
+        public static readonly Color UiButtonHover = FromHex("#0284C7");
+        public static readonly Color UiButtonPressed = FromHex("#0369A1");
+        public static readonly Color UiButtonPrimary = FromHex("#0284C7");
+        public static readonly Color UiButtonPrimaryHover = FromHex("#0EA5E9");
+        public static readonly Color UiButtonPrimaryPressed = FromHex("#0369A1");
+        public static readonly Color UiSuccess = FromHex("#10B981");
+        public static readonly Color UiHazard = FromHex("#EF4444");
+        public static readonly Color UiWarningAmber = FromHex("#F59E0B");
+        public static readonly Color UiFormula = FromHex("#38BDF8");
+        public static readonly Color UiEquation = FromHex("#FDBA74");
+
         public const int ReferenceWidth = 1920;
         public const int ReferenceHeight = 1080;
 

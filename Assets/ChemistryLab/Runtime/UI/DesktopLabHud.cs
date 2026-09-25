@@ -307,7 +307,7 @@ namespace ChemistryLab.Desktop
             safetyText.text = safe
                 ? LabLocalization.Text("AN TOÀN", "SAFE")
                 : LabLocalization.Text("ĐÃ KHÓA", "LOCKED");
-            safetyText.color = safe ? LabTheme.Safe : LabTheme.Warning;
+            safetyText.color = safe ? LabTheme.UiSuccess : LabTheme.UiHazard;
             safetyText.gameObject.name = message;
         }
 
@@ -332,7 +332,7 @@ namespace ChemistryLab.Desktop
                   + "MẶT NẠ  " + (state.RespiratorEquipped ? "ĐANG ĐEO" : state.RespiratorOwned ? "ĐÃ THÁO" : "CHƯA MUA")
                   + "     BÌNH CÁCH LY  " + (state.GasTrapConnected ? "ĐÃ NỐI" : "CHƯA NỐI") + "\n"
                   + (incident == null ? "Chưa ghi nhận sự cố." : incident.Title + " · " + incident.Message);
-            playerSafetyText.color = warning ? LabTheme.Warning : LabTheme.GraphiteInk;
+            playerSafetyText.color = warning ? LabTheme.UiHazard : LabTheme.UiTextDim;
 
             if (respiratorButtonText != null)
             {
@@ -355,7 +355,7 @@ namespace ChemistryLab.Desktop
                 safetyText.text = warning
                     ? LabLocalization.Text("CẢNH BÁO", "WARNING")
                     : LabLocalization.Text("AN TOÀN", "SAFE");
-                safetyText.color = warning ? LabTheme.Warning : LabTheme.Safe;
+                safetyText.color = warning ? LabTheme.UiHazard : LabTheme.UiSuccess;
             }
         }
 
@@ -369,7 +369,7 @@ namespace ChemistryLab.Desktop
             missionText.text = completed
                 ? LabLocalization.Text("NHIỆM VỤ HOÀN THÀNH\n", "MISSION COMPLETE\n") + title
                 : LabLocalization.Text("NHIỆM VỤ ĐANG GHIM\n", "PINNED MISSION\n") + title;
-            missionText.color = completed ? LabTheme.Safe : LabTheme.GraphiteInk;
+            missionText.color = completed ? LabTheme.UiSuccess : LabTheme.UiText;
         }
 
         public void SetInteractionPrompt(string prompt)
@@ -442,7 +442,7 @@ namespace ChemistryLab.Desktop
 
             if (chemical == null)
             {
-                selectedFormulaText.color = LabTheme.Ink;
+                selectedFormulaText.color = LabTheme.UiFormula;
                 selectedFormulaText.text = "—";
                 selectedNameText.text = LabLocalization.Text("Chưa cầm mẫu", "No sample in hand");
                 selectedDetailsText.text =
@@ -456,7 +456,7 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
-            selectedFormulaText.color = LabTheme.Ink;
+            selectedFormulaText.color = LabTheme.UiFormula;
             selectedFormulaText.text = chemical.Formula;
             selectedNameText.text = chemical.Name + " · " + chemical.PhaseLabel;
             selectedDetailsText.text =
@@ -492,7 +492,7 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
-            selectedFormulaText.color = LabTheme.Ink;
+            selectedFormulaText.color = LabTheme.UiFormula;
             selectedFormulaText.text = element.AtomicNumber + "  " + element.Symbol;
             selectedNameText.text = element.Name + " · " + element.CategoryLabel;
             selectedDetailsText.text =
@@ -920,7 +920,7 @@ namespace ChemistryLab.Desktop
             }
 
             transientText.text = message;
-            transientText.color = warning ? LabTheme.Warning : LabTheme.Ink;
+            transientText.color = warning ? LabTheme.UiHazard : LabTheme.UiText;
             transientText.transform.parent.gameObject.SetActive(true);
             transientAnimation = StartCoroutine(HideTransientLater());
         }
@@ -974,16 +974,25 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 1f),
                 new Vector2(0f, -60f),
                 Vector2.zero,
-                LabTheme.Graphite);
+                LabTheme.WithAlpha(LabTheme.UiBackground, 0.94f));
+            CreatePanel(
+                "Edge HUD Bottom Rule",
+                topBar.transform,
+                Vector2.zero,
+                new Vector2(1f, 0f),
+                Vector2.zero,
+                Vector2.zero,
+                new Vector2(0f, 1.5f),
+                new Color(0.22f, 0.74f, 0.97f, 0.35f));
 
             CreateText(
                 "Wordmark",
                 topBar.transform,
-                "CHEMISTRY LAB · NATIVE",
+                "CHEMISTRY LAB · 3D",
                 displayFont,
                 20,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiCyan,
                 TextAnchor.MiddleLeft,
                 new Vector2(0f, 0f),
                 new Vector2(0.42f, 1f),
@@ -1005,7 +1014,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 14,
                 FontStyle.Normal,
-                LabTheme.GraphiteInk,
+                LabTheme.UiTextDim,
                 TextAnchor.MiddleRight,
                 new Vector2(0.54f, 0f),
                 new Vector2(0.72f, 1f),
@@ -1016,10 +1025,10 @@ namespace ChemistryLab.Desktop
                 "Temperature",
                 topBar.transform,
                 "24.0 °C",
-                bodyFont,
+                monoFont,
                 14,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiCyan,
                 TextAnchor.MiddleCenter,
                 new Vector2(0.72f, 0f),
                 new Vector2(0.84f, 1f),
@@ -1033,7 +1042,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 13,
                 FontStyle.Bold,
-                LabTheme.Safe,
+                LabTheme.UiSuccess,
                 TextAnchor.MiddleCenter,
                 new Vector2(0.84f, 0f),
                 Vector2.one,
@@ -1048,19 +1057,22 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 1f),
                 new Vector2(20f, -156f),
                 new Vector2(390f, -82f),
-                LabTheme.WithAlpha(LabTheme.Graphite, 0.88f));
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.92f));
+            AddOutline(missionPanel, new Color(0.22f, 0.74f, 0.97f, 0.25f), new Vector2(1f, -1f));
+            AddLeftAccentStripe(missionPanel, LabTheme.UiCyan, 3f);
+
             missionText = CreateText(
                 "Mission Text",
                 missionPanel.transform,
                 "NHIỆM VỤ ĐANG GHIM\nTạo kết tủa xanh Cu(OH)₂",
                 bodyFont,
-                16,
+                15,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiText,
                 TextAnchor.MiddleLeft,
                 Vector2.zero,
                 Vector2.one,
-                new Vector2(16f, 8f),
+                new Vector2(18f, 8f),
                 new Vector2(-12f, -8f));
 
             CreateSafetyPanel(canvasObject.transform);
@@ -1073,7 +1085,9 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.5f, 0f),
                 new Vector2(0f, 78f),
                 new Vector2(0f, 132f),
-                LabTheme.WithAlpha(LabTheme.Graphite, 0.82f));
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.92f));
+            AddOutline(promptPanel, new Color(0.22f, 0.74f, 0.97f, 0.40f), new Vector2(1.5f, -1.5f));
+
             promptText = CreateText(
                 "Interaction Prompt",
                 promptPanel.transform,
@@ -1081,7 +1095,7 @@ namespace ChemistryLab.Desktop
                 displayFont,
                 19,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiText,
                 TextAnchor.MiddleCenter,
                 Vector2.zero,
                 Vector2.one,
@@ -1095,8 +1109,11 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.48f, 0f),
                 Vector2.zero,
                 new Vector2(22f, 62f),
-                new Vector2(-16f, 112f),
-                LabTheme.WithAlpha(LabTheme.PaperRaised, 0.94f));
+                new Vector2(-16f, 116f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.94f));
+            AddOutline(transientPanel, new Color(0.22f, 0.74f, 0.97f, 0.35f), new Vector2(1f, -1f));
+            AddLeftAccentStripe(transientPanel, LabTheme.UiCyan, 3f);
+
             transientText = CreateText(
                 "Transient",
                 transientPanel.transform,
@@ -1104,11 +1121,11 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 16,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiText,
                 TextAnchor.MiddleLeft,
                 Vector2.zero,
                 Vector2.one,
-                new Vector2(12f, 0f),
+                new Vector2(16f, 0f),
                 new Vector2(-12f, 0f));
             transientPanel.SetActive(false);
 
@@ -1128,13 +1145,15 @@ namespace ChemistryLab.Desktop
             reactionOverlay = CreatePanel(
                 "Reaction Presentation",
                 parent,
-                new Vector2(0.25f, 0.66f),
-                new Vector2(0.78f, 0.93f),
+                new Vector2(0.22f, 0.64f),
+                new Vector2(0.78f, 0.94f),
                 new Vector2(0.5f, 0.5f),
                 Vector2.zero,
                 Vector2.zero,
-                LabTheme.WithAlpha(LabTheme.Graphite, 0.92f));
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.96f));
             reactionOverlay.GetComponent<Image>().raycastTarget = false;
+            AddOutline(reactionOverlay, new Color(0.22f, 0.74f, 0.97f, 0.40f), new Vector2(1.5f, -1.5f));
+            AddTopAccentStripe(reactionOverlay, LabTheme.UiCyan, 3f);
 
             reactionTitleText = CreateText(
                 "Reaction Presentation Title",
@@ -1143,7 +1162,7 @@ namespace ChemistryLab.Desktop
                 displayFont,
                 20,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiCyan,
                 TextAnchor.UpperLeft,
                 new Vector2(0f, 1f),
                 Vector2.one,
@@ -1156,7 +1175,7 @@ namespace ChemistryLab.Desktop
                 monoFont,
                 27,
                 FontStyle.Bold,
-                LabTheme.Focus,
+                LabTheme.UiEquation,
                 TextAnchor.MiddleCenter,
                 new Vector2(0f, 0.38f),
                 new Vector2(1f, 0.78f),
@@ -1169,7 +1188,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 15,
                 FontStyle.Normal,
-                LabTheme.GraphiteInk,
+                LabTheme.UiTextDim,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 new Vector2(1f, 0.38f),
@@ -1198,7 +1217,16 @@ namespace ChemistryLab.Desktop
                 Vector2.zero,
                 Vector2.zero,
                 new Vector2(0f, 54f),
-                LabTheme.Graphite);
+                LabTheme.WithAlpha(LabTheme.UiBackground, 0.94f));
+            CreatePanel(
+                "Footer Top Rule",
+                footer.transform,
+                new Vector2(0f, 1f),
+                Vector2.one,
+                new Vector2(0f, 1f),
+                Vector2.zero,
+                new Vector2(0f, 1.5f),
+                new Color(0.22f, 0.74f, 0.97f, 0.35f));
 
             CreateText(
                 "Movement Controls",
@@ -1207,7 +1235,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 13,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiTextDim,
                 TextAnchor.MiddleCenter,
                 Vector2.zero,
                 new Vector2(0.69f, 1f),
@@ -1221,7 +1249,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 12,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiCyan,
                 TextAnchor.MiddleCenter,
                 new Vector2(0.69f, 0f),
                 new Vector2(0.79f, 1f),
@@ -1235,7 +1263,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 12,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiCyan,
                 TextAnchor.MiddleCenter,
                 new Vector2(0.79f, 0f),
                 new Vector2(0.89f, 1f),
@@ -1249,7 +1277,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 12,
                 FontStyle.Normal,
-                LabTheme.GraphiteInk,
+                LabTheme.UiTextMuted,
                 TextAnchor.MiddleRight,
                 new Vector2(0.89f, 0f),
                 Vector2.one,
@@ -1267,7 +1295,9 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 1f),
                 new Vector2(20f, -614f),
                 new Vector2(390f, -350f),
-                LabTheme.WithAlpha(LabTheme.Graphite, 0.92f));
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.94f));
+            AddOutline(debugPanel, new Color(0.22f, 0.74f, 0.97f, 0.25f), new Vector2(1f, -1f));
+            AddLeftAccentStripe(debugPanel, LabTheme.UiCyan, 3f);
 
             CreateText(
                 "Debug Title",
@@ -1276,11 +1306,11 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 13,
                 FontStyle.Bold,
-                LabTheme.Focus,
+                LabTheme.UiCyan,
                 TextAnchor.UpperLeft,
                 new Vector2(0f, 1f),
                 Vector2.one,
-                new Vector2(16f, -38f),
+                new Vector2(18f, -38f),
                 new Vector2(-14f, -10f));
 
             debugText = CreateText(
@@ -1290,11 +1320,11 @@ namespace ChemistryLab.Desktop
                 monoFont,
                 13,
                 FontStyle.Normal,
-                LabTheme.GraphiteInk,
+                LabTheme.UiText,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
-                new Vector2(16f, 12f),
+                new Vector2(18f, 12f),
                 new Vector2(-14f, -48f));
         }
 
@@ -1308,7 +1338,9 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 1f),
                 new Vector2(20f, -334f),
                 new Vector2(410f, -170f),
-                LabTheme.WithAlpha(LabTheme.Graphite, 0.92f));
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.94f));
+            AddOutline(panel, new Color(0.22f, 0.74f, 0.97f, 0.25f), new Vector2(1f, -1f));
+            AddLeftAccentStripe(panel, LabTheme.UiSuccess, 3f);
 
             playerSafetyText = CreateText(
                 "Safety State",
@@ -1318,19 +1350,19 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 12,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiTextDim,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
-                new Vector2(14f, 58f),
+                new Vector2(18f, 58f),
                 new Vector2(-14f, -12f));
 
             var respiratorButton = CreateButton(
                 "Respirator Button",
                 panel.transform,
                 "PPE / F6 · MUA · 250",
-                new Vector2(14f, 12f),
-                new Vector2(187f, 50f),
+                new Vector2(18f, 12f),
+                new Vector2(191f, 50f),
                 () => { if (game.Player != null) game.Player.DispatchRespirator(); });
             respiratorButtonText = respiratorButton.GetComponentInChildren<Text>();
 
@@ -1338,8 +1370,8 @@ namespace ChemistryLab.Desktop
                 "Gas Trap Button",
                 panel.transform,
                 "HỆ RỬA KHÍ / F7 · NỐI",
-                new Vector2(199f, 12f),
-                new Vector2(376f, 50f),
+                new Vector2(203f, 12f),
+                new Vector2(380f, 50f),
                 () => { if (game.Player != null) game.Player.DispatchGasTrap(); });
             gasTrapButtonText = trapButton.GetComponentInChildren<Text>();
         }
@@ -1601,9 +1633,10 @@ namespace ChemistryLab.Desktop
                 new Vector2(1f, 0.5f),
                 new Vector2(-430f, 66f),
                 new Vector2(-16f, -16f),
-                LabTheme.PaperRaised);
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.96f));
             inspectorRect = inspectorPanel.GetComponent<RectTransform>();
             inspectorGroup = inspectorPanel.AddComponent<CanvasGroup>();
+            AddOutline(inspectorPanel, new Color(0.22f, 0.74f, 0.97f, 0.30f), new Vector2(1.5f, -1.5f));
 
             var rule = CreatePanel(
                 "Inspector Header",
@@ -1613,7 +1646,17 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 1f),
                 Vector2.zero,
                 new Vector2(0f, 72f),
-                LabTheme.PaperDeep);
+                LabTheme.UiCardHeader);
+            AddLeftAccentStripe(rule, LabTheme.UiCyan, 3f);
+            CreatePanel(
+                "Inspector Header Rule",
+                rule.transform,
+                Vector2.zero,
+                new Vector2(1f, 0f),
+                Vector2.zero,
+                Vector2.zero,
+                new Vector2(0f, 1.5f),
+                new Color(0.22f, 0.74f, 0.97f, 0.35f));
 
             CreateText(
                 "Inspector Title",
@@ -1622,7 +1665,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 13,
                 FontStyle.Bold,
-                LabTheme.Ink,
+                LabTheme.UiText,
                 TextAnchor.MiddleLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -1648,7 +1691,7 @@ namespace ChemistryLab.Desktop
                 monoFont,
                 30,
                 FontStyle.Bold,
-                LabTheme.Ink,
+                LabTheme.UiFormula,
                 TextAnchor.UpperLeft,
                 new Vector2(0f, 1f),
                 Vector2.one,
@@ -1662,7 +1705,7 @@ namespace ChemistryLab.Desktop
                 displayFont,
                 18,
                 FontStyle.Bold,
-                LabTheme.InkSoft,
+                LabTheme.UiText,
                 TextAnchor.UpperLeft,
                 new Vector2(0f, 1f),
                 Vector2.one,
@@ -1676,7 +1719,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 15,
                 FontStyle.Normal,
-                LabTheme.Ink,
+                LabTheme.UiTextDim,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -1694,7 +1737,7 @@ namespace ChemistryLab.Desktop
                 displayFont,
                 24,
                 FontStyle.Bold,
-                LabTheme.Ink,
+                LabTheme.UiText,
                 TextAnchor.UpperLeft,
                 new Vector2(0f, 1f),
                 Vector2.one,
@@ -1708,7 +1751,7 @@ namespace ChemistryLab.Desktop
                 monoFont,
                 15,
                 FontStyle.Bold,
-                LabTheme.AccentDeep,
+                LabTheme.UiEquation,
                 TextAnchor.UpperLeft,
                 new Vector2(0f, 1f),
                 Vector2.one,
@@ -1722,7 +1765,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 15,
                 FontStyle.Normal,
-                LabTheme.Ink,
+                LabTheme.UiTextDim,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -1740,7 +1783,16 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 0f),
                 new Vector2(0f, 0f),
                 new Vector2(0f, 62f),
-                LabTheme.PaperDeep);
+                LabTheme.UiCardHeader);
+            CreatePanel(
+                "Inspector Actions Rule",
+                inspectorActions.transform,
+                new Vector2(0f, 1f),
+                Vector2.one,
+                new Vector2(0f, 1f),
+                Vector2.zero,
+                new Vector2(0f, 1.5f),
+                new Color(0.22f, 0.74f, 0.97f, 0.35f));
 
             inspectorHeatButton = CreateButton(
                 "Inspector Heat Button",
@@ -1803,7 +1855,7 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.5f, 0.5f),
                 Vector2.zero,
                 Vector2.zero,
-                LabTheme.WithAlpha(LabTheme.Graphite, 0.78f));
+                new Color(0.02f, 0.04f, 0.08f, 0.85f));
             pauseOverlay.GetComponent<Image>().raycastTarget = true;
 
             var card = CreatePanel(
@@ -1812,9 +1864,11 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
-                new Vector2(-320f, -245f),
-                new Vector2(320f, 245f),
-                LabTheme.PaperRaised);
+                new Vector2(-330f, -250f),
+                new Vector2(330f, 250f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.96f));
+            AddOutline(card, new Color(0.22f, 0.74f, 0.97f, 0.35f), new Vector2(1.5f, -1.5f));
+            AddTopAccentStripe(card, LabTheme.UiCyan, 3f);
 
             CreateText(
                 "Pause Title",
@@ -1823,7 +1877,7 @@ namespace ChemistryLab.Desktop
                 displayFont,
                 27,
                 FontStyle.Bold,
-                LabTheme.Ink,
+                LabTheme.UiText,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -1845,7 +1899,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 16,
                 FontStyle.Normal,
-                LabTheme.InkSoft,
+                LabTheme.UiTextDim,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -1857,23 +1911,24 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "BẮT ĐẦU / TIẾP TỤC THỰC HÀNH",
                 new Vector2(36f, 120f),
-                new Vector2(604f, 174f),
-                game.ResumeFromUi);
+                new Vector2(624f, 174f),
+                game.ResumeFromUi,
+                true);
 
             CreateButton(
                 "Settings Button",
                 card.transform,
                 "CÀI ĐẶT",
                 new Vector2(36f, 50f),
-                new Vector2(304f, 104f),
+                new Vector2(314f, 104f),
                 ShowSettingsFromPauseMenu);
 
             CreateButton(
                 "Back To Main Menu Button",
                 card.transform,
                 "VỀ MÀN HÌNH CHÍNH",
-                new Vector2(326f, 50f),
-                new Vector2(604f, 104f),
+                new Vector2(336f, 50f),
+                new Vector2(624f, 104f),
                 game.ReturnToMainMenuFromUi);
         }
 
@@ -1887,7 +1942,7 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.5f, 0.5f),
                 Vector2.zero,
                 Vector2.zero,
-                LabTheme.WithAlpha(LabTheme.Graphite, 0.82f));
+                new Color(0.02f, 0.04f, 0.08f, 0.85f));
             mainMenuOverlay.GetComponent<Image>().raycastTarget = true;
 
             var card = CreatePanel(
@@ -1896,9 +1951,11 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
-                new Vector2(-320f, -245f),
-                new Vector2(320f, 245f),
-                LabTheme.PaperRaised);
+                new Vector2(-330f, -250f),
+                new Vector2(330f, 250f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.96f));
+            AddOutline(card, new Color(0.22f, 0.74f, 0.97f, 0.35f), new Vector2(1.5f, -1.5f));
+            AddTopAccentStripe(card, LabTheme.UiCyan, 3f);
 
             CreateText(
                 "Main Menu Eyebrow",
@@ -1907,7 +1964,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 13,
                 FontStyle.Bold,
-                LabTheme.AccentDeep,
+                LabTheme.UiCyan,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -1921,7 +1978,7 @@ namespace ChemistryLab.Desktop
                 displayFont,
                 38,
                 FontStyle.Bold,
-                LabTheme.Ink,
+                LabTheme.UiText,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -1937,7 +1994,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 16,
                 FontStyle.Normal,
-                LabTheme.InkSoft,
+                LabTheme.UiTextDim,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -1949,23 +2006,24 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "BẮT ĐẦU / TIẾP TỤC",
                 new Vector2(36f, 120f),
-                new Vector2(604f, 174f),
-                game.ResumeFromUi);
+                new Vector2(624f, 174f),
+                game.ResumeFromUi,
+                true);
 
             CreateButton(
                 "Main Menu Settings Button",
                 card.transform,
                 "CÀI ĐẶT",
                 new Vector2(36f, 50f),
-                new Vector2(304f, 104f),
+                new Vector2(314f, 104f),
                 ShowSettingsFromMainMenu);
 
             CreateButton(
                 "Main Menu Quit Button",
                 card.transform,
                 "THOÁT RA DESKTOP",
-                new Vector2(326f, 50f),
-                new Vector2(604f, 104f),
+                new Vector2(336f, 50f),
+                new Vector2(624f, 104f),
                 game.QuitToDesktop);
         }
 
@@ -1979,7 +2037,7 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.5f, 0.5f),
                 Vector2.zero,
                 Vector2.zero,
-                LabTheme.WithAlpha(LabTheme.Graphite, 0.82f));
+                new Color(0.02f, 0.04f, 0.08f, 0.85f));
             settingsOverlay.GetComponent<Image>().raycastTarget = true;
 
             var card = CreatePanel(
@@ -1988,9 +2046,11 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
-                new Vector2(-320f, -285f),
-                new Vector2(320f, 285f),
-                LabTheme.PaperRaised);
+                new Vector2(-330f, -285f),
+                new Vector2(330f, 285f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.96f));
+            AddOutline(card, new Color(0.22f, 0.74f, 0.97f, 0.35f), new Vector2(1.5f, -1.5f));
+            AddTopAccentStripe(card, LabTheme.UiCyan, 3f);
 
             CreateText(
                 "Settings Title",
@@ -1999,7 +2059,7 @@ namespace ChemistryLab.Desktop
                 displayFont,
                 32,
                 FontStyle.Bold,
-                LabTheme.Ink,
+                LabTheme.UiText,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -2013,7 +2073,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 15,
                 FontStyle.Normal,
-                LabTheme.InkSoft,
+                LabTheme.UiTextDim,
                 TextAnchor.UpperLeft,
                 Vector2.zero,
                 Vector2.one,
@@ -2025,7 +2085,7 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "NGÔN NGỮ · TIẾNG VIỆT",
                 new Vector2(36f, 320f),
-                new Vector2(604f, 374f),
+                new Vector2(624f, 374f),
                 game.ToggleLanguage);
             languageButtonText = languageButton.GetComponentInChildren<Text>();
 
@@ -2034,7 +2094,7 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "ÂM THANH · BẬT",
                 new Vector2(36f, 250f),
-                new Vector2(604f, 304f),
+                new Vector2(624f, 304f),
                 game.ToggleAudio);
             audioButtonText = audioButton.GetComponentInChildren<Text>();
 
@@ -2043,7 +2103,7 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "GIẢM CHUYỂN ĐỘNG · TẮT",
                 new Vector2(36f, 180f),
-                new Vector2(604f, 234f),
+                new Vector2(624f, 234f),
                 game.ToggleReducedMotion);
             reducedMotionButtonText = reducedMotionButton.GetComponentInChildren<Text>();
 
@@ -2052,7 +2112,7 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "MÀN HÌNH · TOÀN MÀN HÌNH",
                 new Vector2(36f, 110f),
-                new Vector2(604f, 164f),
+                new Vector2(624f, 164f),
                 game.ToggleFullscreen);
             fullscreenButtonText = fullscreenButton.GetComponentInChildren<Text>();
 
@@ -2061,7 +2121,7 @@ namespace ChemistryLab.Desktop
                 card.transform,
                 "QUAY LẠI",
                 new Vector2(36f, 40f),
-                new Vector2(604f, 94f),
+                new Vector2(624f, 94f),
                 ReturnFromSettings);
         }
 
@@ -2238,18 +2298,18 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
-                new Vector2(-8f, -1f),
-                new Vector2(8f, 1f),
-                LabTheme.AccentInk);
+                new Vector2(-7f, -1f),
+                new Vector2(7f, 1f),
+                LabTheme.UiCyan);
             var vertical = CreatePanel(
                 "Crosshair Vertical",
                 parent,
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
                 new Vector2(0.5f, 0.5f),
-                new Vector2(-1f, -8f),
-                new Vector2(1f, 8f),
-                LabTheme.AccentInk);
+                new Vector2(-1f, -7f),
+                new Vector2(1f, 7f),
+                LabTheme.UiCyan);
             horizontal.GetComponent<Image>().raycastTarget = false;
             vertical.GetComponent<Image>().raycastTarget = false;
         }
@@ -2377,13 +2437,49 @@ namespace ChemistryLab.Desktop
             return text;
         }
 
+        private static void AddOutline(GameObject target, Color color, Vector2 distance)
+        {
+            var outline = target.GetComponent<Outline>() ?? target.AddComponent<Outline>();
+            outline.effectColor = color;
+            outline.effectDistance = distance;
+            outline.useGraphicAlpha = false;
+            outline.enabled = true;
+        }
+
+        private static void AddTopAccentStripe(GameObject card, Color color, float height = 3f)
+        {
+            CreatePanel(
+                "Top Accent Stripe",
+                card.transform,
+                new Vector2(0f, 1f),
+                Vector2.one,
+                new Vector2(0f, 1f),
+                Vector2.zero,
+                new Vector2(0f, height),
+                color);
+        }
+
+        private static void AddLeftAccentStripe(GameObject card, Color color, float width = 3f)
+        {
+            CreatePanel(
+                "Left Accent Stripe",
+                card.transform,
+                Vector2.zero,
+                new Vector2(0f, 1f),
+                Vector2.zero,
+                Vector2.zero,
+                new Vector2(width, 0f),
+                color);
+        }
+
         private Button CreateButton(
             string name,
             Transform parent,
             string label,
             Vector2 offsetMin,
             Vector2 offsetMax,
-            UnityEngine.Events.UnityAction onClick)
+            UnityEngine.Events.UnityAction onClick,
+            bool isPrimary = false)
         {
             var buttonObject = new GameObject(
                 name,
@@ -2398,26 +2494,30 @@ namespace ChemistryLab.Desktop
             rect.offsetMin = offsetMin;
             rect.offsetMax = offsetMax;
 
+            var normalBg = isPrimary ? LabTheme.UiButtonPrimary : LabTheme.UiButton;
+            var hoverBg = isPrimary ? LabTheme.UiButtonPrimaryHover : LabTheme.UiButtonHover;
+            var pressedBg = isPrimary ? LabTheme.UiButtonPrimaryPressed : LabTheme.UiButtonPressed;
+
             var image = buttonObject.GetComponent<Image>();
-            image.color = LabTheme.Graphite;
+            image.color = normalBg;
             image.raycastTarget = true;
 
             var focusOutline = buttonObject.GetComponent<Outline>();
-            focusOutline.effectColor = LabTheme.Focus;
-            focusOutline.effectDistance = new Vector2(2f, -2f);
+            focusOutline.effectColor = new Color(0.22f, 0.74f, 0.97f, isPrimary ? 0.50f : 0.28f);
+            focusOutline.effectDistance = new Vector2(1f, -1f);
             focusOutline.useGraphicAlpha = false;
-            focusOutline.enabled = false;
+            focusOutline.enabled = true;
 
             var button = buttonObject.GetComponent<Button>();
             button.targetGraphic = image;
             button.transition = Selectable.Transition.ColorTint;
             button.colors = new ColorBlock
             {
-                normalColor = LabTheme.Graphite,
-                highlightedColor = LabTheme.GraphiteRaised,
-                pressedColor = LabTheme.AccentDeep,
-                selectedColor = LabTheme.GraphiteRaised,
-                disabledColor = LabTheme.Rule,
+                normalColor = normalBg,
+                highlightedColor = hoverBg,
+                pressedColor = pressedBg,
+                selectedColor = hoverBg,
+                disabledColor = LabTheme.WithAlpha(LabTheme.UiButton, 0.4f),
                 colorMultiplier = 1f,
                 fadeDuration = LabTheme.DurationMicro
             };
@@ -2430,7 +2530,7 @@ namespace ChemistryLab.Desktop
                 bodyFont,
                 14,
                 FontStyle.Bold,
-                LabTheme.GraphiteInk,
+                LabTheme.UiText,
                 TextAnchor.MiddleCenter,
                 Vector2.zero,
                 Vector2.one,
@@ -2438,7 +2538,7 @@ namespace ChemistryLab.Desktop
                 new Vector2(-14f, 0f));
 
             var feedback = buttonObject.AddComponent<DesktopLabButtonFeedback>();
-            feedback.Initialise(game, focusOutline);
+            feedback.Initialise(game, focusOutline, isPrimary);
             return button;
         }
 
@@ -2459,22 +2559,41 @@ namespace ChemistryLab.Desktop
     public sealed class DesktopLabButtonFeedback :
         MonoBehaviour,
         IPointerEnterHandler,
+        IPointerExitHandler,
         IPointerDownHandler,
         ISelectHandler,
         IDeselectHandler
     {
         private DesktopLabGame game;
         private Outline focusOutline;
+        private bool isPrimary;
+        private bool isSelected;
 
-        public void Initialise(DesktopLabGame owner, Outline outline)
+        public void Initialise(DesktopLabGame owner, Outline outline, bool primary = false)
         {
             game = owner;
             focusOutline = outline;
+            isPrimary = primary;
         }
 
         public void OnPointerEnter(PointerEventData eventData)
         {
+            if (focusOutline != null)
+            {
+                focusOutline.effectColor = LabTheme.UiCyan;
+                focusOutline.effectDistance = new Vector2(1.5f, -1.5f);
+            }
+
             PlayHover();
+        }
+
+        public void OnPointerExit(PointerEventData eventData)
+        {
+            if (focusOutline != null && !isSelected)
+            {
+                focusOutline.effectColor = new Color(0.22f, 0.74f, 0.97f, isPrimary ? 0.50f : 0.28f);
+                focusOutline.effectDistance = new Vector2(1f, -1f);
+            }
         }
 
         public void OnPointerDown(PointerEventData eventData)
@@ -2487,9 +2606,11 @@ namespace ChemistryLab.Desktop
 
         public void OnSelect(BaseEventData eventData)
         {
+            isSelected = true;
             if (focusOutline != null)
             {
-                focusOutline.enabled = true;
+                focusOutline.effectColor = LabTheme.UiCyan;
+                focusOutline.effectDistance = new Vector2(2f, -2f);
             }
 
             PlayHover();
@@ -2497,9 +2618,11 @@ namespace ChemistryLab.Desktop
 
         public void OnDeselect(BaseEventData eventData)
         {
+            isSelected = false;
             if (focusOutline != null)
             {
-                focusOutline.enabled = false;
+                focusOutline.effectColor = new Color(0.22f, 0.74f, 0.97f, isPrimary ? 0.50f : 0.28f);
+                focusOutline.effectDistance = new Vector2(1f, -1f);
             }
         }
 
