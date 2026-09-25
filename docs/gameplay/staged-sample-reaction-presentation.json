@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "2.0",
   "feature": "staged-sample-reaction-presentation",
   "stations": [
     "workbench",
@@ -10,7 +10,9 @@
     "place-on-station-tray-with-E",
     "load-vessel-from-staged-tray-with-E",
     "observe-reaction-close-view",
-    "collect-product-separately"
+    "collect-product-separately",
+    "clean-up-recorded-remaining-mixture-at-sink",
+    "repeat-or-choose-another-experiment"
   ],
   "physicalRules": {
     "directHandToVesselAllowed": false,
@@ -18,7 +20,8 @@
     "reactionWhenPlacedOnTrayAllowed": false,
     "remoteTrayToVesselAllowed": false,
     "failedLoadPreservesStagedSample": true,
-    "independentTrayPerStation": true
+    "independentTrayPerStation": true,
+    "staleInventoryBatchLoadAllowed": false
   },
   "reactionPresentation": {
     "targetFieldOfViewDegrees": 42,
@@ -39,6 +42,19 @@
     "remoteVesselOperationBlocked",
     "samplePlacementFlowVerified",
     "reactionEquationPresentationVerified",
-    "reactionCameraVerified"
-  ]
+    "reactionCameraVerified",
+    "staleBatchLoadBlockedVerified",
+    "conditionCommitVerified",
+    "onceOnlyCollectionVerified"
+  ],
+  "lifecycle": {
+    "reactionsPerVesselBetweenCleanups": 1,
+    "collectionOnce": true,
+    "loadHeatDiluteUseSameCommitPath": true,
+    "consequencesAppliedOnce": true,
+    "recordedInputsRetainedAfterCollection": true,
+    "changesAfterCommitRequireCleanup": true,
+    "remainingMassMeaning": "Signed recorded input grams minus collected primary product grams; solvent and byproduct identities are not fully modelled.",
+    "cleanupClearsBothVessels": true
+  }
 }

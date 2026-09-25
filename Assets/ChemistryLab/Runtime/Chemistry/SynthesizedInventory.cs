@@ -460,7 +460,8 @@ namespace ChemistryLab.Desktop
         {
             consumedGrams = 0d;
             var batch = Find(batchId);
-            if (batch == null || requestedGrams <= 0d || batch.AvailableGrams <= 0d)
+            if (batch == null || double.IsNaN(requestedGrams) || double.IsInfinity(requestedGrams)
+                || requestedGrams <= 0d || batch.AvailableGrams <= 0d)
             {
                 return false;
             }
@@ -557,6 +558,15 @@ namespace ChemistryLab.Desktop
             {
                 throw new InvalidOperationException("Synthesized inventory mass accounting validation failed.");
             }
+            if (!inventory.TryConsume(batch.BatchId, 3d, out consumed)
+                || Math.Abs(consumed - 3d) > .001d
+                || inventory.Find(batch.BatchId) != null
+                || inventory.TryConsume(batch.BatchId, 1d, out consumed)
+                || consumed != 0d)
+            {
+                throw new InvalidOperationException("Depleted/stale inventory withdrawal validation failed.");
+            }
+            VesselReactionLifecycle.ValidateOrThrow();
 
             var runtimeReaction = new ReactionDefinition(
                 "runtime-species-validation",

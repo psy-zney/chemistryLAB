@@ -1,194 +1,103 @@
-# Ma trận sinh hợp chất X/Y/Z
+﻿# Ma trận thành phần anion × cation 2D
 
-## Kết quả triển khai
+[Mở bảng tương tác](compound-matrix-2d.html) · [Hợp đồng JSON](compound-generation-matrix.json) · [Dữ liệu xuất](compound-matrix-2d.json)
 
-Ý tưởng ma trận ba chiều đã được triển khai thành một mô hình dữ liệu có kiểm
-định, không phải một mảng số ba chiều cố định:
+Mỗi hàng là `anionId`, mỗi cột là `cationId`. Chọn một ô không điều chế hóa chất. Công thức trung hòa điện không chứng minh chất tồn tại bền hoặc phản ứng khả thi.
 
-- trục X biểu diễn kim loại/cation, điện tích và hạng hoạt động;
-- trục Y biểu diễn phi kim, anion đơn nguyên tử hoặc họ gốc axit;
-- trục Z biểu diễn số nguyên tử oxi và số oxi hóa liên quan;
-- tầng cân bằng điện tích quyết định chỉ số trong công thức;
-- tầng thuộc tính ước lượng pha, độ tan, màu/ngoại quan và cờ nguy hại;
-- tầng kiểm định áp dụng dữ liệu đã duyệt và loại các tổ hợp không bền.
+## Nguồn và định danh
 
-Phiên bản `1.0` hiện chứa:
+Nguồn duy nhất: `Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json`. `CompoundGenerationMatrix` và `CompoundMatrix2D` đọc cùng tài liệu. `scripts/export-matrix.mjs` xuất bảng Pages cùng SHA-256 dữ liệu nguồn.
+
+```text
+Ion ID + công thức + điện tích
+       ↓
+Hàng anion × cột cation
+       ↓
+GCD → tỉ lệ tối giản → công thức hình thức
+       ↓
+Ngoại lệ → ghi đè tính chất → bối cảnh và bằng chứng
+
+Thành phần bình + điều kiện (luồng riêng)
+       ↓
+Phản ứng mẫu → redox → luật động có giới hạn
+       ↓
+Kiểm tra điều kiện → kết quả trong game
+```
+
+API: `TryGetCell(anionId, cationId, out cell)`. `Cells` duyệt theo hàng anion rồi cột cation. Khóa cũ vẫn là `cationId|anionId`; dùng `ToLegacyCoordinate(cationId, anionId)` để chuyển đổi. Không lưu hóa chất bằng vị trí hàng/cột. `iron-two` và `iron-three` là hai ID riêng.
 
 | Thành phần | Số lượng |
 | --- | ---: |
-| Nguyên tố trong ma trận | 27 |
-| Ion dùng lại được | 46 |
-| Cation | 25 |
-| Anion | 21 |
-| Tọa độ hợp chất được chấp nhận | 565 |
-| Công thức duy nhất | 541 |
-| Ghi đè đã duyệt | 45 |
-| Tổ hợp bị loại rõ lý do | 9 |
+| Ion | 46: 21 anion, 25 cation |
+| Ô 2D | 525 |
+| Bị loại | 8 |
+| Có bằng chứng theo phạm vi hẹp | 4 |
+| Thành phần hình thức | 513 |
+| Ghi đè tính chất cũ, gồm oxit | 45 |
+| Tọa độ oxit riêng được generator cũ chấp nhận | 48 |
+| Tổng tọa độ cũ / công thức khác nhau | 565 / 541 |
 
-Dữ liệu nguồn nằm trong
-`Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json`.
-Mã giải nằm trong
-`Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs`.
+Đây là độ phủ dữ liệu, không chứng nhận khoa học cho toàn bộ chất. Danh mục `oxide:element:oxidationState` nằm riêng; không tạo cation giả trong nước cho oxit phi kim. Bảng 2D cũng không giả định mọi ion, đặc biệt oxide, tồn tại tự do trong nước.
 
-## Vì sao không dùng mảng `matrix[x,y,z]` đơn giản
+## Tỉ lệ và ví dụ khớp code
 
-Một tọa độ kim loại–phi kim–oxi chưa đủ xác định duy nhất một chất. Ví dụ sắt có
-Fe(II), Fe(III); lưu huỳnh có S(IV), S(VI); nitơ có nhiều số oxi hóa và một số
-oxit có công thức phân tử khác công thức thực nghiệm. Vì vậy tọa độ được biểu
-diễn bằng đối tượng giàu thông tin:
+Với `qc > 0`, `qa < 0`, `g = gcd(qc, abs(qa))`:
 
 ```text
-Element
-  -> allowed oxidation states
-  -> IonDefinition
-  -> charge-balanced coordinate
-  -> GeneratedCompoundDefinition
-  -> property estimate
-  -> reviewed override / exclusion
+cationCount = abs(qa) / g
+anionCount = qc / g
+cationCount * qc + anionCount * qa = 0
 ```
 
-Mô hình này vẫn giữ đúng trực giác X/Y/Z, nhưng không làm mất điện tích, trạng
-thái oxi hóa hoặc họ ion đa nguyên tử.
+| Hàng anion | Cột cation | Cation : anion | Công thức |
+| --- | --- | --- | --- |
+| sulfate (−2) | sodium (+1) | 2 : 1 | Na2SO4 |
+| phosphate (−3) | calcium (+2) | 3 : 2 | Ca3(PO4)2 |
+| hydroxide (−1) | copper-two (+2) | 1 : 2 | Cu(OH)2 |
+| acetate (−1) | hydrogen (+1) | 1 : 1 | CH3COOH |
 
-## Thuật toán sinh công thức
+Ion đa nguyên tử lặp lại cần ngoặc. Ghi đè CH3COOH giữ cách viết thông dụng nhưng không thay số nguyên tử; không có nghĩa axit yếu phân li hoàn toàn. C# dùng Unicode chỉ số dưới; bản xuất dùng ASCII. `AtomCounts` được suy ra từ công thức và kiểm tra thành phần qua ghi đè.
 
-Với cation điện tích `+m` và anion điện tích `-n`:
+## Trạng thái, điều kiện và bằng chứng
 
-1. Tính `gcd(m, n)`.
-2. Chỉ số cation là `n / gcd`.
-3. Chỉ số anion là `m / gcd`.
-4. Thêm ngoặc nếu ion đa nguyên tử có chỉ số lớn hơn 1.
-5. Tính khối lượng mol từ số đơn vị ion.
-6. Áp dụng công thức chuẩn đã duyệt nếu cách viết thông thường khác cách ghép
-   ion, ví dụ `CH3COOH`.
+| Trường | Ý nghĩa |
+| --- | --- |
+| formalComposition | Tỉ lệ trung hòa điện; chưa xác lập tính bền hoặc phản ứng |
+| literatureSupported | Chỉ khẳng định đúng nội dung notes trong phạm vi nguồn |
+| excluded | Có lý do loại; formula=null, vẫn giữ tỉ lệ hình thức |
+| unsupported | Phạm vi chưa mô hình hóa; chưa có ô hiện tại |
+| propertyReviewed | Ghi đè tính chất nội bộ cũ, không phải chứng nhận độc lập |
+| heuristic | Phân loại bằng luật cũ, không phải phép đo |
 
-Ví dụ:
+`conditionIds` dẫn tới bối cảnh của khẳng định, **không phải predicate được engine thực thi**. `ReactionConditionEngine` kiểm tra riêng những điều kiện đã triển khai. `evidenceIds` dẫn tới nguồn có tiêu đề, URL, phạm vi và ngày truy cập. Không bịa Ksp hoặc ngưỡng thực nghiệm. `AuthorizesReaction` luôn false trên ô ma trận. Điểm `.98/.72` của API cũ là hằng số phần mềm, không phải xác suất khoa học.
 
-```text
-Ca2+ + PO4(3-) -> Ca3(PO4)2
-Al3+ + O2-     -> Al2O3
-Fe3+ + OH-     -> Fe(OH)3
+Bốn ô có nguồn: sodium|chloride, barium|sulfate, hydrogen|hydroxide, hydrogen|acetate. Đọc notes và scope trước khi sử dụng. Nguồn cho một ví dụ không chứng nhận những ô còn lại.
+
+Ngoại lệ ưu tiên hơn ghi đè: ammonium|hydroxide không tạo chai NH4OH tinh khiết; silver|hydroxide không đại diện hydroxide độc lập bền. Ngoại lệ ngăn tạo công thức tại ô đó, không tự sinh phương trình chuyển hóa.
+
+## Kiểm tra và mở rộng
+
+```powershell
+node scripts/export-matrix.mjs
+node scripts/validate-project.mjs
+node scripts/export-matrix.mjs --check
 ```
 
-Oxit được sinh riêng từ nguyên tố và số oxi hóa:
+Unity: chạy `ChemistryLab.Desktop.Editor.DesktopLabBuild.ValidateOnly`. Đối chiếu C# với Pages bằng `ChemistryLab.Desktop.Editor.MatrixParityExport.Export`, rồi:
 
-```text
-C(+4)  + O(-2) -> CO2
-S(+6)  + O(-2) -> SO3
-Fe(+3) + O(-2) -> Fe2O3
+```powershell
+node scripts/validate-project.mjs --unity-parity Logs/matrix-unity-parity.json
 ```
 
-## Tầng thuộc tính vật lý
+Kiểm tra ID duy nhất, dấu điện tích, tham chiếu, tỉ lệ tối giản trung hòa, số nguyên tử qua ghi đè, ngoại lệ và tương thích generator. Actions kiểm tra tĩnh trước Pages; không thay thế kiểm thử Unity hoặc chứng minh tính khả thi của mọi phản ứng.
 
-Engine chỉ sinh mức phân loại có cơ sở, không bịa số đo chính xác:
+Mở rộng bằng ion có ID ổn định và nguồn rõ; thêm ghi đè/ngoại lệ theo bằng chứng, thêm **luật phản ứng riêng** khi cần chuyển hóa. Không tăng mức bằng chứng chỉ để tăng độ phủ.
 
-- `Soluble`, `SlightlySoluble`, `Insoluble`, `ReactsWithWater`, `Unknown`;
-- pha rắn, lỏng, dung dịch hoặc khí;
-- màu ưu tiên theo dữ liệu kết tủa đã duyệt, sau đó mới dùng màu ion;
-- mô tả ngoại quan nêu rõ khi là giá trị ước lượng;
-- khối lượng mol được tính trực tiếp từ thành phần.
+## Giới hạn và nguồn
 
-Quy tắc độ tan bao phủ muối kim loại kiềm/amoni, nitrat, axetat, halogenua,
-sunfat, hiđroxit, cacbonat, photphat, sunfua, silicat, cromat và đicromat.
-Ngoại lệ quan trọng như `AgCl`, `AgBr`, `AgI`, `BaSO4`, `PbI2`,
-`Cu(OH)2`, `Fe(OH)2` và `Fe(OH)3` có màu cùng độ tan đã duyệt riêng.
+Chưa giải đầy đủ nhiệt động, hoạt độ, phức chất, hydrate, cơ chế hữu cơ hoặc kết tủa định lượng theo Ksp. Quy tắc độ tan/màu/nguy hại cũ được giữ để tương thích, chưa rà nguồn toàn bộ. Oxit như P2O5 có thể là công thức thực nghiệm thay vì công thức phân tử đầy đủ.
 
-## Tầng nguy hại và độ tin cậy
+- [OpenStax: Ionic and Molecular Compounds](https://openstax.org/books/chemistry-2e/pages/2-6-ionic-and-molecular-compounds): điện tích, ion đa nguyên tử, thành phần hợp chất.
+- [OpenStax: Classifying Chemical Reactions](https://openstax.org/books/chemistry-2e/pages/4-2-classifying-chemical-reactions): ví dụ ion, axit–bazơ và kết tủa trong phạm vi của nguồn.
 
-Mỗi hợp chất có thể mang nhiều cờ:
-
-```text
-Corrosive
-Toxic
-Oxidizer
-EnvironmentalHazard
-WaterReactive
-GasReleasePotential
-HeavyMetal
-Carcinogenic
-```
-
-Nguy hại được hợp từ cation, anion, họ hợp chất và ngoại lệ đã duyệt. Ví dụ:
-
-- muối Pb, Hg, Cd giữ cờ độc/kim loại nặng;
-- permanganat, cromat, đicromat và clorat giữ cờ oxi hóa;
-- axit và bazơ tan mạnh giữ cờ ăn mòn;
-- sunfua, cacbonat, nitrit và hipoclorit có tiềm năng giải phóng khí khi gặp
-  môi trường thích hợp.
-
-Hai mức kết quả được phép đi vào gameplay:
-
-- `Reviewed`: công thức/tính chất chính đã được ghi đè và kiểm tra;
-- `RuleDerived`: đúng theo cân bằng điện tích cùng luật phổ thông nhưng vẫn được
-  HUD ghi rõ là suy diễn.
-
-`Rejected` không được đưa vào danh sách hợp chất sinh. Ví dụ `AgOH` bị loại vì
-chuyển thành oxit bạc; `NH4OH` được biểu diễn bằng cân bằng amoniac trong nước,
-không coi là một chai hợp chất tinh khiết.
-
-## Tích hợp vào engine phản ứng
-
-Thứ tự giải vẫn bảo toàn độ tin cậy:
-
-```text
-38 phản ứng mẫu đã duyệt
-  -> 8 luật oxi hóa–khử đã cân bằng electron
-      -> 9 họ luật DynamicReactionEngine
-      -> CompoundGenerationMatrix tạo/kiểm định sản phẩm
-          -> tầng điều kiện nhiệt độ, nồng độ, pH, xúc tác
-              -> tính chất, màu, độ tan, cờ nguy hại
-              -> HUD, VFX, hướng dẫn thải bỏ và LabSafetySystem
-```
-
-`DynamicReactionEngine.MakeFormula` lấy công thức, hệ số ion, khối lượng mol,
-màu và cờ nguy hại từ ma trận. Phản ứng kết tủa dùng độ tan/màu của ma trận.
-`ReactionOutcome` chuyển mức tin cậy và cơ sở ước lượng cho HUD. F3 diagnostics
-hiển thị tổng số hợp chất sinh và số bản ghi đã duyệt.
-
-## Kiểm định tự động
-
-Unity batch validation kiểm tra:
-
-- JSON tải và phân tích được;
-- không trùng symbol nguyên tố hoặc id ion;
-- nguyên tử khối khớp bảng tuần hoàn trong game;
-- ion có điện tích khác 0 và khối lượng mol dương;
-- các ca chuẩn `Na2SO4`, `Ca3(PO4)2`, `Cu(OH)2`, `CH3COOH`, `Al2O3`,
-  `SO3`;
-- tổng độ phủ tối thiểu 450 hợp chất và 20 ngoại lệ đã duyệt;
-- 155 cặp phản ứng động hiện có vẫn giải được;
-- 7 profile điều kiện và 8 luật oxi hóa–khử cân bằng electron;
-- phản ứng Cu/H₂SO₄ bị chặn khi lạnh nhưng chạy khi axit đặc, nóng;
-- nhánh HNO₃ loãng/đặc lần lượt tạo NO/NO₂;
-- kho sản phẩm trừ đúng khối lượng khi dùng lại;
-- 38 phản ứng mẫu, an toàn tủ hút, âm thanh và bốn lớp hiệu ứng vẫn đạt.
-
-Kết quả mới nhất: Unity `6000.5.3f1`, `0` cảnh báo, `0` lỗi.
-
-## Giới hạn có chủ ý
-
-541 công thức không đồng nghĩa 541 chất đều bền, tinh khiết hoặc điều chế được
-trong mọi điều kiện. Phiên bản này đã mô hình hóa xu hướng nhiệt độ, nồng độ,
-pH, xúc tác và động học, nhưng chưa tự suy ra đầy đủ:
-
-- năng lượng hoạt hóa thực nghiệm và cân bằng nhiệt động;
-- áp suất, hệ số hoạt độ và bản chất dung môi;
-- profile điều kiện cứng ngoài 7 trường hợp đã duyệt;
-- phức chất phối trí, dạng hydrat và cấu trúc tinh thể;
-- oxi hóa–khử ngoài 8 luật bán phản ứng đã duyệt;
-- cơ chế hữu cơ;
-- công thức phân tử đầy đủ khi công thức thực nghiệm chưa đủ, ví dụ `P4O10`.
-
-Các phần đó nên được thêm dưới dạng các tầng điều kiện và bộ kiểm định mới,
-không nhồi trực tiếp vào ba trục ban đầu.
-
-## Cách mở rộng an toàn
-
-1. Thêm nguyên tố/ion vào JSON và khai báo đúng điện tích, khối lượng mol, số
-   oxi cùng cờ nguy hại.
-2. Thêm override cho màu, độ tan hoặc cách viết công thức có bằng chứng.
-3. Thêm exclusion nếu công thức cân bằng nhưng chất không bền hoặc không nên
-   xuất hiện như hóa chất độc lập.
-4. Thêm luật phản ứng riêng nếu cơ chế phụ thuộc điều kiện.
-5. Chạy `DesktopLabBuild.ValidateOnly`.
-6. Chỉ nâng `RuleDerived` lên `Reviewed` sau khi dữ liệu đã được rà soát.
+Trạng thái kiểm thử lấy từ báo cáo tương ứng mã hiện tại; báo cáo cũ không chứng nhận bản thay đổi mới.

@@ -101,3 +101,15 @@ The engine evaluates temperature, concentration, pH, catalyst, redox branch, lim
   **EN:** If no reaction occurs, open data with `F`, inspect the conditions, then adjust temperature or dilution.
 - **VI:** Nếu menu không nhận chuột, nhấn `ESC` một lần để mở đúng trạng thái pause rồi thử lại.
   **EN:** If the menu does not receive the mouse, press `ESC` once to enter the correct pause state and try again.
+
+## Vòng thử nghiệm và điều khiển cảm ứng / Experiment loop and touch controls
+
+**VI:** Mỗi bình ghi nhận một phản ứng trước khi dọn. Gia nhiệt hoặc pha loãng để mở khóa phản ứng áp dụng cùng hậu quả an toàn như nạp chất. Chỉ thu sản phẩm một lần. Sau đó đến bồn rửa, ngắm và tương tác để dọn phần còn lại ở cả hai bình. Dữ liệu chất đã nạp là lịch sử đầu vào; chênh lệch khối lượng sau thu không mô tả đầy đủ dung môi hoặc sản phẩm phụ. Các trường hợp ngoài luật hỗ trợ được ghi là chưa hỗ trợ, không kết luận không phản ứng trong thực tế.
+
+**EN:** Each vessel commits one reaction before cleanup. Heating or dilution that enables a reaction applies the same safety consequences as loading. Collect once, then aim at the sink and interact to clear remaining mixtures in both vessels. Loaded substances remain an input history; the mass difference after collection does not fully describe solvent or byproducts. Unmatched chemistry is unsupported, not evidence that no real reaction occurs.
+
+**VI:** `Alt` thả hoặc khóa con trỏ để dùng các nút HUD. Trên giao diện cảm ứng, vùng trái di chuyển, vùng phải xoay nhìn; các nút thao tác gọi cùng hành động vật lý như bàn phím. Luôn đặt mẫu lên khay trước khi nạp bình. Menu tạm dừng giữ quyền điều khiển. Cờ `-touchControls` dùng để xem trước điều khiển cảm ứng trên desktop.
+
+**EN:** `Alt` releases or locks the cursor for HUD buttons. In the touch interface, the left pad moves and the right pad turns the view; action buttons use the same physical interaction as the keyboard. Always stage samples before loading. Pause menus own input. Use `-touchControls` to preview touch controls on desktop.
+
+Điều khiển cảm ứng nằm trong cùng dự án Unity; chưa xác minh trên thiết bị mobile thật. / Touch controls live in the same Unity project; physical mobile-device behavior remains unverified.

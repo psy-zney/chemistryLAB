@@ -1,10 +1,13 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "2.0",
   "title": {
     "vi": "Hướng dẫn người chơi Chemistry Lab 3D",
     "en": "Chemistry Lab 3D Player Guide"
   },
-  "languages": ["vi", "en"],
+  "languages": [
+    "vi",
+    "en"
+  ],
   "languageSetting": {
     "path": {
       "vi": "ESC > Cài đặt > Ngôn ngữ",
@@ -56,6 +59,12 @@
       "key": "C",
       "vi": "Lưu sản phẩm thành lô có thể tái sử dụng.",
       "en": "Save the product as a reusable batch."
+    },
+    {
+      "id": "cleanup",
+      "key": "E",
+      "vi": "Đến bồn rửa để dọn phần còn lại của cả hai bình trước lần thử tiếp theo.",
+      "en": "Use the sink to clear remaining mixtures in both vessels before another experiment."
     }
   ],
   "rules": {
@@ -63,18 +72,90 @@
     "remoteVesselOperationAllowed": false,
     "gasCollectionRequiresFumeHood": true,
     "gasCollectionRequiresConnectedTrap": true,
-    "productsAreReusable": true
+    "productsAreReusable": true,
+    "reactionsPerVesselBetweenCleanups": 1,
+    "collectionOnce": true,
+    "staleBatchLoadAllowed": false,
+    "gameplayActionsWhilePaused": false
   },
   "controls": [
-    {"key": "WASD", "vi": "Di chuyển", "en": "Move"},
-    {"key": "Mouse", "vi": "Nhìn", "en": "Look"},
-    {"key": "Shift", "vi": "Chạy", "en": "Sprint"},
-    {"key": "E", "vi": "Tương tác vật lý", "en": "Physical interaction"},
-    {"key": "[ / ]", "vi": "Đổi khối lượng mẫu", "en": "Adjust sample mass"},
-    {"key": "Page Up / Page Down", "vi": "Tăng / giảm nhiệt độ", "en": "Raise / lower temperature"},
-    {"key": "F8", "vi": "Pha loãng", "en": "Dilute"},
-    {"key": "C", "vi": "Thu sản phẩm", "en": "Collect product"},
-    {"key": "I", "vi": "Duyệt kho điều chế", "en": "Cycle synthesized inventory"},
-    {"key": "ESC", "vi": "Tạm dừng / quay lại", "en": "Pause / back"}
-  ]
+    {
+      "key": "WASD",
+      "vi": "Di chuyển",
+      "en": "Move"
+    },
+    {
+      "key": "Mouse",
+      "vi": "Nhìn",
+      "en": "Look"
+    },
+    {
+      "key": "Shift",
+      "vi": "Chạy",
+      "en": "Sprint"
+    },
+    {
+      "key": "E",
+      "vi": "Tương tác vật lý",
+      "en": "Physical interaction"
+    },
+    {
+      "key": "[ / ]",
+      "vi": "Đổi khối lượng mẫu",
+      "en": "Adjust sample mass"
+    },
+    {
+      "key": "Page Up / Page Down",
+      "vi": "Tăng / giảm nhiệt độ",
+      "en": "Raise / lower temperature"
+    },
+    {
+      "key": "F8",
+      "vi": "Pha loãng",
+      "en": "Dilute"
+    },
+    {
+      "key": "C",
+      "vi": "Thu sản phẩm",
+      "en": "Collect product"
+    },
+    {
+      "key": "I",
+      "vi": "Duyệt kho điều chế",
+      "en": "Cycle synthesized inventory"
+    },
+    {
+      "key": "ESC",
+      "vi": "Tạm dừng / quay lại",
+      "en": "Pause / back"
+    },
+    {
+      "key": "Alt",
+      "vi": "Thả / khóa con trỏ để dùng nút trên HUD",
+      "en": "Release / lock the pointer to use HUD buttons"
+    }
+  ],
+  "touchControls": {
+    "implementation": "same Unity project",
+    "previewFlag": "-touchControls",
+    "movement": "left pointer-owned pad",
+    "look": "right pointer-owned pad",
+    "contextualInteractionPreservesStaging": true,
+    "actions": [
+      "interact",
+      "inspect",
+      "pause",
+      "put-away",
+      "amount",
+      "temperature",
+      "dilute",
+      "collect",
+      "inventory"
+    ],
+    "deviceValidation": "Not yet verified on a physical mobile device"
+  },
+  "accountingLimits": {
+    "vi": "Chênh lệch khối lượng ghi nhận không phải cân bằng khối lượng đầy đủ; chưa mô hình hóa riêng dung môi và từng sản phẩm phụ.",
+    "en": "Recorded mass difference is not complete mass balance; solvent and individual byproducts are not separately modelled."
+  }
 }

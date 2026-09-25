@@ -7,9 +7,14 @@ on:
     paths:
       - "docs/**"
       - "Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json"
+      - "Assets/ChemistryLab/Runtime/Chemistry/**"
+      - "scripts/**"
+      - "Packages/**"
+      - ".gitattributes"
       - ".github/workflows/deploy-docs-pages.yml"
       - "README.md"
   workflow_dispatch:
+  pull_request:
 
 permissions:
   contents: read
@@ -33,6 +38,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          node scripts/validate-project.mjs
+          node scripts/export-matrix.mjs --check
+          git diff --check
           rm -rf _site
           mkdir -p _site/Assets/ChemistryLab/Resources/Chemistry
           cp -R docs _site/docs
@@ -45,11 +53,11 @@ jobs:
           <head>
             <meta charset="utf-8">
             <meta name="viewport" content="width=device-width, initial-scale=1">
-            <meta http-equiv="refresh" content="0; url=docs/chemistry/compound-matrix-3d.html">
+            <meta http-equiv="refresh" content="0; url=docs/chemistry/compound-matrix-2d.html">
             <title>Chemistry Lab Docs</title>
           </head>
           <body>
-            <a href="docs/chemistry/compound-matrix-3d.html">Open Chemistry Lab 3D matrix</a>
+            <a href="docs/chemistry/compound-matrix-2d.html">Open Chemistry Lab anion × cation matrix</a>
           </body>
           </html>
           HTML
@@ -61,7 +69,7 @@ jobs:
 
   deploy:
     name: Deploy to GitHub Pages
-    if: github.ref == 'refs/heads/main'
+    if: github.ref == 'refs/heads/main' && github.event_name != 'pull_request'
     needs: build
     runs-on: ubuntu-latest
     permissions:

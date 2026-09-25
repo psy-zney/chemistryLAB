@@ -43,3 +43,11 @@ Reduced-motion mode keeps the equation card but does not move the camera.
 The desktop smoke report verifies these constraints with
 `samplePlacementFlowVerified`, `reactionEquationPresentationVerified`, and
 `reactionCameraVerified`.
+
+## Bounded reaction lifecycle (schema 2.0)
+
+Each vessel commits at most one reaction between cleanups. Loading, heating and dilution share the same transition and apply safety, presentation and mission consequences once. After commitment, collect the primary product once, then use the sink before further additions or condition changes. Cleanup clears both vessels.
+
+Recorded inputs remain visible after collection. The signed difference between recorded input mass and collected product is bookkeeping, not a complete solvent/byproduct conservation model. Sequential reactions in residual mixtures are not implemented. A staged inventory sample whose batch was depleted elsewhere is rejected without removing the tray sample or adding material to the vessel.
+
+The extended smoke assertions are `staleBatchLoadBlockedVerified`, `conditionCommitVerified`, and `onceOnlyCollectionVerified`. Their presence in source is not a test result; inspect the current runtime smoke report.

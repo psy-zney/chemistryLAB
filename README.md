@@ -34,14 +34,34 @@ The game is built as an educational simulation, not as real laboratory operating
 - Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
 - JSON build, validation, and smoke-test reports under `BuildReports/`.
 
-## Current Chemistry Matrix — 3D Graph
+## Chemistry Matrix — Anion × Cation
+
+Open the [2D explorer](https://zney295.id.vn/chemistryLAB/docs/chemistry/compound-matrix-2d.html)
+for **21 anion rows × 25 cation columns**. Cells show stable ion IDs, charges,
+reduced ratios, scoped evidence, descriptive conditions and exclusions.
+The generated JSON comes from the canonical Unity resource;
+`MatrixParityExport` compares actual C# results with the Pages exporter.
+A neutral formula does not establish stability or authorize a reaction.
+
+See the [2D data contract](docs/chemistry/compound-generation-matrix.md).
+Four cells have narrowly scoped literature evidence; other nonexcluded cells
+are formal compositions. Legacy property overrides are identified separately.
+The catalogue has not been comprehensively scientifically certified.
+
+The bounded game loop commits one reaction per vessel, applies consequences
+once, allows one collection, then requires cleanup. Recorded inputs remain
+visible after collection. Input-minus-collected mass is bookkeeping; solvent
+and byproduct composition are not a complete mass-balance model.
+
+## Optional 3D Projection
 
 [![Actual Three.js view of the current chemistry compound matrix](docs/chemistry/compound-matrix-3d-preview.png)](https://psy-zney.github.io/chemistryLAB/docs/chemistry/compound-matrix-3d.html)
 
-This is a real Three.js data explorer, not a decorative illustration. It rebuilds
+This legacy Three.js projection rebuilds
 the same charge-balanced space as the Unity `CompoundGenerationMatrix`: **565
 accepted coordinates, 541 unique formulas, 45 reviewed records, and 9 explicit
-exclusions**. Drag to orbit, use the mouse wheel to zoom, click a node to inspect
+exclusions**. Its reviewed/rule-derived labels describe legacy property rules,
+not complete evidence of stability or synthesis. Drag to orbit, use the mouse wheel to zoom, click a node to inspect
 its physical properties and hazards, or press `Ctrl K` to find a formula such as
 `CuSO4`.
 
@@ -131,7 +151,7 @@ The runtime uses regular Unity `MonoBehaviour` components at the scene edge, whi
 - `ReactionEnvironment` owns temperature and volume for each physical vessel, so heating and dilution persist independently of the ingredient list.
 - `RedoxReactionEngine` selects reviewed redox branches and verifies the shared electron count with a greatest-common-divisor/least-common-multiple algorithm.
 - `SynthesizedInventory` and `RuntimeChemicalRegistry` turn an outcome into a mass-accounted reusable batch, persist it as JSON, and register matrix-backed products as new dynamic species.
-- `CompoundGenerationMatrix` models the enriched X/Y/Z idea: cation or metal, nonmetal or anion family, oxygen count, and explicit oxidation state. It charge-balances candidate compounds, estimates physical/safety classes, applies reviewed overrides, and rejects known unstable combinations.
+- `CompoundGenerationMatrix` and `CompoundMatrix2D` expose anion rows and cation columns with ratios, evidence scope and exclusions. Element/oxidation-state oxides remain a separate registry; the optional 3D view projects legacy composition/property data.
 - `DynamicReactionEngine` models species, reaction families, activity series, and bounded stoichiometry balancing. It consumes compound-matrix results instead of maintaining a second formula/solubility truth source.
 - `LabSafetySystem` converts hazardous reaction outcomes into player consequences: health loss, credit loss, incident history, and emergency evacuation.
 - `DesktopLabHud` renders the in-game information layer and owns the main, pause, and settings menu states. Settings can return to the menu that opened them; language, audio, reduced-motion, and display preferences persist through `PlayerPrefs`.

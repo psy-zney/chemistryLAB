@@ -25,6 +25,8 @@ namespace ChemistryLab.Desktop
             new Dictionary<LabStation, VesselVisual>();
         private readonly Dictionary<LabStation, StagedSample> stagedSamples =
             new Dictionary<LabStation, StagedSample>();
+        private readonly Dictionary<LabStation, VesselReactionLifecycle> vesselLifecycles =
+            new Dictionary<LabStation, VesselReactionLifecycle>();
         private readonly Dictionary<LabStation, Transform> stagedSampleVisualRoots =
             new Dictionary<LabStation, Transform>();
 
@@ -53,6 +55,11 @@ namespace ChemistryLab.Desktop
         private bool reactionCameraActive;
         private bool skipReactionCamera;
         private bool missionComplete;
+        private int committedReactionCount;
+        private double lastCleanupUnallocatedGrams;
+        private bool staleBatchLoadBlockedVerified;
+        private bool conditionCommitVerified;
+        private bool onceOnlyCollectionVerified;
         private bool inspectorOpen;
 
         public DesktopLabHud Hud
@@ -370,6 +377,10 @@ namespace ChemistryLab.Desktop
 
         public void AddSelectedToVessel(LabStation station)
         {
+            if (!EnsureVesselAcceptsChanges(station))
+            {
+                return;
+            }
             if (selectedChemical != null)
             {
                 hud.ShowTransient(
@@ -424,6 +435,14 @@ namespace ChemistryLab.Desktop
             var sourceBatch = synthesizedInventory == null || string.IsNullOrWhiteSpace(staged.BatchId)
                 ? null
                 : synthesizedInventory.Find(staged.BatchId);
+            if (!string.IsNullOrWhiteSpace(staged.BatchId) && sourceBatch == null)
+            {
+                hud.ShowTransient(LabLocalization.Text(
+                    "Lô trên khay đã hết hoặc không còn tồn tại. Cầm lại mẫu rồi cất bằng Q.",
+                    "The staged batch is depleted or missing. Retrieve it and return it with Q."), true);
+                audioSystem.PlayError();
+                return;
+            }
             if (sourceBatch != null)
             {
                 additionGrams = (float)Math.Min(additionGrams, sourceBatch.AvailableGrams);
@@ -448,22 +467,25 @@ namespace ChemistryLab.Desktop
             {
                 new VesselAddition(stagedChemical.Id, additionGrams)
             };
-            var nextOutcome = ReactionSimulator.Evaluate(candidate, station, environment);
-            currentVesselStation = station;
-            currentOutcome = nextOutcome;
-
-            additions.Add(candidate[candidate.Count - 1]);
             if (sourceBatch != null)
             {
                 double consumed;
-                synthesizedInventory.TryConsume(sourceBatch.BatchId, additionGrams, out consumed);
-                if (synthesizedInventory.Find(sourceBatch.BatchId) == null)
+                if (!synthesizedInventory.TryConsume(sourceBatch.BatchId, additionGrams, out consumed))
                 {
-                    staged.BatchId = null;
+                    hud.ShowTransient(LabLocalization.Text(
+                        "Không thể lấy mẫu từ lô này; khay được giữ nguyên.",
+                        "This batch could not be withdrawn; the tray is unchanged."), true);
+                    return;
                 }
+                candidate[candidate.Count - 1] = new VesselAddition(stagedChemical.Id, consumed);
             }
+            additions.Add(candidate[candidate.Count - 1]);
             stagedSamples.Remove(station);
             UpdateStagedSampleVisual(station);
+            bool committedNow;
+            var nextOutcome = GetVesselLifecycle(station).Advance(additions, station, environment, out committedNow);
+            currentVesselStation = station;
+            currentOutcome = nextOutcome;
             UpdateVesselVisual(station, additions, nextOutcome);
             audioSystem.PlayPour(GetVesselPosition(station));
             hud.SetVessel(additions, nextOutcome, station);
@@ -472,32 +494,9 @@ namespace ChemistryLab.Desktop
             hud.ShowVesselSection();
             ToggleInspector(true);
 
-            if (nextOutcome.Status == ReactionStatus.Reaction)
+            if (committedNow)
             {
-                var incident = labSafety.Apply(nextOutcome, station);
-                hud.SetSafetySystem(labSafety);
-                PlayReactionEffect(station, nextOutcome);
-                StartReactionPresentation(station, nextOutcome);
-                if (!incident.Controlled)
-                {
-                    hud.ShowTransient(incident.Title + " · " + incident.Message, true);
-                    audioSystem.PlayHazardAlarm();
-                }
-                else
-                {
-                    hud.ShowTransient(
-                        LabLocalization.IsEnglish
-                            ? "Reaction detected · " + nextOutcome.Equation
-                            : nextOutcome.Title + " · " + nextOutcome.Message
-                              + (nextOutcome.GeneratedByRule ? " · suy diễn " + nextOutcome.RuleFamily : string.Empty));
-                }
-                if (!missionComplete
-                    && nextOutcome.Reaction != null
-                    && string.Equals(nextOutcome.Reaction.Id, MissionReactionId, StringComparison.Ordinal))
-                {
-                    missionComplete = true;
-                    hud.SetMission(MissionTitle(), true);
-                }
+                ApplyCommittedReaction(station, nextOutcome);
             }
             else
             {
@@ -520,8 +519,7 @@ namespace ChemistryLab.Desktop
                 return false;
             }
 
-            var outcome = ReactionSimulator.Evaluate(additions, station, environment);
-            return outcome.Status == ReactionStatus.Reaction && outcome.CanCollectProduct;
+            return GetVesselLifecycle(station).CanCollect;
         }
 
         public void CollectProduct(LabStation station)
@@ -543,8 +541,9 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
-            var outcome = ReactionSimulator.Evaluate(additions, station, environment);
-            if (outcome.Status != ReactionStatus.Reaction || !outcome.CanCollectProduct)
+            var lifecycle = GetVesselLifecycle(station);
+            var outcome = lifecycle.CommittedOutcome;
+            if (!lifecycle.CanCollect)
             {
                 hud.ShowTransient(LabLocalization.Text(
                     "Chưa có sản phẩm đủ điều kiện để thu hồi.",
@@ -577,8 +576,7 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
-            additions.Clear();
-            environment.Reset(BaselineTemperatureC, .100d);
+            lifecycle.MarkCollected();
             selectedBatchId = batch.BatchId;
             selectedChemical = RuntimeChemicalRegistry.GetChemical(batch.ChemicalId);
             currentVesselStation = station;
@@ -596,12 +594,20 @@ namespace ChemistryLab.Desktop
                 LabLocalization.Text("Đã lưu lô ", "Saved batch ") + batch.Formula + " · "
                 + batch.AvailableGrams.ToString("0.000")
                 + LabLocalization.Text(" g · độ tinh khiết ", " g · purity ")
-                + (batch.PurityFraction * 100f).ToString("0.0") + "%.");
+                + (batch.PurityFraction * 100f).ToString("0.0") + "%. "
+                + LabLocalization.Text(
+                    "Phần còn lại được giữ trong bình; đến bồn rửa để dọn trước lần thử tiếp theo.",
+                    "Remaining mixture stays in the vessel; clean up at the sink before the next experiment."));
+            RefreshGuidance();
             audioSystem.PlaySamplePickup();
         }
 
         public void AdjustVesselTemperature(float deltaC)
         {
+            if (!EnsureVesselAcceptsChanges(currentVesselStation))
+            {
+                return;
+            }
             ReactionEnvironment environment;
             if (!vesselEnvironments.TryGetValue(currentVesselStation, out environment))
             {
@@ -615,13 +621,16 @@ namespace ChemistryLab.Desktop
 
             environment.ChangeTemperature(deltaC);
             RefreshVesselVisual(currentVesselStation);
-            RefreshOutcome(currentVesselStation);
+            var committedNow = RefreshOutcome(currentVesselStation);
             hud.ShowVesselSection();
-            hud.ShowTransient(
-                (deltaC >= 0f
-                    ? LabLocalization.Text("Đã gia nhiệt · ", "Heated · ")
-                    : LabLocalization.Text("Đã làm nguội · ", "Cooled · "))
-                + environment.TemperatureC.ToString("0.#") + " °C.");
+            if (!committedNow)
+            {
+                hud.ShowTransient(
+                    (deltaC >= 0f
+                        ? LabLocalization.Text("Đã gia nhiệt · ", "Heated · ")
+                        : LabLocalization.Text("Đã làm nguội · ", "Cooled · "))
+                    + environment.TemperatureC.ToString("0.#") + " °C.");
+            }
             audioSystem.PlayUiClick();
         }
 
@@ -633,6 +642,10 @@ namespace ChemistryLab.Desktop
 
         public void DiluteCurrentVessel(double addedMillilitres = 50d)
         {
+            if (!EnsureVesselAcceptsChanges(currentVesselStation))
+            {
+                return;
+            }
             ReactionEnvironment environment;
             if (!vesselEnvironments.TryGetValue(currentVesselStation, out environment))
             {
@@ -646,11 +659,14 @@ namespace ChemistryLab.Desktop
 
             environment.Dilute(Math.Max(0d, addedMillilitres) / 1000d);
             RefreshVesselVisual(currentVesselStation);
-            RefreshOutcome(currentVesselStation);
+            var committedNow = RefreshOutcome(currentVesselStation);
             hud.ShowVesselSection();
-            hud.ShowTransient(
-                LabLocalization.Text("Đã thêm dung môi · thể tích ", "Added solvent · volume ")
-                + (environment.VolumeLitres * 1000d).ToString("0") + " mL.");
+            if (!committedNow)
+            {
+                hud.ShowTransient(
+                    LabLocalization.Text("Đã thêm dung môi · thể tích ", "Added solvent · volume ")
+                    + (environment.VolumeLitres * 1000d).ToString("0") + " mL.");
+            }
             audioSystem.PlayPour(GetVesselPosition(currentVesselStation));
         }
 
@@ -702,9 +718,23 @@ namespace ChemistryLab.Desktop
 
         public void WashVessels()
         {
+            lastCleanupUnallocatedGrams = 0d;
             foreach (var pair in vesselAdditions)
             {
+                var committed = GetVesselLifecycle(pair.Key).CommittedOutcome;
+                if (committed != null)
+                {
+                    lastCleanupUnallocatedGrams += committed.UnallocatedInputGrams;
+                }
+                else
+                {
+                    foreach (var addition in pair.Value)
+                    {
+                        lastCleanupUnallocatedGrams += addition.Grams;
+                    }
+                }
                 pair.Value.Clear();
+                GetVesselLifecycle(pair.Key).Reset();
                 ReactionEnvironment environment;
                 if (vesselEnvironments.TryGetValue(pair.Key, out environment))
                 {
@@ -718,8 +748,12 @@ namespace ChemistryLab.Desktop
             hud.ShowVesselSection();
             ToggleInspector(true);
             hud.ShowTransient(LabLocalization.Text(
-                "Cốc đã được rửa và đưa về 24 °C.",
-                "Vessels were washed and reset to 24 °C."));
+                "Đã dọn hỗn hợp còn lại ở cả hai bình và đưa về 24 °C. Có thể lặp lại thí nghiệm.",
+                "Remaining mixtures in both vessels were cleared and reset to 24 °C. Ready to repeat an experiment.")
+                + LabLocalization.Text(" Chênh lệch khối lượng ghi nhận: ", " Recorded mass difference: ")
+                + lastCleanupUnallocatedGrams.ToString("0.000")
+                + LabLocalization.Text(" g (chưa mô hình hóa dung môi/sản phẩm phụ).", " g (solvent/byproducts are not modelled)."));
+            RefreshGuidance();
             audioSystem.PlayWash(new Vector3(-5.75f, 1.1f, 3.9f));
         }
 
@@ -1012,7 +1046,7 @@ namespace ChemistryLab.Desktop
             }
 
             hud.RefreshLanguage();
-            hud.SetMission(MissionTitle(), missionComplete);
+            RefreshGuidance();
             hud.SetZone(ZoneLabel(currentZone));
             hud.SetAudioState(audioSystem != null && !audioSystem.IsMuted);
             hud.SetAccessibilityState(LabAccessibility.ReducedMotion);
@@ -2366,22 +2400,94 @@ namespace ChemistryLab.Desktop
             }
         }
 
-        private void RefreshOutcome(LabStation station)
+        private VesselReactionLifecycle GetVesselLifecycle(LabStation station)
+        {
+            VesselReactionLifecycle lifecycle;
+            if (!vesselLifecycles.TryGetValue(station, out lifecycle))
+            {
+                lifecycle = new VesselReactionLifecycle();
+                vesselLifecycles[station] = lifecycle;
+            }
+            return lifecycle;
+        }
+
+        private bool EnsureVesselAcceptsChanges(LabStation station)
+        {
+            if (!GetVesselLifecycle(station).RequiresCleanup)
+            {
+                return true;
+            }
+            hud.ShowTransient(LabLocalization.Text(
+                "Bình đã phản ứng. Thu sản phẩm nếu có, rồi dọn ở bồn rửa trước thí nghiệm tiếp theo.",
+                "This vessel has reacted. Collect the product if available, then clean up at the sink before another experiment."), true);
+            audioSystem.PlayError();
+            return false;
+        }
+
+        private void ApplyCommittedReaction(LabStation station, ReactionOutcome outcome)
+        {
+            committedReactionCount++;
+            var incident = labSafety.Apply(outcome, station);
+            hud.SetSafetySystem(labSafety);
+            PlayReactionEffect(station, outcome);
+            StartReactionPresentation(station, outcome);
+            if (!incident.Controlled)
+            {
+                hud.ShowTransient(incident.Title + " · " + incident.Message, true);
+                audioSystem.PlayHazardAlarm();
+            }
+            else
+            {
+                hud.ShowTransient(LabLocalization.Text("Phản ứng đã xảy ra · ", "Reaction committed · ")
+                    + outcome.Equation);
+            }
+            if (outcome.Reaction != null
+                && string.Equals(outcome.Reaction.Id, MissionReactionId, StringComparison.Ordinal))
+            {
+                missionComplete = true;
+            }
+            RefreshGuidance();
+        }
+
+        private void RefreshGuidance()
+        {
+            var lifecycle = GetVesselLifecycle(currentVesselStation);
+            if (lifecycle.RequiresCleanup)
+            {
+                hud.SetMission(lifecycle.CanCollect
+                    ? LabLocalization.Text("Tiếp theo: thu sản phẩm tại bình (E / C).", "Next: collect the product at the vessel (E / C).")
+                    : LabLocalization.Text("Tiếp theo: dọn hỗn hợp còn lại ở bồn rửa.", "Next: clear the remaining mixture at the sink."), false);
+            }
+            else
+            {
+                hud.SetMission(missionComplete
+                    ? LabLocalization.Text("Đã hoàn thành Cu(OH)₂. Lặp lại hoặc thử phản ứng khác.", "Cu(OH)₂ objective complete. Repeat or try another reaction.")
+                    : MissionTitle(), missionComplete);
+            }
+        }
+
+        private bool RefreshOutcome(LabStation station)
         {
             List<VesselAddition> additions;
             ReactionEnvironment environment;
             if (!vesselAdditions.TryGetValue(station, out additions)
                 || !vesselEnvironments.TryGetValue(station, out environment))
             {
-                return;
+                return false;
             }
 
-            currentOutcome = ReactionSimulator.Evaluate(additions, station, environment);
+            bool committedNow;
+            currentOutcome = GetVesselLifecycle(station).Advance(additions, station, environment, out committedNow);
             currentVesselStation = station;
             hud.SetVessel(additions, currentOutcome, station);
             hud.SetTemperature(currentOutcome.TemperatureC);
             hud.SetSafety(!currentOutcome.SafetyViolation, currentOutcome.Safety);
             hud.SetSafetySystem(labSafety);
+            if (committedNow)
+            {
+                ApplyCommittedReaction(station, currentOutcome);
+            }
+            return committedNow;
         }
 
         private void RefreshVesselVisual(LabStation station)
@@ -2394,7 +2500,7 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
-            var outcome = ReactionSimulator.Evaluate(additions, station, environment);
+            var outcome = GetVesselLifecycle(station).Preview(additions, station, environment);
             UpdateVesselVisual(station, additions, outcome);
         }
 
@@ -3117,6 +3223,7 @@ namespace ChemistryLab.Desktop
                 && !ReactionCameraActive
                 && !hud.ReactionPresentationVisible
                 && Mathf.Abs(player.ViewCamera.fieldOfView - 66f) < .1f;
+            yield return RunLifecycleSmokeChecks(outcome);
             LabLocalization.Current = originalLanguage;
             RefreshLocalizedPresentation();
 
@@ -3148,6 +3255,9 @@ namespace ChemistryLab.Desktop
                 || !reactionCameraVerified
                 || !vietnameseLanguageVerified
                 || !englishLanguageVerified
+                || !staleBatchLoadBlockedVerified
+                || !conditionCommitVerified
+                || !onceOnlyCollectionVerified
                 || diagnostics == null)
             {
                 WriteSmokeReport(
@@ -3218,6 +3328,105 @@ namespace ChemistryLab.Desktop
             Application.Quit(0);
         }
 
+        private IEnumerator RunLifecycleSmokeChecks(ReactionOutcome productFixture)
+        {
+            var originalInventory = synthesizedInventory;
+            var originalSafety = labSafety;
+            var originalPosition = player.transform.position;
+            var originalAmount = selectedAmountGrams;
+            var originalMissionComplete = missionComplete;
+            var temporaryPath = Path.Combine(Application.temporaryCachePath,
+                "chemistry-lifecycle-smoke-" + Guid.NewGuid().ToString("N") + ".json");
+            synthesizedInventory = new SynthesizedInventory(temporaryPath);
+            labSafety = new LabSafetySystem();
+            try
+            {
+                WashVessels();
+                var batch = synthesizedInventory.AddProduct(productFixture);
+                selectedAmountGrams = 25f;
+                CycleSynthesizedBatch();
+                ToggleSampleOnPreparationSurface(LabStation.Workbench);
+                CycleSynthesizedBatch();
+                ToggleSampleOnPreparationSurface(LabStation.FumeHood);
+                player.transform.position = new Vector3(0f, .02f, 2.1f);
+                AddSelectedToVessel(LabStation.Workbench);
+                player.transform.position = new Vector3(0f, .02f, -3.2f);
+                var hoodCount = GetVesselAdditionCount(LabStation.FumeHood);
+                AddSelectedToVessel(LabStation.FumeHood);
+                staleBatchLoadBlockedVerified = batch != null
+                    && synthesizedInventory.Find(batch.BatchId) == null
+                    && GetVesselAdditionCount(LabStation.Workbench) == 1
+                    && GetVesselAdditionCount(LabStation.FumeHood) == hoodCount
+                    && HasStagedSample(LabStation.FumeHood);
+                ToggleSampleOnPreparationSurface(LabStation.FumeHood);
+                ClearSelectedChemical();
+                WashVessels();
+
+                player.transform.position = new Vector3(0f, .02f, 2.1f);
+                vesselEnvironments[LabStation.Workbench].Reset(0f, .100d);
+                vesselAdditions[LabStation.Workbench].Add(new VesselAddition("hydrogen-peroxide", 6.803d));
+                vesselAdditions[LabStation.Workbench].Add(new VesselAddition("manganese-dioxide", .2d));
+                var countBeforeHeating = committedReactionCount;
+                RefreshOutcome(LabStation.Workbench);
+                var initiallyBlocked = currentOutcome.Status == ReactionStatus.Blocked;
+                AdjustVesselTemperature(25f);
+                var heatedOutcome = currentOutcome;
+                var afterHeatingTemperature = CurrentEnvironment.TemperatureC;
+                var afterHeatingVolume = CurrentEnvironment.VolumeLitres;
+                AdjustVesselTemperature(25f);
+                DiluteCurrentVessel();
+                RefreshOutcome(LabStation.Workbench);
+                conditionCommitVerified = initiallyBlocked
+                    && committedReactionCount == countBeforeHeating + 1
+                    && heatedOutcome.ReactionCommitted
+                    && ReferenceEquals(currentOutcome, heatedOutcome)
+                    && CurrentEnvironment.TemperatureC == afterHeatingTemperature
+                    && CurrentEnvironment.VolumeLitres == afterHeatingVolume;
+                SkipReactionCamera();
+                for (var frame = 0; frame < 8 && ReactionCameraActive; frame++) yield return null;
+                WashVessels();
+
+                vesselAdditions[LabStation.Workbench].Add(new VesselAddition("copper-sulfate", 10d));
+                vesselAdditions[LabStation.Workbench].Add(new VesselAddition("sodium-hydroxide", 10d));
+                RefreshOutcome(LabStation.Workbench);
+                SkipReactionCamera();
+                for (var frame = 0; frame < 8 && ReactionCameraActive; frame++) yield return null;
+                var batchesBeforeCollection = synthesizedInventory.Count;
+                CollectProduct(LabStation.Workbench);
+                var collected = currentOutcome;
+                var countAfterCollection = synthesizedInventory.Count;
+                CollectProduct(LabStation.Workbench);
+                onceOnlyCollectionVerified = countAfterCollection == batchesBeforeCollection + 1
+                    && synthesizedInventory.Count == countAfterCollection
+                    && collected.ProductCollected && !CanCollectProduct(LabStation.Workbench)
+                    && GetVesselAdditionCount(LabStation.Workbench) == 2
+                    && Math.Abs(collected.UnallocatedInputGrams + collected.CollectedProductGrams - 20d) < .000001d;
+                SelectChemical("water");
+                ToggleSampleOnPreparationSurface(LabStation.Workbench);
+                AddSelectedToVessel(LabStation.Workbench);
+                onceOnlyCollectionVerified &= HasStagedSample(LabStation.Workbench)
+                    && GetVesselAdditionCount(LabStation.Workbench) == 2;
+                ToggleSampleOnPreparationSurface(LabStation.Workbench);
+                ClearSelectedChemical();
+                WashVessels();
+                onceOnlyCollectionVerified &= GetVesselAdditionCount(LabStation.Workbench) == 0
+                    && !GetVesselLifecycle(LabStation.Workbench).RequiresCleanup
+                    && Math.Abs(lastCleanupUnallocatedGrams - collected.UnallocatedInputGrams) < .000001d;
+            }
+            finally
+            {
+                synthesizedInventory = originalInventory;
+                labSafety = originalSafety;
+                player.transform.position = originalPosition;
+                selectedAmountGrams = originalAmount;
+                missionComplete = originalMissionComplete;
+                ClearSelectedChemical();
+                if (File.Exists(temporaryPath)) File.Delete(temporaryPath);
+                RefreshOutcome(LabStation.Workbench);
+                RefreshGuidance();
+            }
+        }
+
         private void WriteSmokeReport(
             string result,
             string failure,
@@ -3279,6 +3488,9 @@ namespace ChemistryLab.Desktop
                 supportedLanguages = 2,
                 vietnameseLanguageVerified = vietnameseLanguageVerified,
                 englishLanguageVerified = englishLanguageVerified,
+                staleBatchLoadBlockedVerified = staleBatchLoadBlockedVerified,
+                conditionCommitVerified = conditionCommitVerified,
+                onceOnlyCollectionVerified = onceOnlyCollectionVerified,
                 starterChemicals = starterChemicalCount,
                 originalReferenceProps = proceduralReferencePropCount,
                 cameraFovDegrees = player == null || player.ViewCamera == null
@@ -3339,6 +3551,9 @@ namespace ChemistryLab.Desktop
             public int supportedLanguages;
             public bool vietnameseLanguageVerified;
             public bool englishLanguageVerified;
+            public bool staleBatchLoadBlockedVerified;
+            public bool conditionCommitVerified;
+            public bool onceOnlyCollectionVerified;
             public int starterChemicals;
             public int originalReferenceProps;
             public float cameraFovDegrees;

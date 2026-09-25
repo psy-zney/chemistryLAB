@@ -1,89 +1,108 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "2.0",
   "engine": "CompoundGenerationMatrix",
-  "implementedFrom": "enriched-x-y-z-model",
-  "axes": {
-    "x": "metal-or-cation-with-activity-and-oxidation-state",
-    "y": "nonmetal-or-anion-family",
-    "z": "oxygen-count-and-explicit-oxidation-state"
-  },
   "sourceData": "Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json",
   "runtimeImplementation": "Assets/ChemistryLab/Runtime/Chemistry/CompoundGenerationMatrix.cs",
+  "matrixImplementation": "Assets/ChemistryLab/Runtime/Chemistry/CompoundMatrix2D.cs",
+  "axes": {
+    "row": "anionId",
+    "column": "cationId",
+    "legacyCoordinate": "cationId|anionId"
+  },
   "coverage": {
     "matrixElements": 27,
     "ions": 46,
     "cations": 25,
     "anions": 21,
-    "acceptedCompoundCoordinates": 565,
-    "uniqueGeneratedFormulas": 541,
-    "reviewedOverrides": 45,
-    "explicitExclusions": 9
+    "total2DCells": 525,
+    "excluded2DCells": 8,
+    "formalCompositionCells": 513,
+    "literatureSupportedCells": 4,
+    "unsupportedCells": 0,
+    "legacyAcceptedIonicCoordinates": 517,
+    "separateAcceptedOxideCoordinates": 48,
+    "legacyAcceptedCompoundCoordinates": 565,
+    "legacyUniqueGeneratedFormulas": 541,
+    "propertyReviewedOverrides": 45,
+    "explicitExclusionsIncludingOxides": 9
   },
-  "pipeline": [
-    "select-element-or-ion-coordinate",
-    "validate-oxidation-state",
-    "reduce-charge-ratio-with-gcd",
-    "format-polyatomic-ion",
-    "calculate-molar-mass",
-    "estimate-family-phase-solubility-colour-and-hazards",
-    "apply-reviewed-override",
-    "apply-explicit-exclusion",
-    "attach-confidence-and-validation-notes"
-  ],
-  "confidenceLevels": {
-    "Reviewed": 0.98,
-    "RuleDerived": 0.72,
-    "Rejected": 0.0
+  "cellStatuses": {
+    "formalComposition": "Neutral coprime ion ratio only; existence, stability and reaction feasibility are not established.",
+    "literatureSupported": "Only the claim in the annotated note is supported by the cited source and descriptive condition scope.",
+    "excluded": "Explicit legacy exclusion takes precedence; formal ion ratio is retained but formula is null.",
+    "unsupported": "Explicitly unmodeled chemistry or evidence scope; does not mean no reaction. Available for future annotations, with no current cells."
   },
-  "physicalPropertyClasses": [
-    "phase",
-    "solubility",
-    "appearance",
-    "colour",
-    "molar-mass"
-  ],
-  "hazardFlags": [
-    "Corrosive",
-    "Toxic",
-    "Oxidizer",
-    "EnvironmentalHazard",
-    "WaterReactive",
-    "GasReleasePotential",
-    "HeavyMetal",
-    "Carcinogenic"
-  ],
-  "validationExamples": [
-    "Na2SO4",
-    "Ca3(PO4)2",
-    "Cu(OH)2",
-    "CH3COOH",
-    "Al2O3",
-    "SO3"
-  ],
-  "resolutionPriority": [
-    "curated-reaction",
-    "reviewed-redox-rule",
-    "dynamic-reaction-family",
-    "compound-generation-matrix",
-    "temperature-concentration-pH-catalyst-condition-gate",
-    "property-and-safety-classification",
-    "no-reaction-at-current-condition"
-  ],
-  "latestUnityValidation": {
-    "generatedAtUtc": "2026-07-28T18:52:38.8734384Z",
-    "unityVersion": "6000.5.3f1",
-    "result": "succeeded",
-    "warnings": 0,
-    "errors": 0,
-    "dynamicResolvedPairs": 155
+  "propertyReviewStatuses": {
+    "propertyReviewed": "Existing internal override record, not external certification.",
+    "heuristic": "Legacy property rules, not a measured property record."
   },
+  "contract": {
+    "defaultStatus": "formalComposition",
+    "defaultConditionIds": [
+      "composition-only"
+    ],
+    "defaultEvidenceIds": [],
+    "conditionRecordsAreExecutable": false,
+    "cellSelectionAuthorizesReaction": false,
+    "ruleDerivedAuthorizesReaction": false,
+    "legacyConfidenceScoresAreProbabilities": false,
+    "preserveLegacyRuntimeOutput": true,
+    "oxideRegistrySeparateFromIonicGrid": true,
+    "atomCountsDerivedFromFormula": true,
+    "displayFormula": "Unicode subscripts",
+    "exportFormula": "ASCII digits"
+  },
+  "generation": {
+    "gcd": "gcd(positiveCationCharge, abs(negativeAnionCharge))",
+    "cationCount": "abs(anionCharge) / gcd",
+    "anionCount": "cationCharge / gcd",
+    "neutrality": "cationCount * cationCharge + anionCount * anionCharge == 0",
+    "precedence": [
+      "exclusion",
+      "reviewed-property-override",
+      "heuristic-property-estimate"
+    ]
+  },
+  "queryApi": [
+    "CompoundGenerationMatrix.Cells",
+    "CompoundGenerationMatrix.TryGetCell(anionId, cationId, out cell)",
+    "CompoundGenerationMatrix.ToLegacyCoordinate(cationId, anionId)",
+    "CompoundGenerationMatrix.Conditions",
+    "CompoundGenerationMatrix.Evidence",
+    "ChemistryIonDefinition.AtomCounts"
+  ],
+  "validation": [
+    "unique element, ion, annotation, condition and evidence IDs",
+    "anion/cation coordinate sign and identity",
+    "positive finite ion masses and parsed atom composition",
+    "ion oxygen counts match formula",
+    "condition/evidence references resolve without duplicates",
+    "neutral coprime ratios for every ionic cell",
+    "override formulas conserve atom counts including conventional reordered formulas",
+    "exclusions precede overrides and return no generated formula",
+    "all nonexcluded cell formulas and ratios match the legacy generator",
+    "oxide coordinates use allowed element oxidation states",
+    "literature-supported annotations provide explicit scoped evidence"
+  ],
+  "references": [
+    {
+      "id": "openstax-ionic-composition",
+      "url": "https://openstax.org/books/chemistry-2e/pages/2-6-ionic-and-molecular-compounds",
+      "accessedOn": "2026-09-25"
+    },
+    {
+      "id": "openstax-reaction-examples",
+      "url": "https://openstax.org/books/chemistry-2e/pages/4-2-classifying-chemical-reactions",
+      "accessedOn": "2026-09-25"
+    }
+  ],
+  "validationReporting": "Counts describe deterministic data coverage, not chemical certification. Run DesktopLabBuild.ValidateOnly for current validation evidence; historical reports do not certify this change.",
   "limitations": [
-    "thermodynamic-equilibrium-and-activity-coefficients-not-yet-derived",
-    "pressure-and-solvent-identity-not-yet-generalized",
-    "hard-condition-profiles-currently-cover-seven-reviewed-reactions",
-    "coordination-complexes-and-hydrates-not-yet-generated",
-    "redox-currently-uses-eight-reviewed-half-reaction-rules",
-    "organic-mechanisms-out-of-current-scope",
-    "some-generated-formulas-are-empirical-high-school-representations"
+    "No universal existence or stability decision for formally balanced cells.",
+    "No new equilibrium constants, activity coefficients or quantitative precipitation thresholds.",
+    "Condition references describe evidence scope; ReactionConditionEngine separately enforces implemented reaction conditions.",
+    "Legacy colour, phase, solubility and hazard heuristics are retained for compatibility and are not comprehensively literature-reviewed.",
+    "Hydrates, coordination complexes and organic mechanisms are outside the formula grammar.",
+    "Separate oxide registry may use empirical rather than molecular formulas, such as P2O5."
   ]
 }

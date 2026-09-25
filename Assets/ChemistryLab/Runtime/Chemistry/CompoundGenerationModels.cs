@@ -97,6 +97,7 @@ namespace ChemistryLab.Desktop
             IsPolyatomic = source.polyatomic;
             Colour = string.IsNullOrWhiteSpace(source.colour) ? "#ECECE8" : source.colour;
             Hazards = CompoundGenerationMatrix.ParseHazards(source.hazards);
+            AtomCounts = ChemicalFormulaComposition.Parse(source.formula);
         }
 
         public string Id { get; private set; }
@@ -109,6 +110,7 @@ namespace ChemistryLab.Desktop
         public bool IsPolyatomic { get; private set; }
         public string Colour { get; private set; }
         public ChemicalHazardFlags Hazards { get; private set; }
+        public IReadOnlyDictionary<string, int> AtomCounts { get; private set; }
         public bool IsCation { get { return Charge > 0; } }
         public bool IsAnion { get { return Charge < 0; } }
     }
@@ -176,6 +178,11 @@ namespace ChemistryLab.Desktop
         public CompoundConfidence Confidence { get; private set; }
         public string ValidationNotes { get; private set; }
         public bool IsAccepted { get { return Confidence != CompoundConfidence.Rejected; } }
+        // Legacy confidence is an internal property classification, not scientific certification.
+        public string PropertyReviewStatus
+        {
+            get { return Confidence == CompoundConfidence.Reviewed ? "propertyReviewed" : "heuristic"; }
+        }
         public float ConfidenceScore
         {
             get

@@ -56,6 +56,44 @@ namespace ChemistryLab.Desktop
         private Coroutine transientAnimation;
         private bool inspectorVisible;
         private bool settingsReturnToMainMenu;
+        private GameObject touchControlsRoot;
+        private bool touchControlsEnabled;
+        public bool TouchControlsEnabled { get { return touchControlsEnabled; } }
+        private LabTouchZone moveTouchZone;
+        private LabTouchZone lookTouchZone;
+        private Button touchInteractButton;
+        private Button touchInspectButton;
+        private Button touchPutAwayButton;
+        private Button touchAmountMinusButton;
+        private Button touchAmountPlusButton;
+        private Button touchHeatButton;
+        private Button touchCoolButton;
+        private Button touchDiluteButton;
+        private Button touchCollectButton;
+        private Button touchInventoryButton;
+        private Button touchPauseButton;
+        private Button inspectorCloseButton;
+        private Button inspectorHeatButton;
+        private Button inspectorCoolButton;
+        private Button inspectorDiluteButton;
+        private Button inspectorCollectButton;
+        private Button inspectorPutAwayButton;
+        private Button inspectorInventoryButton;
+
+        public LabTouchZone MoveTouchZone
+        {
+            get { return moveTouchZone; }
+        }
+
+        public LabTouchZone LookTouchZone
+        {
+            get { return lookTouchZone; }
+        }
+
+        public GameObject TouchControlsRoot
+        {
+            get { return touchControlsRoot; }
+        }
 
         public bool InspectorVisible
         {
@@ -357,6 +395,13 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
+            if (touchControlsRoot != null)
+            {
+                touchControlsRoot.SetActive(false);
+            }
+            if (moveTouchZone != null) moveTouchZone.ResetPointer();
+            if (lookTouchZone != null) lookTouchZone.ResetPointer();
+
             reactionTitleText.text = LabLocalization.IsEnglish
                 ? "REACTION · " + DesktopLabGame.ZoneLabel(station)
                 : outcome.Title + " · " + DesktopLabGame.ZoneLabel(station);
@@ -376,6 +421,11 @@ namespace ChemistryLab.Desktop
             if (reactionOverlay != null)
             {
                 reactionOverlay.SetActive(false);
+            }
+
+            if (touchControlsRoot != null && !MainMenuVisible && !PauseMenuVisible && !SettingsVisible)
+            {
+                touchControlsRoot.SetActive(touchControlsEnabled);
             }
         }
 
@@ -474,12 +524,30 @@ namespace ChemistryLab.Desktop
             vesselTitleText.text = LabLocalization.IsEnglish
                 ? LocalizeReactionStatus(outcome.Status)
                 : outcome.Title;
+            if (outcome.ProductCollected)
+                vesselTitleText.text = LabLocalization.Text("Đã thu · cần dọn bình", "Collected · cleanup required");
             vesselEquationText.text = outcome.Equation;
 
             var builder = new StringBuilder();
+            if (outcome.ReactionCommitted)
+            {
+                builder.Append(LabLocalization.Text("PHẢN ỨNG ĐÃ GHI NHẬN · KHÔNG LẶP LẠI\n", "REACTION COMMITTED · NO REPLAY\n"));
+                builder.Append(outcome.ProductCollected
+                    ? LabLocalization.Text("Đến bồn rửa để dọn trước lần thử tiếp theo.\n", "Use the sink before another experiment.\n")
+                    : LabLocalization.Text("Thu sản phẩm một lần, rồi dọn bình.\n", "Collect once, then clean up.\n"));
+                builder.Append(LabLocalization.Text("Đầu vào ghi nhận: ", "Recorded inputs: "));
+                builder.Append(outcome.RecordedInputGrams.ToString("0.000"));
+                builder.Append(LabLocalization.Text(" g · Đã thu: ", " g · Collected: "));
+                builder.Append(outcome.CollectedProductGrams.ToString("0.000"));
+                builder.Append(LabLocalization.Text(" g\nChênh lệch: ", " g\nDifference: "));
+                builder.Append(outcome.UnallocatedInputGrams.ToString("0.000"));
+                builder.Append(LabLocalization.Text(" g (chưa mô hình hóa dung môi/sản phẩm phụ).\n\n", " g (solvent/byproducts not modelled).\n\n"));
+            }
             builder.Append(LabLocalization.Text("VỊ TRÍ\n", "LOCATION\n"));
             builder.Append(DesktopLabGame.ZoneLabel(station));
-            builder.Append(LabLocalization.Text("\n\nTHÀNH PHẦN\n", "\n\nCONTENTS\n"));
+            builder.Append(outcome.ReactionCommitted
+                ? LabLocalization.Text("\n\nLỊCH SỬ ĐẦU VÀO\n", "\n\nRECORDED INPUTS\n")
+                : LabLocalization.Text("\n\nTHÀNH PHẦN\n", "\n\nCONTENTS\n"));
             if (additions == null || additions.Count == 0)
             {
                 builder.Append(LabLocalization.Text(
@@ -559,7 +627,7 @@ namespace ChemistryLab.Desktop
                 builder.Append(LabLocalization.Text(" g\n\nĐỘ TINH KHIẾT LÔ\n", " g\n\nBATCH PURITY\n"));
                 builder.Append((outcome.ProductPurity * 100f).ToString("0.0"));
                 builder.Append(LabLocalization.Text("%\n\nTHU SẢN PHẨM\n", "%\n\nCOLLECT PRODUCT\n"));
-                builder.Append(outcome.Effect == ReactionEffect.Gas
+                builder.Append(outcome.ProductCollected ? LabLocalization.Text("Đã thu; cần dọn bình.", "Already collected; cleanup required.") : outcome.Effect == ReactionEffect.Gas
                     ? LabLocalization.Text(
                         "C · cần tủ hút + hệ rửa khí đã nối",
                         "C · requires fume hood + connected gas trap")
@@ -753,6 +821,25 @@ namespace ChemistryLab.Desktop
             SetButtonLabel("Main Menu Settings Button", "CÀI ĐẶT", "SETTINGS");
             SetButtonLabel("Main Menu Quit Button", "THOÁT RA DESKTOP", "QUIT TO DESKTOP");
             SetButtonLabel("Settings Back Button", "QUAY LẠI", "BACK");
+            SetButtonLabel("Reaction Skip Button", "BỎ QUA", "SKIP");
+            SetButtonLabel("Touch Interact Button", "E · TƯƠNG TÁC", "E · INTERACT");
+            SetButtonLabel("Touch Inspect Button", "F · PHÂN TÍCH", "F · INSPECT");
+            SetButtonLabel("Touch Put Away Button", "Q · CẤT MẪU", "Q · PUT AWAY");
+            SetButtonLabel("Touch Pause Button", "ESC · DỪNG", "ESC · PAUSE");
+            SetButtonLabel("Touch Amount Minus Button", "[ -1g", "[ -1g");
+            SetButtonLabel("Touch Amount Plus Button", "] +1g", "] +1g");
+            SetButtonLabel("Touch Heat Button", "NHIỆT +", "HEAT +");
+            SetButtonLabel("Touch Cool Button", "NHIỆT -", "COOL -");
+            SetButtonLabel("Touch Dilute Button", "F8 · LOÃNG", "F8 · DILUTE");
+            SetButtonLabel("Touch Collect Button", "C · THU HỒI", "C · COLLECT");
+            SetButtonLabel("Touch Inventory Button", "I · KHO", "I · INVENTORY");
+            SetButtonLabel("Inspector Close Button", "ĐÓNG · F", "CLOSE · F");
+            SetButtonLabel("Inspector Heat Button", "+25°C", "+25°C");
+            SetButtonLabel("Inspector Cool Button", "-25°C", "-25°C");
+            SetButtonLabel("Inspector Dilute Button", "LOÃNG", "DILUTE");
+            SetButtonLabel("Inspector Collect Button", "THU HỒI", "COLLECT");
+            SetButtonLabel("Inspector Put Away Button", "CẤT MẪU", "PUT AWAY");
+            SetButtonLabel("Inspector Inventory Button", "KHO", "BATCH");
             if (languageButtonText != null)
             {
                 languageButtonText.text = LabLocalization.IsEnglish
@@ -870,6 +957,14 @@ namespace ChemistryLab.Desktop
             scaler.referenceResolution = new Vector2(LabTheme.ReferenceWidth, LabTheme.ReferenceHeight);
             scaler.screenMatchMode = CanvasScaler.ScreenMatchMode.MatchWidthOrHeight;
             scaler.matchWidthOrHeight = 0.5f;
+
+            touchControlsEnabled = Application.isMobilePlatform || Input.touchSupported
+                || System.Array.IndexOf(System.Environment.GetCommandLineArgs(), "-touchControls") >= 0;
+            // Insets all HUD/menu elements once; child touch zones share this safe rectangle.
+            var safeRoot = new GameObject("Safe HUD Content", typeof(RectTransform), typeof(LabSafeAreaHandler));
+            safeRoot.transform.SetParent(canvasObject.transform, false);
+            safeRoot.GetComponent<LabSafeAreaHandler>().ApplySafeArea();
+            canvasObject = safeRoot;
 
             var topBar = CreatePanel(
                 "Edge HUD",
@@ -1020,6 +1115,7 @@ namespace ChemistryLab.Desktop
             CreateDebugPanel(canvasObject.transform);
             CreateCrosshair(canvasObject.transform);
             CreateFooter(canvasObject.transform);
+            CreateTouchControls(canvasObject.transform);
             CreateInspector(canvasObject.transform);
             CreateReactionPresentation(canvasObject.transform);
             CreateMainMenuOverlay(canvasObject.transform);
@@ -1083,6 +1179,12 @@ namespace ChemistryLab.Desktop
             reactionTitleText.raycastTarget = false;
             reactionEquationText.raycastTarget = false;
             reactionDetailsText.raycastTarget = false;
+            var skipButton = CreateButton("Reaction Skip Button", reactionOverlay.transform,
+                LabLocalization.Text("BỎ QUA", "SKIP"), new Vector2(-172f, 8f), new Vector2(-8f, 60f),
+                () => { if (game != null) game.SkipReactionCamera(); });
+            var skipRect = skipButton.GetComponent<RectTransform>();
+            skipRect.anchorMin = new Vector2(1f, 0f);
+            skipRect.anchorMax = new Vector2(1f, 0f);
             reactionOverlay.SetActive(false);
         }
 
@@ -1229,7 +1331,7 @@ namespace ChemistryLab.Desktop
                 "PPE / F6 · MUA · 250",
                 new Vector2(14f, 12f),
                 new Vector2(187f, 50f),
-                game.ToggleRespirator);
+                () => { if (game.Player != null) game.Player.DispatchRespirator(); });
             respiratorButtonText = respiratorButton.GetComponentInChildren<Text>();
 
             var trapButton = CreateButton(
@@ -1238,8 +1340,255 @@ namespace ChemistryLab.Desktop
                 "HỆ RỬA KHÍ / F7 · NỐI",
                 new Vector2(199f, 12f),
                 new Vector2(376f, 50f),
-                game.ToggleGasTrap);
+                () => { if (game.Player != null) game.Player.DispatchGasTrap(); });
             gasTrapButtonText = trapButton.GetComponentInChildren<Text>();
+        }
+
+        private void CreateTouchControls(Transform parent)
+        {
+            var touchCanvasObject = new GameObject("Touch Canvas", typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
+            touchCanvasObject.transform.SetParent(transform, false);
+            var touchCanvas = touchCanvasObject.GetComponent<Canvas>();
+            touchCanvas.renderMode = RenderMode.ScreenSpaceOverlay;
+            touchCanvas.sortingOrder = 99; // Inspectors and modal menus retain pointer ownership.
+            var touchScaler = touchCanvasObject.GetComponent<CanvasScaler>();
+            touchScaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+            touchScaler.referenceResolution = new Vector2(1280f, 720f);
+            touchScaler.matchWidthOrHeight = 1f;
+            touchControlsRoot = CreatePanel(
+                "Touch Controls",
+                touchCanvasObject.transform,
+                Vector2.zero,
+                Vector2.one,
+                new Vector2(0.5f, 0.5f),
+                Vector2.zero,
+                Vector2.zero,
+                Color.clear);
+            touchControlsRoot.AddComponent<LabSafeAreaHandler>();
+
+
+            // Left Movement Pad
+            var movePadArea = CreatePanel(
+                "Touch Move Area",
+                touchControlsRoot.transform,
+                new Vector2(0f, 0f),
+                new Vector2(0.35f, 0.42f),
+                new Vector2(0.5f, 0.5f),
+                Vector2.zero,
+                Vector2.zero,
+                Color.clear);
+            var movePadImg = movePadArea.GetComponent<Image>();
+            if (movePadImg != null)
+            {
+                movePadImg.color = new Color(0f, 0f, 0f, 0.001f);
+                movePadImg.raycastTarget = true;
+            }
+
+            var moveBasePlate = CreatePanel(
+                "Move Base Plate",
+                movePadArea.transform,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(-75f, -75f),
+                new Vector2(75f, 75f),
+                LabTheme.WithAlpha(LabTheme.Graphite, 0.42f));
+            var moveBasePlateImg = moveBasePlate.GetComponent<Image>();
+            if (moveBasePlateImg != null)
+            {
+                moveBasePlateImg.raycastTarget = false;
+            }
+
+            var moveKnob = CreatePanel(
+                "Move Knob",
+                moveBasePlate.transform,
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(0.5f, 0.5f),
+                new Vector2(-28f, -28f),
+                new Vector2(28f, 28f),
+                LabTheme.WithAlpha(LabTheme.PaperRaised, 0.75f));
+            var moveKnobImg = moveKnob.GetComponent<Image>();
+            if (moveKnobImg != null)
+            {
+                moveKnobImg.raycastTarget = false;
+            }
+
+            moveTouchZone = movePadArea.AddComponent<LabTouchZone>();
+            moveTouchZone.Initialise(TouchZoneMode.Movement, moveKnob.GetComponent<RectTransform>());
+
+            // Right Look Pad (swiping outside buttons rotates camera)
+            var lookPadArea = CreatePanel(
+                "Touch Look Area",
+                touchControlsRoot.transform,
+                new Vector2(0.40f, 0.12f),
+                new Vector2(0.82f, 0.85f),
+                new Vector2(0.5f, 0.5f),
+                Vector2.zero,
+                Vector2.zero,
+                Color.clear);
+            var lookPadImg = lookPadArea.GetComponent<Image>();
+            if (lookPadImg != null)
+            {
+                lookPadImg.color = new Color(0f, 0f, 0f, 0.001f);
+                lookPadImg.raycastTarget = true;
+            }
+
+            lookTouchZone = lookPadArea.AddComponent<LabTouchZone>();
+            lookTouchZone.Initialise(TouchZoneMode.Look, null);
+
+            // Right Touch Action Column (stacked vertically above bottom bar)
+            var rightActions = CreatePanel(
+                "Touch Primary Actions",
+                touchControlsRoot.transform,
+                new Vector2(1f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(-190f, 65f),
+                new Vector2(-10f, 320f),
+                Color.clear);
+            var rightImg = rightActions.GetComponent<Image>();
+            if (rightImg != null)
+            {
+                rightImg.raycastTarget = false;
+            }
+
+            touchInteractButton = CreateButton(
+                "Touch Interact Button",
+                rightActions.transform,
+                "E · TƯƠNG TÁC",
+                new Vector2(0f, 0f),
+                new Vector2(180f, 54f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchInteract(); });
+            var interactImg = touchInteractButton.GetComponent<Image>();
+            if (interactImg != null)
+            {
+                interactImg.color = LabTheme.Focus;
+            }
+
+            touchInspectButton = CreateButton(
+                "Touch Inspect Button",
+                rightActions.transform,
+                "F · PHÂN TÍCH",
+                new Vector2(0f, 62f),
+                new Vector2(180f, 116f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchInspect(); });
+
+            touchPutAwayButton = CreateButton(
+                "Touch Put Away Button",
+                rightActions.transform,
+                "Q · CẤT MẪU",
+                new Vector2(0f, 124f),
+                new Vector2(180f, 178f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchPutAway(); });
+
+            touchPauseButton = CreateButton(
+                "Touch Pause Button",
+                rightActions.transform,
+                "ESC · DỪNG",
+                new Vector2(0f, 186f),
+                new Vector2(180f, 240f),
+                () => { if (game != null) game.HandleEscape(); });
+
+            // Bottom Action Bar (Contextual physical controls)
+            var bottomActions = CreatePanel(
+                "Touch Secondary Actions",
+                touchControlsRoot.transform,
+                new Vector2(0.5f, 0f),
+                new Vector2(0.5f, 0f),
+                new Vector2(0.5f, 0f),
+                new Vector2(-280f, 6f),
+                new Vector2(280f, 58f),
+                Color.clear);
+            var bottomImg = bottomActions.GetComponent<Image>();
+            if (bottomImg != null)
+            {
+                bottomImg.raycastTarget = false;
+            }
+
+            touchAmountMinusButton = CreateButton(
+                "Touch Amount Minus Button",
+                bottomActions.transform,
+                "[ -1g",
+                new Vector2(0f, 2f),
+                new Vector2(68f, 50f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchAmount(-1f); });
+
+            touchAmountPlusButton = CreateButton(
+                "Touch Amount Plus Button",
+                bottomActions.transform,
+                "] +1g",
+                new Vector2(72f, 2f),
+                new Vector2(140f, 50f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchAmount(1f); });
+
+            touchHeatButton = CreateButton(
+                "Touch Heat Button",
+                bottomActions.transform,
+                "NHIỆT +",
+                new Vector2(144f, 2f),
+                new Vector2(218f, 50f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchTemperature(25f); });
+
+            touchCoolButton = CreateButton(
+                "Touch Cool Button",
+                bottomActions.transform,
+                "NHIỆT -",
+                new Vector2(222f, 2f),
+                new Vector2(296f, 50f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchTemperature(-25f); });
+
+            touchDiluteButton = CreateButton(
+                "Touch Dilute Button",
+                bottomActions.transform,
+                "F8 · LOÃNG",
+                new Vector2(300f, 2f),
+                new Vector2(382f, 50f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchDilute(); });
+
+            touchCollectButton = CreateButton(
+                "Touch Collect Button",
+                bottomActions.transform,
+                "C · THU HỒI",
+                new Vector2(386f, 2f),
+                new Vector2(468f, 50f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchCollect(); });
+
+            touchInventoryButton = CreateButton(
+                "Touch Inventory Button",
+                bottomActions.transform,
+                "I · KHO",
+                new Vector2(472f, 2f),
+                new Vector2(554f, 50f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchInventory(); });
+
+            var primaryRect = rightActions.GetComponent<RectTransform>();
+            primaryRect.offsetMin = new Vector2(-204f, 120f);
+            primaryRect.offsetMax = new Vector2(-12f, 536f);
+            var primary = new[] { touchInteractButton, touchInspectButton, touchPutAwayButton, touchPauseButton };
+            for (var i = 0; i < primary.Length; i++)
+                SetTouchTarget(primary[i], new Vector2(0f, i * 104f), new Vector2(192f, i * 104f + 96f));
+            var secondaryRect = bottomActions.GetComponent<RectTransform>();
+            secondaryRect.offsetMin = new Vector2(-416f, 12f);
+            secondaryRect.offsetMax = new Vector2(416f, 108f);
+            var secondary = new[] { touchAmountMinusButton, touchAmountPlusButton, touchHeatButton,
+                touchCoolButton, touchDiluteButton, touchCollectButton, touchInventoryButton };
+            for (var i = 0; i < secondary.Length; i++)
+                SetTouchTarget(secondary[i], new Vector2(i * 120f, 0f), new Vector2(i * 120f + 112f, 96f));
+            touchControlsRoot.SetActive(touchControlsEnabled);
+        }
+
+        private static void SetTouchTarget(Button button, Vector2 min, Vector2 max)
+        {
+            var rect = button.GetComponent<RectTransform>();
+            rect.offsetMin = min; rect.offsetMax = max;
+            var label = button.GetComponentInChildren<Text>();
+            label.fontSize = 24;
+            label.resizeTextForBestFit = true;
+            label.resizeTextMinSize = 20;
+            label.resizeTextMaxSize = 24;
+            label.rectTransform.offsetMin = new Vector2(4f, 0f);
+            label.rectTransform.offsetMax = new Vector2(-4f, 0f);
         }
 
         private void CreateInspector(Transform parent)
@@ -1278,11 +1627,19 @@ namespace ChemistryLab.Desktop
                 Vector2.zero,
                 Vector2.one,
                 new Vector2(18f, 0f),
-                new Vector2(-14f, 0f));
+                new Vector2(-120f, 0f));
+
+            inspectorCloseButton = CreateButton(
+                "Inspector Close Button",
+                rule.transform,
+                "ĐÓNG · F",
+                new Vector2(296f, 14f),
+                new Vector2(398f, 58f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchInspect(); });
 
             selectedSection = new GameObject("Chemical Section", typeof(RectTransform));
             selectedSection.transform.SetParent(inspectorPanel.transform, false);
-            Stretch(selectedSection.GetComponent<RectTransform>(), new Vector2(0f, 0f), Vector2.one, new Vector2(18f, 18f), new Vector2(-18f, -84f));
+            Stretch(selectedSection.GetComponent<RectTransform>(), new Vector2(0f, 0f), Vector2.one, new Vector2(18f, 70f), new Vector2(-18f, -84f));
 
             selectedFormulaText = CreateText(
                 "Chemical Formula",
@@ -1328,7 +1685,7 @@ namespace ChemistryLab.Desktop
 
             vesselSection = new GameObject("Vessel Section", typeof(RectTransform));
             vesselSection.transform.SetParent(inspectorPanel.transform, false);
-            Stretch(vesselSection.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, new Vector2(18f, 18f), new Vector2(-18f, -84f));
+            Stretch(vesselSection.GetComponent<RectTransform>(), Vector2.zero, Vector2.one, new Vector2(18f, 70f), new Vector2(-18f, -84f));
 
             vesselTitleText = CreateText(
                 "Vessel Title",
@@ -1371,6 +1728,67 @@ namespace ChemistryLab.Desktop
                 Vector2.one,
                 Vector2.zero,
                 new Vector2(0f, -96f));
+
+            MakeScrollable(selectedDetailsText);
+            MakeScrollable(vesselDetailsText);
+
+            var inspectorActions = CreatePanel(
+                "Inspector Actions Bar",
+                inspectorPanel.transform,
+                new Vector2(0f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(0f, 0f),
+                new Vector2(0f, 0f),
+                new Vector2(0f, 62f),
+                LabTheme.PaperDeep);
+
+            inspectorHeatButton = CreateButton(
+                "Inspector Heat Button",
+                inspectorActions.transform,
+                "+25°C",
+                new Vector2(8f, 7f),
+                new Vector2(68f, 53f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchTemperature(25f); });
+
+            inspectorCoolButton = CreateButton(
+                "Inspector Cool Button",
+                inspectorActions.transform,
+                "-25°C",
+                new Vector2(72f, 7f),
+                new Vector2(132f, 53f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchTemperature(-25f); });
+
+            inspectorDiluteButton = CreateButton(
+                "Inspector Dilute Button",
+                inspectorActions.transform,
+                "LOÃNG",
+                new Vector2(136f, 7f),
+                new Vector2(202f, 53f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchDilute(); });
+
+            inspectorCollectButton = CreateButton(
+                "Inspector Collect Button",
+                inspectorActions.transform,
+                "THU HỒI",
+                new Vector2(206f, 7f),
+                new Vector2(276f, 53f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchCollect(); });
+
+            inspectorPutAwayButton = CreateButton(
+                "Inspector Put Away Button",
+                inspectorActions.transform,
+                "CẤT MẪU",
+                new Vector2(280f, 7f),
+                new Vector2(344f, 53f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchPutAway(); });
+
+            inspectorInventoryButton = CreateButton(
+                "Inspector Inventory Button",
+                inspectorActions.transform,
+                "KHO",
+                new Vector2(348f, 7f),
+                new Vector2(406f, 53f),
+                () => { if (game != null && game.Player != null) game.Player.DispatchInventory(); });
 
             ShowChemicalSection();
         }
@@ -1658,6 +2076,18 @@ namespace ChemistryLab.Desktop
 
         private void SetMenuState(bool mainMenu, bool pause, bool settings)
         {
+            var inMenu = mainMenu || pause || settings;
+            if (touchControlsRoot != null)
+            {
+                touchControlsRoot.SetActive(touchControlsEnabled && !inMenu && !ReactionPresentationVisible);
+            }
+
+            if (inMenu)
+            {
+                if (moveTouchZone != null) moveTouchZone.ResetPointer();
+                if (lookTouchZone != null) lookTouchZone.ResetPointer();
+            }
+
             if (mainMenuOverlay != null)
             {
                 mainMenuOverlay.SetActive(mainMenu);
@@ -1863,6 +2293,27 @@ namespace ChemistryLab.Desktop
         {
             yield return new WaitForSecondsRealtime(3.6f);
             transientText.transform.parent.gameObject.SetActive(false);
+        }
+
+        private static void MakeScrollable(Text text)
+        {
+            var oldRect = text.rectTransform;
+            var viewport = new GameObject(text.name + " Viewport", typeof(RectTransform), typeof(Image), typeof(RectMask2D), typeof(ScrollRect));
+            viewport.transform.SetParent(oldRect.parent, false);
+            var rect = viewport.GetComponent<RectTransform>();
+            rect.anchorMin = oldRect.anchorMin; rect.anchorMax = oldRect.anchorMax;
+            rect.offsetMin = oldRect.offsetMin; rect.offsetMax = oldRect.offsetMax;
+            viewport.GetComponent<Image>().color = Color.clear;
+            text.transform.SetParent(viewport.transform, false);
+            oldRect.anchorMin = new Vector2(0f, 1f); oldRect.anchorMax = Vector2.one;
+            oldRect.pivot = new Vector2(.5f, 1f); oldRect.offsetMin = Vector2.zero; oldRect.offsetMax = Vector2.zero;
+            text.verticalOverflow = VerticalWrapMode.Overflow;
+            var fitter = text.gameObject.AddComponent<ContentSizeFitter>();
+            fitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+            var scroll = viewport.GetComponent<ScrollRect>();
+            scroll.viewport = rect; scroll.content = oldRect; scroll.horizontal = false;
+            scroll.movementType = ScrollRect.MovementType.Clamped;
+            scroll.scrollSensitivity = 35f;
         }
 
         private static GameObject CreatePanel(

@@ -12,8 +12,11 @@ The repository root is the canonical Unity project. Start with the main
 ## Chemistry
 
 - [`chemistry/compound-generation-matrix.md`](chemistry/compound-generation-matrix.md):
-  X/Y/Z compound model, charge balancing, physical-property estimation, and
+  2D anion × cation contract, charge balancing, evidence scope, and
   validation.
+- [`chemistry/compound-matrix-2d.html`](chemistry/compound-matrix-2d.html):
+  primary keyboard/touch-accessible ionic composition table, generated from
+  canonical Unity data; formula candidates do not authorize reactions.
 - [`chemistry/dynamic-reaction-engine.md`](chemistry/dynamic-reaction-engine.md):
   dynamic reaction resolution and safety classification.
 - [`chemistry/reaction-condition-engine.md`](chemistry/reaction-condition-engine.md):

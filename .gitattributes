@@ -1,0 +1,4 @@
+# The generated explorer records a byte hash of this canonical source.
+# Keep the source/export pair deterministic across Windows and Linux CI.
+Assets/ChemistryLab/Resources/Chemistry/compound-generation-matrix.json text eol=lf
+docs/chemistry/compound-matrix-2d.json text eol=lf

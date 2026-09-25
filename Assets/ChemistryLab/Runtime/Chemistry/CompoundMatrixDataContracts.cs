@@ -10,6 +10,7 @@ namespace ChemistryLab.Desktop
         public MatrixIonRecord[] ions;
         public MatrixCompoundOverrideRecord[] overrides;
         public MatrixExclusionRecord[] exclusions;
+        public Matrix2DRecord matrix2D;
     }
 
     [Serializable]
@@ -50,6 +51,7 @@ namespace ChemistryLab.Desktop
         public string[] hazards;
         public string confidence;
         public string notes;
+        public string propertyReviewStatus;
     }
 
     [Serializable]
@@ -57,5 +59,47 @@ namespace ChemistryLab.Desktop
     {
         public string coordinate;
         public string reason;
+    }
+
+    [Serializable]
+    internal sealed class Matrix2DRecord
+    {
+        public string rowAxis;
+        public string columnAxis;
+        public string defaultStatus;
+        public string[] defaultConditionIds;
+        public string[] defaultEvidenceIds;
+        public MatrixCellRecord[] cells;
+        public MatrixConditionRecord[] conditions;
+        public MatrixEvidenceRecord[] evidence;
+    }
+
+    [Serializable]
+    internal sealed class MatrixCellRecord
+    {
+        public string cationId;
+        public string anionId;
+        public string status;
+        public string[] conditionIds;
+        public string[] evidenceIds;
+        public string notes;
+    }
+
+    [Serializable]
+    internal sealed class MatrixConditionRecord
+    {
+        public string id;
+        public string label;
+        public string description;
+    }
+
+    [Serializable]
+    internal sealed class MatrixEvidenceRecord
+    {
+        public string id;
+        public string title;
+        public string url;
+        public string scope;
+        public string accessedOn;
     }
 }

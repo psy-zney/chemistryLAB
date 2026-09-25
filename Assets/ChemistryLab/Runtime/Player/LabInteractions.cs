@@ -356,6 +356,8 @@ namespace ChemistryLab.Desktop
         private Vector3 handsBasePosition;
         private Vector3 cameraBasePosition;
         private LabInteractable focusedInteractable;
+        private LabTouchZone moveTouchZone;
+        private LabTouchZone lookTouchZone;
         private float verticalVelocity;
         private float pitch;
         private float bobPhase;
@@ -364,6 +366,7 @@ namespace ChemistryLab.Desktop
         private bool cinematic;
         private bool moving;
         private bool running;
+        private bool sprintRequested;
 
         public bool IsPaused
         {
@@ -390,11 +393,156 @@ namespace ChemistryLab.Desktop
             get { return running; }
         }
 
+        public void SetTouchZones(LabTouchZone moveZone, LabTouchZone lookZone)
+        {
+            moveTouchZone = moveZone;
+            lookTouchZone = lookZone;
+        }
+
+        public void SetSprintRequested(bool requested)
+        {
+            sprintRequested = requested;
+        }
+
+        public bool CanUseGameplayActions
+        {
+            get { return game != null && !paused && !cinematic && !game.ReactionCameraActive
+                && (game.Hud == null || (!game.Hud.MainMenuVisible && !game.Hud.PauseMenuVisible && !game.Hud.SettingsVisible)); }
+        }
+
+        public void DispatchInteract()
+        {
+            if (!CanUseGameplayActions) return;
+            RaycastHit hit;
+            if (viewCamera != null && Physics.Raycast(viewCamera.transform.position,
+                viewCamera.transform.forward, out hit, InteractionDistance,
+                Physics.DefaultRaycastLayers, QueryTriggerInteraction.Ignore))
+            {
+                var target = hit.collider.GetComponentInParent<LabInteractable>();
+                if (target != null) target.Interact();
+            }
+        }
+
+        public void DispatchInspect()
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.ToggleInspector();
+            }
+        }
+
+        public void DispatchPutAway()
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.ClearSelectedChemical();
+            }
+        }
+
+        public void DispatchAmount(float delta)
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.AdjustSelectedAmount(delta);
+            }
+        }
+
+        public void DispatchTemperature(float deltaC)
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.AdjustVesselTemperature(deltaC);
+            }
+        }
+
+        public void DispatchDilute()
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.DiluteCurrentVessel();
+            }
+        }
+
+        public void DispatchCollect()
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.CollectProduct(game.CurrentVesselStation);
+            }
+        }
+
+        public void DispatchInventory()
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.CycleSynthesizedBatch();
+            }
+        }
+
+        public void DispatchRespirator()
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.ToggleRespirator();
+            }
+        }
+
+        public void DispatchGasTrap()
+        {
+            if (!CanUseGameplayActions) return;
+            if (game != null)
+            {
+                game.ToggleGasTrap();
+            }
+        }
+
+        public void DispatchPause()
+        {
+            if (game != null)
+            {
+                game.HandleEscape();
+            }
+        }
+
+        public void SetCursorLocked(bool locked)
+        {
+            if (paused)
+            {
+                Cursor.lockState = CursorLockMode.None;
+                Cursor.visible = true;
+                return;
+            }
+
+            Cursor.lockState = locked ? CursorLockMode.Locked : CursorLockMode.None;
+            Cursor.visible = !locked;
+        }
+
+        public void ToggleCursorLock()
+        {
+            if (paused)
+            {
+                return;
+            }
+
+            SetCursorLocked(Cursor.lockState != CursorLockMode.Locked);
+        }
+
         public void SetCinematicMode(bool value)
         {
             cinematic = value;
             moving = false;
             running = false;
+            if (moveTouchZone != null) moveTouchZone.ResetPointer();
+            if (lookTouchZone != null) lookTouchZone.ResetPointer();
+
             if (handsRoot != null)
             {
                 handsRoot.gameObject.SetActive(!value);
@@ -433,8 +581,17 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
+            if (moveTouchZone == null && game.Hud != null)
+            {
+                moveTouchZone = game.Hud.MoveTouchZone;
+                lookTouchZone = game.Hud.LookTouchZone;
+            }
+
             if (cinematic || game.ReactionCameraActive)
             {
+                if (moveTouchZone != null) moveTouchZone.ResetPointer();
+                if (lookTouchZone != null) lookTouchZone.ResetPointer();
+
                 if (Input.GetKeyDown(KeyCode.Space)
                     || Input.GetKeyDown(KeyCode.E)
                     || Input.GetKeyDown(KeyCode.Escape))
@@ -448,13 +605,45 @@ namespace ChemistryLab.Desktop
 
             if (Input.GetKeyDown(KeyCode.Escape))
             {
+                if (moveTouchZone != null) moveTouchZone.ResetPointer();
+                if (lookTouchZone != null) lookTouchZone.ResetPointer();
                 game.HandleEscape();
                 return;
             }
 
+            // Gated strictly when paused or when menus are active!
+            if (paused || (game.Hud != null && (game.Hud.MainMenuVisible || game.Hud.SettingsVisible || game.Hud.PauseMenuVisible)))
+            {
+                if (moveTouchZone != null) moveTouchZone.ResetPointer();
+                if (lookTouchZone != null) lookTouchZone.ResetPointer();
+                AnimateHands(0f, 0f);
+                UpdateCameraMotion();
+                return;
+            }
+
+            // Contextual desktop mouse cursor release without stranding pointer lock
+            if (Input.GetKeyDown(KeyCode.LeftAlt) || Input.GetKeyDown(KeyCode.RightAlt))
+            {
+                ToggleCursorLock();
+            }
+
+            if (Cursor.lockState != CursorLockMode.Locked && !paused && !game.Hud.TouchControlsEnabled)
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    var eventSystem = UnityEngine.EventSystems.EventSystem.current;
+                    var isPointerOverUi = eventSystem != null && eventSystem.IsPointerOverGameObject();
+                    if (!isPointerOverUi)
+                    {
+                        SetCursorLocked(true);
+                    }
+                }
+            }
+
+            // Active gameplay hotkeys - using shared dispatch
             if (Input.GetKeyDown(KeyCode.F))
             {
-                game.ToggleInspector();
+                DispatchInspect();
             }
 
             if (Input.GetKeyDown(KeyCode.F10))
@@ -475,59 +664,52 @@ namespace ChemistryLab.Desktop
 
             if (Input.GetKeyDown(KeyCode.F6))
             {
-                game.ToggleRespirator();
+                DispatchRespirator();
             }
 
             if (Input.GetKeyDown(KeyCode.F7))
             {
-                game.ToggleGasTrap();
+                DispatchGasTrap();
             }
 
             if (Input.GetKeyDown(KeyCode.LeftBracket))
             {
-                game.AdjustSelectedAmount(-1f);
+                DispatchAmount(-1f);
             }
 
             if (Input.GetKeyDown(KeyCode.RightBracket))
             {
-                game.AdjustSelectedAmount(1f);
+                DispatchAmount(1f);
             }
 
             if (Input.GetKeyDown(KeyCode.Q))
             {
-                game.ClearSelectedChemical();
-            }
-
-            if (paused)
-            {
-                AnimateHands(0f, 0f);
-                UpdateCameraMotion();
-                return;
+                DispatchPutAway();
             }
 
             if (Input.GetKeyDown(KeyCode.PageUp))
             {
-                game.AdjustVesselTemperature(25f);
+                DispatchTemperature(25f);
             }
 
             if (Input.GetKeyDown(KeyCode.PageDown))
             {
-                game.AdjustVesselTemperature(-25f);
+                DispatchTemperature(-25f);
             }
 
             if (Input.GetKeyDown(KeyCode.F8))
             {
-                game.DiluteCurrentVessel();
+                DispatchDilute();
             }
 
             if (Input.GetKeyDown(KeyCode.C))
             {
-                game.CollectProduct(game.CurrentVesselStation);
+                DispatchCollect();
             }
 
             if (Input.GetKeyDown(KeyCode.I))
             {
-                game.CycleSynthesizedBatch();
+                DispatchInventory();
             }
 
             UpdateLook();
@@ -539,21 +721,32 @@ namespace ChemistryLab.Desktop
 
         private void UpdateLook()
         {
-            var mouseX = Input.GetAxisRaw("Mouse X") * LookSensitivity;
-            var mouseY = Input.GetAxisRaw("Mouse Y") * LookSensitivity;
+            var mouseX = 0f;
+            var mouseY = 0f;
+            if (Cursor.lockState == CursorLockMode.Locked && !game.Hud.TouchControlsEnabled)
+            {
+                mouseX = Input.GetAxisRaw("Mouse X") * LookSensitivity;
+                mouseY = Input.GetAxisRaw("Mouse Y") * LookSensitivity;
+            }
 
-            transform.Rotate(Vector3.up, mouseX, Space.Self);
-            pitch = Mathf.Clamp(pitch - mouseY, -78f, 78f);
+            var touchLook = lookTouchZone != null ? lookTouchZone.ConsumeLookDelta() : Vector2.zero;
+            var totalLookX = mouseX + touchLook.x;
+            var totalLookY = mouseY + touchLook.y;
+
+            transform.Rotate(Vector3.up, totalLookX, Space.Self);
+            pitch = Mathf.Clamp(pitch - totalLookY, -78f, 78f);
             viewCamera.transform.localRotation = Quaternion.Euler(pitch, 0f, 0f);
-            AnimateHands(mouseX, mouseY);
+            AnimateHands(totalLookX, totalLookY);
         }
 
         private void UpdateMovement()
         {
             var horizontal = Input.GetAxisRaw("Horizontal");
             var vertical = Input.GetAxisRaw("Vertical");
-            var input = Vector2.ClampMagnitude(new Vector2(horizontal, vertical), 1f);
-            running = Input.GetKey(KeyCode.LeftShift) && input.sqrMagnitude > 0.01f;
+            var touchMove = moveTouchZone != null ? moveTouchZone.InputVector : Vector2.zero;
+            var combined = new Vector2(horizontal + touchMove.x, vertical + touchMove.y);
+            var input = Vector2.ClampMagnitude(combined, 1f);
+            running = (Input.GetKey(KeyCode.LeftShift) || sprintRequested) && input.sqrMagnitude > 0.01f;
             var speed = running ? RunSpeed : WalkSpeed;
             var planar = (transform.right * input.x + transform.forward * input.y) * speed;
 
@@ -615,7 +808,7 @@ namespace ChemistryLab.Desktop
 
             if (focusedInteractable != null && Input.GetKeyDown(KeyCode.E))
             {
-                focusedInteractable.Interact();
+                DispatchInteract();
             }
         }
 
@@ -702,8 +895,11 @@ namespace ChemistryLab.Desktop
         private void SetPaused(bool value)
         {
             paused = value;
-            Cursor.lockState = value ? CursorLockMode.None : CursorLockMode.Locked;
-            Cursor.visible = value;
+            if (moveTouchZone != null) moveTouchZone.ResetPointer();
+            if (lookTouchZone != null) lookTouchZone.ResetPointer();
+            var touch = game != null && game.Hud != null && game.Hud.TouchControlsEnabled;
+            Cursor.lockState = value || touch ? CursorLockMode.None : CursorLockMode.Locked;
+            Cursor.visible = value || touch;
             if (game != null)
             {
                 game.SetPaused(value);

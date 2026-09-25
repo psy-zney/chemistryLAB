@@ -296,6 +296,11 @@ namespace ChemistryLab.Desktop
         public float EstimatedCompletionSeconds;
         public float ProductPurity;
         public bool CanCollectProduct;
+        public bool ReactionCommitted;
+        public bool ProductCollected;
+        public double RecordedInputGrams;
+        public double CollectedProductGrams;
+        public double UnallocatedInputGrams;
         public string CatalystSummary;
         public string ConditionSummary;
         public float TemperatureC;
@@ -729,9 +734,9 @@ namespace ChemistryLab.Desktop
             if (match == null)
             {
                 idle.Status = ReactionStatus.NoMatch;
-                idle.Title = "Không có động lực phản ứng";
+                idle.Title = "Chưa có mô hình phản ứng phù hợp";
                 idle.Message =
-                    "Không tìm thấy phản ứng mẫu hoặc luật ion/axit–bazơ/thế kim loại phù hợp ở điều kiện hiện tại.";
+                    "Chưa có phản ứng mẫu hoặc luật phù hợp cho hỗn hợp này. Điều đó không chứng minh rằng không có phản ứng thực tế.";
                 idle.Safety = "Hỗn hợp vẫn được giữ lại; không gia nhiệt nếu chưa có luật nhiệt phân.";
                 var mixture = ReactionConditionEngine.Assess(null, gramsById, environment);
                 ApplyConditionFields(idle, mixture, environment);

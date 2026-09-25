@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "1.0",
+  "schemaVersion": "2.0",
   "elements": [
     { "symbol": "H",  "name": "Hydrogen",   "atomicMass": 1.008,   "axis": "Nonmetal", "activityRank": 0,   "oxidationStates": [-1, 1] },
     { "symbol": "Li", "name": "Lithium",    "atomicMass": 6.94,    "axis": "Metal",    "activityRank": 90,  "oxidationStates": [1] },
@@ -79,53 +79,53 @@
     { "id": "silicate",       "name": "Silicate",      "formula": "SiO₃",   "charge": -2, "molarMass": 76.082,  "elementSymbol": "Si", "oxygenCount": 3, "polyatomic": true,  "colour": "#ECECE8", "hazards": [] }
   ],
   "overrides": [
-    { "coordinate": "hydrogen|oxide",          "formula": "H₂O",       "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless liquid.",                         "colour": "#DDEBEC", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed molecular formula for water." },
-    { "coordinate": "hydrogen|hydroxide",      "formula": "H₂O",       "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless liquid.",                         "colour": "#DDEBEC", "hazards": [],                                  "confidence": "Reviewed", "notes": "H+ and OH- neutralise to water." },
-    { "coordinate": "hydrogen|chloride",       "formula": "HCl",       "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Colourless aqueous acid.",                    "colour": "#E8E4D3", "hazards": ["corrosive"],                       "confidence": "Reviewed", "notes": "Reviewed common strong acid." },
-    { "coordinate": "hydrogen|nitrate",        "formula": "HNO₃",      "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless to pale-yellow oxidising acid.",   "colour": "#E9E2C7", "hazards": ["corrosive", "oxidizer"],           "confidence": "Reviewed", "notes": "Reviewed common strong oxidising acid." },
-    { "coordinate": "hydrogen|nitrite",        "formula": "HNO₂",      "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Unstable pale-blue aqueous acid.",            "colour": "#DCE8EA", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "notes": "Exists mainly in dilute solution and can decompose." },
-    { "coordinate": "hydrogen|sulfate",        "formula": "H₂SO₄",     "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless dense liquid.",                    "colour": "#E6E1CE", "hazards": ["corrosive", "oxidizer"],           "confidence": "Reviewed", "notes": "Reviewed common diprotic acid." },
-    { "coordinate": "hydrogen|sulfite",        "formula": "H₂SO₃",     "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Sulfur dioxide in aqueous equilibrium.",      "colour": "#E1E8E7", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "notes": "Modelled as an aqueous equilibrium, not an isolable pure liquid." },
-    { "coordinate": "hydrogen|carbonate",      "formula": "H₂CO₃",     "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Carbon dioxide in aqueous equilibrium.",      "colour": "#DDEBEC", "hazards": ["gas-release-potential"],           "confidence": "Reviewed", "notes": "Modelled as dissolved carbonic acid equilibrium." },
-    { "coordinate": "hydrogen|phosphate",      "formula": "H₃PO₄",     "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless viscous acid.",                    "colour": "#E8E1CB", "hazards": ["corrosive"],                       "confidence": "Reviewed", "notes": "Reviewed common triprotic acid." },
-    { "coordinate": "hydrogen|acetate",        "formula": "CH₃COOH",   "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless volatile liquid.",                 "colour": "#E7E3D8", "hazards": ["corrosive"],                       "confidence": "Reviewed", "notes": "Conventional structural ordering for acetic acid." },
-    { "coordinate": "hydrogen|sulfide",        "formula": "H₂S",       "solubility": "SlightlySoluble", "phase": "Gas",     "appearance": "Colourless highly toxic gas.",                  "colour": "#D4DDC4", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "notes": "Critical inhalation hazard; requires containment." },
-    { "coordinate": "hydrogen|hypochlorite",   "formula": "HClO",      "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Pale aqueous oxidising acid.",                "colour": "#E4E2BD", "hazards": ["oxidizer", "gas-release-potential"], "confidence": "Reviewed", "notes": "Conventional formula for hypochlorous acid." },
-    { "coordinate": "hydrogen|chlorate",       "formula": "HClO₃",     "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Strong oxidising acid in solution.",          "colour": "#E8E3CE", "hazards": ["corrosive", "oxidizer"],           "confidence": "Reviewed", "notes": "Restricted to aqueous high-school representation." },
-    { "coordinate": "hydrogen|silicate",       "formula": "H₂SiO₃",    "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Hydrated silica-like gelatinous solid.",           "colour": "#E9E8E2", "hazards": [],                                  "confidence": "Reviewed", "notes": "Simplified high-school representation of silicic acid." },
+    { "coordinate": "hydrogen|oxide",          "formula": "H₂O",       "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless liquid.",                         "colour": "#DDEBEC", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed molecular formula for water." },
+    { "coordinate": "hydrogen|hydroxide",      "formula": "H₂O",       "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless liquid.",                         "colour": "#DDEBEC", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "H+ and OH- neutralise to water." },
+    { "coordinate": "hydrogen|chloride",       "formula": "HCl",       "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Colourless aqueous acid.",                    "colour": "#E8E4D3", "hazards": ["corrosive"],                       "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed common strong acid." },
+    { "coordinate": "hydrogen|nitrate",        "formula": "HNO₃",      "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless to pale-yellow oxidising acid.",   "colour": "#E9E2C7", "hazards": ["corrosive", "oxidizer"],           "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed common strong oxidising acid." },
+    { "coordinate": "hydrogen|nitrite",        "formula": "HNO₂",      "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Unstable pale-blue aqueous acid.",            "colour": "#DCE8EA", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Exists mainly in dilute solution and can decompose." },
+    { "coordinate": "hydrogen|sulfate",        "formula": "H₂SO₄",     "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless dense liquid.",                    "colour": "#E6E1CE", "hazards": ["corrosive", "oxidizer"],           "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed common diprotic acid." },
+    { "coordinate": "hydrogen|sulfite",        "formula": "H₂SO₃",     "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Sulfur dioxide in aqueous equilibrium.",      "colour": "#E1E8E7", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Modelled as an aqueous equilibrium, not an isolable pure liquid." },
+    { "coordinate": "hydrogen|carbonate",      "formula": "H₂CO₃",     "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Carbon dioxide in aqueous equilibrium.",      "colour": "#DDEBEC", "hazards": ["gas-release-potential"],           "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Modelled as dissolved carbonic acid equilibrium." },
+    { "coordinate": "hydrogen|phosphate",      "formula": "H₃PO₄",     "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless viscous acid.",                    "colour": "#E8E1CB", "hazards": ["corrosive"],                       "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed common triprotic acid." },
+    { "coordinate": "hydrogen|acetate",        "formula": "CH₃COOH",   "solubility": "Soluble",         "phase": "Liquid",  "appearance": "Colourless volatile liquid.",                 "colour": "#E7E3D8", "hazards": ["corrosive"],                       "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Conventional structural ordering for acetic acid." },
+    { "coordinate": "hydrogen|sulfide",        "formula": "H₂S",       "solubility": "SlightlySoluble", "phase": "Gas",     "appearance": "Colourless highly toxic gas.",                  "colour": "#D4DDC4", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Critical inhalation hazard; requires containment." },
+    { "coordinate": "hydrogen|hypochlorite",   "formula": "HClO",      "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Pale aqueous oxidising acid.",                "colour": "#E4E2BD", "hazards": ["oxidizer", "gas-release-potential"], "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Conventional formula for hypochlorous acid." },
+    { "coordinate": "hydrogen|chlorate",       "formula": "HClO₃",     "solubility": "Soluble",         "phase": "Aqueous", "appearance": "Strong oxidising acid in solution.",          "colour": "#E8E3CE", "hazards": ["corrosive", "oxidizer"],           "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Restricted to aqueous high-school representation." },
+    { "coordinate": "hydrogen|silicate",       "formula": "H₂SiO₃",    "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Hydrated silica-like gelatinous solid.",           "colour": "#E9E8E2", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Simplified high-school representation of silicic acid." },
 
-    { "coordinate": "sodium|sulfate",          "formula": "Na₂SO₄",    "solubility": "Soluble",         "phase": "Solid",   "appearance": "White crystalline solid.",                      "colour": "#EEEDE7", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed soluble sodium salt." },
-    { "coordinate": "calcium|phosphate",       "formula": "Ca₃(PO₄)₂", "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White precipitate.",                            "colour": "#F0EFE8", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed phosphate solubility exception." },
-    { "coordinate": "calcium|carbonate",       "formula": "CaCO₃",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White solid or precipitate.",                   "colour": "#EEECE5", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed limestone/chalk compound." },
-    { "coordinate": "copper-two|hydroxide",    "formula": "Cu(OH)₂",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Blue gelatinous precipitate.",                  "colour": "#4B93A7", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "notes": "Reviewed qualitative-analysis precipitate." },
-    { "coordinate": "copper-two|carbonate",    "formula": "CuCO₃",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Green carbonate/basic-carbonate representation.", "colour": "#5B9475", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "notes": "Simplified high-school carbonate representation." },
-    { "coordinate": "copper-two|sulfide",      "formula": "CuS",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Black precipitate.",                            "colour": "#242725", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "notes": "Reviewed black copper(II) sulfide precipitate." },
-    { "coordinate": "iron-two|hydroxide",      "formula": "Fe(OH)₂",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Pale-green precipitate that oxidises in air.",   "colour": "#83A486", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed Fe(II) hydroxide observation." },
-    { "coordinate": "iron-three|hydroxide",    "formula": "Fe(OH)₃",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Red-brown gelatinous precipitate.",             "colour": "#9B5535", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed Fe(III) hydroxide observation." },
-    { "coordinate": "silver|chloride",         "formula": "AgCl",      "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White photosensitive precipitate.",             "colour": "#F1F0E8", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "notes": "Reviewed silver-halide solubility exception." },
-    { "coordinate": "silver|bromide",          "formula": "AgBr",      "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Cream photosensitive precipitate.",             "colour": "#E7DDBB", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "notes": "Reviewed silver-halide solubility exception." },
-    { "coordinate": "silver|iodide",           "formula": "AgI",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Yellow photosensitive precipitate.",            "colour": "#D9C65B", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "notes": "Reviewed silver-halide solubility exception." },
-    { "coordinate": "barium|sulfate",          "formula": "BaSO₄",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Dense white precipitate.",                      "colour": "#F0EFEA", "hazards": [],                                  "confidence": "Reviewed", "notes": "Insoluble BaSO4 differs strongly from toxic soluble Ba salts." },
-    { "coordinate": "lead-two|iodide",         "formula": "PbI₂",      "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Bright-yellow crystalline precipitate.",        "colour": "#E1C93A", "hazards": ["toxic", "heavy-metal"],            "confidence": "Reviewed", "notes": "Reviewed lead(II) iodide precipitate." },
-    { "coordinate": "lead-two|sulfate",        "formula": "PbSO₄",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White precipitate.",                            "colour": "#EAE8E0", "hazards": ["toxic", "heavy-metal"],            "confidence": "Reviewed", "notes": "Reviewed sulfate solubility exception." },
-    { "coordinate": "cadmium|sulfide",         "formula": "CdS",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Yellow precipitate.",                           "colour": "#E1C62B", "hazards": ["toxic", "heavy-metal", "carcinogenic"], "confidence": "Reviewed", "notes": "Reviewed cadmium sulfide colour and hazard." },
-    { "coordinate": "nickel-two|hydroxide",    "formula": "Ni(OH)₂",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Green precipitate.",                            "colour": "#6B9A68", "hazards": ["toxic", "heavy-metal"],            "confidence": "Reviewed", "notes": "Reviewed nickel(II) hydroxide observation." },
-    { "coordinate": "cobalt-two|hydroxide",    "formula": "Co(OH)₂",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Blue to pink precipitate depending on ageing.",  "colour": "#6685A7", "hazards": ["toxic", "heavy-metal"],            "confidence": "Reviewed", "notes": "Reviewed qualitative-analysis representation." },
-    { "coordinate": "chromium-three|hydroxide","formula": "Cr(OH)₃",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Grey-green gelatinous precipitate.",            "colour": "#708774", "hazards": ["heavy-metal"],                     "confidence": "Reviewed", "notes": "Reviewed amphoteric chromium(III) hydroxide." },
+    { "coordinate": "sodium|sulfate",          "formula": "Na₂SO₄",    "solubility": "Soluble",         "phase": "Solid",   "appearance": "White crystalline solid.",                      "colour": "#EEEDE7", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed soluble sodium salt." },
+    { "coordinate": "calcium|phosphate",       "formula": "Ca₃(PO₄)₂", "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White precipitate.",                            "colour": "#F0EFE8", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed phosphate solubility exception." },
+    { "coordinate": "calcium|carbonate",       "formula": "CaCO₃",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White solid or precipitate.",                   "colour": "#EEECE5", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed limestone/chalk compound." },
+    { "coordinate": "copper-two|hydroxide",    "formula": "Cu(OH)₂",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Blue gelatinous precipitate.",                  "colour": "#4B93A7", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed qualitative-analysis precipitate." },
+    { "coordinate": "copper-two|carbonate",    "formula": "CuCO₃",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Green carbonate/basic-carbonate representation.", "colour": "#5B9475", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Simplified high-school carbonate representation." },
+    { "coordinate": "copper-two|sulfide",      "formula": "CuS",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Black precipitate.",                            "colour": "#242725", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed black copper(II) sulfide precipitate." },
+    { "coordinate": "iron-two|hydroxide",      "formula": "Fe(OH)₂",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Pale-green precipitate that oxidises in air.",   "colour": "#83A486", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed Fe(II) hydroxide observation." },
+    { "coordinate": "iron-three|hydroxide",    "formula": "Fe(OH)₃",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Red-brown gelatinous precipitate.",             "colour": "#9B5535", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed Fe(III) hydroxide observation." },
+    { "coordinate": "silver|chloride",         "formula": "AgCl",      "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White photosensitive precipitate.",             "colour": "#F1F0E8", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed silver-halide solubility exception." },
+    { "coordinate": "silver|bromide",          "formula": "AgBr",      "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Cream photosensitive precipitate.",             "colour": "#E7DDBB", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed silver-halide solubility exception." },
+    { "coordinate": "silver|iodide",           "formula": "AgI",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Yellow photosensitive precipitate.",            "colour": "#D9C65B", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed silver-halide solubility exception." },
+    { "coordinate": "barium|sulfate",          "formula": "BaSO₄",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Dense white precipitate.",                      "colour": "#F0EFEA", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Insoluble BaSO4 differs strongly from toxic soluble Ba salts." },
+    { "coordinate": "lead-two|iodide",         "formula": "PbI₂",      "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Bright-yellow crystalline precipitate.",        "colour": "#E1C93A", "hazards": ["toxic", "heavy-metal"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed lead(II) iodide precipitate." },
+    { "coordinate": "lead-two|sulfate",        "formula": "PbSO₄",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White precipitate.",                            "colour": "#EAE8E0", "hazards": ["toxic", "heavy-metal"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed sulfate solubility exception." },
+    { "coordinate": "cadmium|sulfide",         "formula": "CdS",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Yellow precipitate.",                           "colour": "#E1C62B", "hazards": ["toxic", "heavy-metal", "carcinogenic"], "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed cadmium sulfide colour and hazard." },
+    { "coordinate": "nickel-two|hydroxide",    "formula": "Ni(OH)₂",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Green precipitate.",                            "colour": "#6B9A68", "hazards": ["toxic", "heavy-metal"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed nickel(II) hydroxide observation." },
+    { "coordinate": "cobalt-two|hydroxide",    "formula": "Co(OH)₂",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Blue to pink precipitate depending on ageing.",  "colour": "#6685A7", "hazards": ["toxic", "heavy-metal"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed qualitative-analysis representation." },
+    { "coordinate": "chromium-three|hydroxide","formula": "Cr(OH)₃",   "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Grey-green gelatinous precipitate.",            "colour": "#708774", "hazards": ["heavy-metal"],                     "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed amphoteric chromium(III) hydroxide." },
 
-    { "coordinate": "oxide:Al:3",              "formula": "Al₂O₃",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White amphoteric solid.",                       "colour": "#ECEBE7", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed amphoteric aluminium oxide." },
-    { "coordinate": "oxide:Ca:2",              "formula": "CaO",       "solubility": "ReactsWithWater", "phase": "Solid",   "appearance": "White basic solid.",                            "colour": "#EEEDE8", "hazards": ["corrosive", "water-reactive"],     "confidence": "Reviewed", "notes": "Reacts exothermically with water to form Ca(OH)2." },
-    { "coordinate": "oxide:Fe:2",              "formula": "FeO",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Black solid.",                                  "colour": "#292C2B", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed iron(II) oxide." },
-    { "coordinate": "oxide:Fe:3",              "formula": "Fe₂O₃",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Red-brown solid.",                              "colour": "#9B4C32", "hazards": [],                                  "confidence": "Reviewed", "notes": "Reviewed iron(III) oxide." },
-    { "coordinate": "oxide:Cu:1",              "formula": "Cu₂O",      "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Brick-red solid.",                              "colour": "#A54C36", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "notes": "Reviewed copper(I) oxide." },
-    { "coordinate": "oxide:Cu:2",              "formula": "CuO",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Black basic solid.",                            "colour": "#242625", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "notes": "Reviewed copper(II) oxide." },
-    { "coordinate": "oxide:C:2",               "formula": "CO",        "solubility": "SlightlySoluble", "phase": "Gas",     "appearance": "Colourless toxic gas.",                         "colour": "#DCE5E6", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "notes": "Reviewed carbon monoxide; critical inhalation hazard." },
-    { "coordinate": "oxide:C:4",               "formula": "CO₂",       "solubility": "SlightlySoluble", "phase": "Gas",     "appearance": "Colourless gas.",                               "colour": "#DDEBEC", "hazards": ["gas-release-potential"],           "confidence": "Reviewed", "notes": "Reviewed carbon dioxide." },
-    { "coordinate": "oxide:S:4",               "formula": "SO₂",       "solubility": "Soluble",         "phase": "Gas",     "appearance": "Colourless choking gas.",                       "colour": "#DFE5D7", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "notes": "Reviewed acidic sulfur dioxide." },
-    { "coordinate": "oxide:S:6",               "formula": "SO₃",       "solubility": "ReactsWithWater", "phase": "Liquid",  "appearance": "Fuming molecular oxide near room temperature.", "colour": "#E7E5DC", "hazards": ["corrosive", "water-reactive"],     "confidence": "Reviewed", "notes": "Reviewed sulfur trioxide formula and water reactivity." },
-    { "coordinate": "oxide:N:4",               "formula": "NO₂",       "solubility": "ReactsWithWater", "phase": "Gas",     "appearance": "Brown toxic gas.",                              "colour": "#A95836", "hazards": ["toxic", "oxidizer", "gas-release-potential"], "confidence": "Reviewed", "notes": "Reviewed nitrogen dioxide." },
-    { "coordinate": "oxide:N:5",               "formula": "N₂O₅",      "solubility": "ReactsWithWater", "phase": "Solid",   "appearance": "Colourless oxidising solid.",                   "colour": "#E8E8E2", "hazards": ["oxidizer", "water-reactive"],     "confidence": "Reviewed", "notes": "Reviewed nitrogen(V) oxide." },
-    { "coordinate": "oxide:P:5",               "formula": "P₂O₅",      "solubility": "ReactsWithWater", "phase": "Solid",   "appearance": "White hygroscopic solid (empirical formula).",   "colour": "#F0EEE6", "hazards": ["corrosive", "water-reactive"],     "confidence": "Reviewed", "notes": "High-school empirical representation; molecular form is P4O10." }
+    { "coordinate": "oxide:Al:3",              "formula": "Al₂O₃",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "White amphoteric solid.",                       "colour": "#ECEBE7", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed amphoteric aluminium oxide." },
+    { "coordinate": "oxide:Ca:2",              "formula": "CaO",       "solubility": "ReactsWithWater", "phase": "Solid",   "appearance": "White basic solid.",                            "colour": "#EEEDE8", "hazards": ["corrosive", "water-reactive"],     "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reacts exothermically with water to form Ca(OH)2." },
+    { "coordinate": "oxide:Fe:2",              "formula": "FeO",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Black solid.",                                  "colour": "#292C2B", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed iron(II) oxide." },
+    { "coordinate": "oxide:Fe:3",              "formula": "Fe₂O₃",     "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Red-brown solid.",                              "colour": "#9B4C32", "hazards": [],                                  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed iron(III) oxide." },
+    { "coordinate": "oxide:Cu:1",              "formula": "Cu₂O",      "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Brick-red solid.",                              "colour": "#A54C36", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed copper(I) oxide." },
+    { "coordinate": "oxide:Cu:2",              "formula": "CuO",       "solubility": "Insoluble",       "phase": "Solid",   "appearance": "Black basic solid.",                            "colour": "#242625", "hazards": ["environmental-hazard"],            "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed copper(II) oxide." },
+    { "coordinate": "oxide:C:2",               "formula": "CO",        "solubility": "SlightlySoluble", "phase": "Gas",     "appearance": "Colourless toxic gas.",                         "colour": "#DCE5E6", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed carbon monoxide; critical inhalation hazard." },
+    { "coordinate": "oxide:C:4",               "formula": "CO₂",       "solubility": "SlightlySoluble", "phase": "Gas",     "appearance": "Colourless gas.",                               "colour": "#DDEBEC", "hazards": ["gas-release-potential"],           "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed carbon dioxide." },
+    { "coordinate": "oxide:S:4",               "formula": "SO₂",       "solubility": "Soluble",         "phase": "Gas",     "appearance": "Colourless choking gas.",                       "colour": "#DFE5D7", "hazards": ["toxic", "gas-release-potential"],  "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed acidic sulfur dioxide." },
+    { "coordinate": "oxide:S:6",               "formula": "SO₃",       "solubility": "ReactsWithWater", "phase": "Liquid",  "appearance": "Fuming molecular oxide near room temperature.", "colour": "#E7E5DC", "hazards": ["corrosive", "water-reactive"],     "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed sulfur trioxide formula and water reactivity." },
+    { "coordinate": "oxide:N:4",               "formula": "NO₂",       "solubility": "ReactsWithWater", "phase": "Gas",     "appearance": "Brown toxic gas.",                              "colour": "#A95836", "hazards": ["toxic", "oxidizer", "gas-release-potential"], "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed nitrogen dioxide." },
+    { "coordinate": "oxide:N:5",               "formula": "N₂O₅",      "solubility": "ReactsWithWater", "phase": "Solid",   "appearance": "Colourless oxidising solid.",                   "colour": "#E8E8E2", "hazards": ["oxidizer", "water-reactive"],     "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "Reviewed nitrogen(V) oxide." },
+    { "coordinate": "oxide:P:5",               "formula": "P₂O₅",      "solubility": "ReactsWithWater", "phase": "Solid",   "appearance": "White hygroscopic solid (empirical formula).",   "colour": "#F0EEE6", "hazards": ["corrosive", "water-reactive"],     "confidence": "Reviewed", "propertyReviewStatus": "propertyReviewed", "notes": "High-school empirical representation; molecular form is P4O10." }
   ],
   "exclusions": [
     { "coordinate": "ammonium|oxide",          "reason": "A free ammonium oxide is not treated as a stable bottleable school-lab compound." },
@@ -137,5 +137,97 @@
     { "coordinate": "iron-three|bicarbonate",  "reason": "Strong hydrolysis prevents a stable simple iron(III) bicarbonate." },
     { "coordinate": "chromium-three|bicarbonate", "reason": "Strong hydrolysis prevents a stable simple chromium(III) bicarbonate." },
     { "coordinate": "oxide:H:1",               "reason": "Hydrogen oxide is represented by the reviewed H+ / oxide route as water." }
-  ]
+  ],
+  "matrix2D": {
+    "rowAxis": "anionId",
+    "columnAxis": "cationId",
+    "defaultStatus": "formalComposition",
+    "defaultConditionIds": [
+      "composition-only"
+    ],
+    "defaultEvidenceIds": [],
+    "conditions": [
+      {
+        "id": "composition-only",
+        "label": "Formal composition only",
+        "description": "Charge arithmetic only. No temperature, phase, solvent, stability or reaction feasibility is asserted. This record is descriptive, not an executable reaction predicate."
+      },
+      {
+        "id": "aqueous-example",
+        "label": "Aqueous textbook example",
+        "description": "Evidence concerns the specific aqueous example in the cited section. Concentration-dependent equilibrium and quantitative thresholds are not supplied or automatically enforced by this record."
+      },
+      {
+        "id": "solid-composition-example",
+        "label": "Solid composition example",
+        "description": "Evidence supports the named ionic solid and its composition; it supplies no preparation route or reaction permission."
+      }
+    ],
+    "evidence": [
+      {
+        "id": "openstax-ionic-composition",
+        "title": "OpenStax Chemistry 2e, 2.6 Ionic and Molecular Compounds",
+        "url": "https://openstax.org/books/chemistry-2e/pages/2-6-ionic-and-molecular-compounds",
+        "scope": "Supports neutral ion ratios and the sodium chloride composition example. Does not validate every generated coordinate or its estimated properties.",
+        "accessedOn": "2026-09-25"
+      },
+      {
+        "id": "openstax-reaction-examples",
+        "title": "OpenStax Chemistry 2e, 4.2 Classifying Chemical Reactions",
+        "url": "https://openstax.org/books/chemistry-2e/pages/4-2-classifying-chemical-reactions",
+        "scope": "Supports the specifically annotated barium sulfate precipitation, acid/base water formation and aqueous acetic acid examples. No general synthesis or quantitative equilibrium claim.",
+        "accessedOn": "2026-09-25"
+      }
+    ],
+    "cells": [
+      {
+        "anionId": "chloride",
+        "cationId": "sodium",
+        "status": "literatureSupported",
+        "conditionIds": [
+          "solid-composition-example"
+        ],
+        "evidenceIds": [
+          "openstax-ionic-composition"
+        ],
+        "notes": "NaCl is the named 1:1 ionic composition example. This evidence does not review the generated colour, hazards or synthesis feasibility."
+      },
+      {
+        "anionId": "sulfate",
+        "cationId": "barium",
+        "status": "literatureSupported",
+        "conditionIds": [
+          "aqueous-example"
+        ],
+        "evidenceIds": [
+          "openstax-reaction-examples"
+        ],
+        "notes": "The section identifies BaSO4 as the precipitate when sulfate is supplied to aqueous barium ions. This is a scoped qualitative example, not a threshold or universal mixing prediction."
+      },
+      {
+        "anionId": "hydroxide",
+        "cationId": "hydrogen",
+        "status": "literatureSupported",
+        "conditionIds": [
+          "aqueous-example"
+        ],
+        "evidenceIds": [
+          "openstax-reaction-examples"
+        ],
+        "notes": "Water is the product in the cited aqueous strong-acid/ionic-hydroxide neutralization example. H+ is the simulator shorthand for solvated proton chemistry."
+      },
+      {
+        "anionId": "acetate",
+        "cationId": "hydrogen",
+        "status": "literatureSupported",
+        "conditionIds": [
+          "aqueous-example"
+        ],
+        "evidenceIds": [
+          "openstax-reaction-examples"
+        ],
+        "notes": "Aqueous acetic acid is shown in equilibrium with acetate and hydronium. CH3COOH preserves the formal atom counts; this does not assert complete ionic association."
+      }
+    ]
+  }
 }

@@ -17,7 +17,7 @@ namespace ChemistryLab.Desktop
     /// properties and rejects explicitly unstable combinations. Reaction rules
     /// remain a separate concern in DynamicReactionEngine.
     /// </summary>
-    public static class CompoundGenerationMatrix
+    public static partial class CompoundGenerationMatrix
     {
         private const string ResourcePath = "Chemistry/compound-generation-matrix";
         private const string OxideIonId = "oxide";
@@ -268,6 +268,7 @@ namespace ChemistryLab.Desktop
         public static void ValidateOrThrow()
         {
             EnsureLoaded();
+            ValidateMatrix2DOrThrow();
             if (string.IsNullOrWhiteSpace(schemaVersion)
                 || elements.Count < 20
                 || ions.Count < 40)
@@ -416,6 +417,8 @@ namespace ChemistryLab.Desktop
                         sourceExclusions[index].coordinate,
                         sourceExclusions[index].reason);
                 }
+
+                InitializeMatrix2D(document.matrix2D);
             }
         }
 
