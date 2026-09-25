@@ -4,33 +4,116 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="dark">
+  <meta name="description" content="chemistryLAB · Bảng tra cứu thành phần ion 2D (anion × cation), cân bằng điện tích, phạm vi bằng chứng và loại trừ tổ hợp không bền.">
   <title>chemistryLAB · Anion × Cation</title>
   <link rel="icon" href="data:,">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="compound-matrix-2d.css">
   <script type="module" src="compound-matrix-2d.js"></script>
 </head>
 <body>
   <a class="skip" href="#explorer">Đến ma trận / Skip to matrix</a>
-  <header><a class="brand" href="compound-matrix-2d.html">CL<span>chemistryLAB</span></a><nav aria-label="Documentation"><a href="compound-matrix-3d.html">3D</a><a href="../architecture/oop-data-algorithms.html">Architecture</a><button id="language" type="button">English</button></nav></header>
+  <header>
+    <a class="brand" href="compound-matrix-2d.html">CL<span>chemistryLAB</span></a>
+    <nav aria-label="Documentation">
+      <a href="compound-matrix-3d.html">3D Explorer</a>
+      <a href="../architecture/oop-data-algorithms.html">Architecture</a>
+      <button id="language" type="button">English</button>
+    </nav>
+  </header>
   <main>
     <section class="intro">
-      <div><p class="eyebrow" data-vi="SỔ TAY HÓA HỌC · 01" data-en="CHEMISTRY NOTEBOOK · 01">SỔ TAY HÓA HỌC · 01</p><h1>Anion <span>×</span> Cation</h1><p class="lead" data-vi="Đọc điện tích. Cân bằng thành phần. Kiểm tra bằng chứng." data-en="Read the charge. Balance the composition. Check the evidence.">Đọc điện tích. Cân bằng thành phần. Kiểm tra bằng chứng.</p><p data-vi="Mỗi hàng là một anion, mỗi cột là một cation. Một công thức trung hòa điện chưa chứng minh chất bền hoặc phản ứng xảy ra." data-en="Each row is an anion; each column is a cation. A neutral formula alone establishes neither a stable compound nor a feasible reaction.">Mỗi hàng là một anion, mỗi cột là một cation. Một công thức trung hòa điện chưa chứng minh chất bền hoặc phản ứng xảy ra.</p></div>
-      <div class="principle"><span data-vi="VÍ DỤ THÀNH PHẦN" data-en="COMPOSITION EXAMPLE">VÍ DỤ THÀNH PHẦN</span><div class="formula">Ca<sup>2+</sup> &nbsp; PO<sub>4</sub><sup>3−</sup></div><div class="ratio">3 × (+2) + 2 × (−3) = 0</div><strong>Ca<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub></strong><small data-vi="Tỉ lệ cation : anion = 3 : 2 · Đây không phải phương trình điều chế." data-en="Cation : anion ratio = 3 : 2 · This is not a synthesis equation.">Tỉ lệ cation : anion = 3 : 2 · Đây không phải phương trình điều chế.</small></div>
-    </section>
-    <div class="flow" aria-label="Data flow"><span data-vi="01 · Ion + điện tích" data-en="01 · Ion + charge">01 · Ion + điện tích</span><b>→</b><span data-vi="02 · Tỉ lệ tối giản" data-en="02 · Reduced ratio">02 · Tỉ lệ tối giản</span><b>→</b><span data-vi="03 · Ngoại lệ + nguồn" data-en="03 · Exceptions + evidence">03 · Ngoại lệ + nguồn</span><b>→</b><span data-vi="04 · Luật phản ứng riêng" data-en="04 · Separate reaction rules">04 · Luật phản ứng riêng</span></div>
-    <section id="explorer" aria-labelledby="matrix-title">
-      <div class="section-heading"><h2 id="matrix-title" data-vi="Khám phá ma trận" data-en="Explore the matrix">Khám phá ma trận</h2><span id="counts" role="status">Đang tải / Loading…</span></div>
-      <div class="controls"><label><span data-vi="Tìm công thức hoặc ion" data-en="Find a formula or ion">Tìm công thức hoặc ion</span><input id="search" type="search" placeholder="Na2SO4, Fe, hydroxide…" autocomplete="off"></label><label><span>Anion ↓</span><select id="anion"></select></label><label><span>Cation →</span><select id="cation"></select></label><button id="reset" type="button" data-vi="Đặt lại" data-en="Reset">Đặt lại</button></div>
-      <div class="workspace">
-        <aside id="detail" aria-labelledby="detail-title" aria-live="polite"><h3 id="detail-title" data-vi="Chọn một ô" data-en="Select a cell">Chọn một ô</h3><p data-vi="Chạm, nhấp hoặc dùng phím mũi tên trong bảng để xem thành phần và giới hạn." data-en="Tap, click or use arrow keys in the table to inspect a composition and its limits.">Chạm, nhấp hoặc dùng phím mũi tên trong bảng để xem thành phần và giới hạn.</p></aside>
-        <div class="matrix-wrap" tabindex="0" aria-label="Scrollable anion by cation table"><table id="matrix"><caption data-vi="Hàng: anion (−) · Cột: cation (+). Vuốt để xem thêm cột." data-en="Rows: anions (−) · Columns: cations (+). Scroll to reveal more columns.">Hàng: anion (−) · Cột: cation (+). Vuốt để xem thêm cột.</caption><thead></thead><tbody></tbody></table></div>
+      <div>
+        <p class="eyebrow" data-vi="SỔ TAY HÓA HỌC · 01" data-en="CHEMISTRY NOTEBOOK · 01">SỔ TAY HÓA HỌC · 01</p>
+        <h1>Anion <span>×</span> Cation</h1>
+        <p class="lead" data-vi="Đọc điện tích. Cân bằng thành phần. Kiểm tra bằng chứng." data-en="Read the charge. Balance the composition. Check the evidence.">Đọc điện tích. Cân bằng thành phần. Kiểm tra bằng chứng.</p>
+        <p data-vi="Mỗi hàng là một anion, mỗi cột là một cation. Một công thức trung hòa điện chưa chứng minh chất bền hoặc phản ứng xảy ra." data-en="Each row is an anion; each column is a cation. A neutral formula alone establishes neither a stable compound nor a feasible reaction.">Mỗi hàng là một anion, mỗi cột là một cation. Một công thức trung hòa điện chưa chứng minh chất bền hoặc phản ứng xảy ra.</p>
       </div>
-      <div class="legend"><span class="supported" data-vi="● Có nguồn theo phạm vi ghi chú" data-en="● Supported within the stated evidence scope">● Có nguồn theo phạm vi ghi chú</span><span data-vi="○ Thành phần hình thức" data-en="○ Formal composition">○ Thành phần hình thức</span><span class="excluded" data-vi="× Bị loại" data-en="× Excluded">× Bị loại</span><span data-vi="? Chưa hỗ trợ" data-en="? Unsupported">? Chưa hỗ trợ</span></div>
-      <p id="error" role="alert" hidden></p>
-      <noscript><p>This explorer needs JavaScript. The <a href="compound-generation-matrix.md">matrix reference</a> and <a href="compound-matrix-2d.json">complete JSON table</a> remain available.</p></noscript>
+      <div class="principle">
+        <span data-vi="VÍ DỤ THÀNH PHẦN" data-en="COMPOSITION EXAMPLE">VÍ DỤ THÀNH PHẦN</span>
+        <div class="formula">Ca<sup>2+</sup> &nbsp; PO<sub>4</sub><sup>3−</sup></div>
+        <div class="ratio">3 × (+2) + 2 × (−3) = 0</div>
+        <strong>Ca<sub>3</sub>(PO<sub>4</sub>)<sub>2</sub></strong>
+        <small data-vi="Tỉ lệ cation : anion = 3 : 2 · Đây không phải phương trình điều chế." data-en="Cation : anion ratio = 3 : 2 · This is not a synthesis equation.">Tỉ lệ cation : anion = 3 : 2 · Đây không phải phương trình điều chế.</small>
+      </div>
     </section>
-    <section class="notes"><article><p class="eyebrow">01 / MODEL</p><h2 data-vi="Công thức ≠ phản ứng" data-en="Composition ≠ reaction">Công thức ≠ phản ứng</h2><p data-vi="Chọn ô không tổng hợp hóa chất. Game giải phản ứng mẫu, luật oxi hóa–khử rồi luật động có giới hạn; sau đó kiểm tra điều kiện. Chất chưa hỗ trợ không đồng nghĩa không phản ứng." data-en="Selecting a cell never synthesizes a chemical. The game resolves curated reactions, redox rules, then bounded dynamic rules, followed by condition checks. Unsupported chemistry does not mean no reaction.">Chọn ô không tổng hợp hóa chất. Game giải phản ứng mẫu, luật oxi hóa–khử rồi luật động có giới hạn; sau đó kiểm tra điều kiện. Chất chưa hỗ trợ không đồng nghĩa không phản ứng.</p></article><article><p class="eyebrow">02 / SCOPE</p><h2 data-vi="Giữ đúng phạm vi" data-en="Keep the scope explicit">Giữ đúng phạm vi</h2><p data-vi="Bảng không giả định mọi ion đều tồn tại tự do trong nước. Oxit theo nguyên tố và số oxi hóa có danh mục riêng. Dữ liệu tính chất cũ có thể là ước lượng; không phải mọi ô đều đã được xác minh thực nghiệm." data-en="The table does not assume every ion exists freely in water. Element/oxidation-state oxides have a separate catalogue. Legacy property records may be estimates; not every cell has experimental verification.">Bảng không giả định mọi ion đều tồn tại tự do trong nước. Oxit theo nguyên tố và số oxi hóa có danh mục riêng. Dữ liệu tính chất cũ có thể là ước lượng; không phải mọi ô đều đã được xác minh thực nghiệm.</p></article></section>
-    <footer><p data-vi="Mô phỏng giáo dục · Game Unity gốc · Trang này là tài liệu dữ liệu" data-en="Educational simulation · Native Unity game · This page documents the data">Mô phỏng giáo dục · Game Unity gốc · Trang này là tài liệu dữ liệu</p><a href="compound-generation-matrix.md" data-vi="Hợp đồng dữ liệu" data-en="Data contract">Hợp đồng dữ liệu</a><a href="compound-matrix-2d.json">JSON</a><a href="https://github.com/psy-zney/chemistryLAB">GitHub</a><p id="provenance"></p></footer>
+
+    <div class="flow" aria-label="Data flow">
+      <span data-vi="01 · Ion + điện tích" data-en="01 · Ion + charge">01 · Ion + điện tích</span>
+      <b>→</b>
+      <span data-vi="02 · Tỉ lệ tối giản" data-en="02 · Reduced ratio">02 · Tỉ lệ tối giản</span>
+      <b>→</b>
+      <span data-vi="03 · Ngoại lệ + nguồn" data-en="03 · Exceptions + evidence">03 · Ngoại lệ + nguồn</span>
+      <b>→</b>
+      <span data-vi="04 · Luật phản ứng riêng" data-en="04 · Separate reaction rules">04 · Luật phản ứng riêng</span>
+    </div>
+
+    <section id="explorer" aria-labelledby="matrix-title">
+      <div class="section-heading">
+        <h2 id="matrix-title" data-vi="Khám phá ma trận" data-en="Explore the matrix">Khám phá ma trận</h2>
+        <span id="counts" role="status">Đang tải / Loading…</span>
+      </div>
+      <div class="controls">
+        <label>
+          <span data-vi="Tìm công thức hoặc ion" data-en="Find a formula or ion">Tìm công thức hoặc ion</span>
+          <input id="search" type="search" placeholder="Na2SO4, Fe, hydroxide…" autocomplete="off">
+        </label>
+        <label>
+          <span>Anion ↓</span>
+          <select id="anion"></select>
+        </label>
+        <label>
+          <span>Cation →</span>
+          <select id="cation"></select>
+        </label>
+        <button id="reset" type="button" data-vi="Đặt lại" data-en="Reset">Đặt lại</button>
+      </div>
+      <div class="workspace">
+        <aside id="detail" aria-labelledby="detail-title" aria-live="polite">
+          <h3 id="detail-title" data-vi="Chọn một ô" data-en="Select a cell">Chọn một ô</h3>
+          <p data-vi="Chạm, nhấp hoặc dùng phím mũi tên trong bảng để xem thành phần và giới hạn." data-en="Tap, click or use arrow keys in the table to inspect a composition and its limits.">Chạm, nhấp hoặc dùng phím mũi tên trong bảng để xem thành phần và giới hạn.</p>
+        </aside>
+        <div class="matrix-wrap" tabindex="0" aria-label="Scrollable anion by cation table">
+          <table id="matrix">
+            <caption data-vi="Hàng: anion (−) · Cột: cation (+). Vuốt để xem thêm cột." data-en="Rows: anions (−) · Columns: cations (+). Scroll to reveal more columns.">Hàng: anion (−) · Cột: cation (+). Vuốt để xem thêm cột.</caption>
+            <thead></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="legend">
+        <span class="supported" data-vi="● Có nguồn theo phạm vi ghi chú" data-en="● Supported within the stated evidence scope">● Có nguồn theo phạm vi ghi chú</span>
+        <span data-vi="○ Thành phần hình thức" data-en="○ Formal composition">○ Thành phần hình thức</span>
+        <span class="excluded" data-vi="× Bị loại" data-en="× Excluded">× Bị loại</span>
+        <span data-vi="? Chưa hỗ trợ" data-en="? Unsupported">? Chưa hỗ trợ</span>
+      </div>
+      <p id="error" role="alert" hidden></p>
+      <noscript>
+        <p>This explorer needs JavaScript. The <a href="compound-generation-matrix.md">matrix reference</a> and <a href="compound-matrix-2d.json">complete JSON table</a> remain available.</p>
+      </noscript>
+    </section>
+
+    <section class="notes">
+      <article>
+        <p class="eyebrow">01 / MODEL</p>
+        <h2 data-vi="Công thức ≠ phản ứng" data-en="Composition ≠ reaction">Công thức ≠ phản ứng</h2>
+        <p data-vi="Chọn ô không tổng hợp hóa chất. Game giải phản ứng mẫu, luật oxi hóa–khử rồi luật động có giới hạn; sau đó kiểm tra điều kiện. Chất chưa hỗ trợ không đồng nghĩa không phản ứng." data-en="Selecting a cell never synthesizes a chemical. The game resolves curated reactions, redox rules, then bounded dynamic rules, followed by condition checks. Unsupported chemistry does not mean no reaction.">Chọn ô không tổng hợp hóa chất. Game giải phản ứng mẫu, luật oxi hóa–khử rồi luật động có giới hạn; sau đó kiểm tra điều kiện. Chất chưa hỗ trợ không đồng nghĩa không phản ứng.</p>
+      </article>
+      <article>
+        <p class="eyebrow">02 / SCOPE</p>
+        <h2 data-vi="Giữ đúng phạm vi" data-en="Keep the scope explicit">Giữ đúng phạm vi</h2>
+        <p data-vi="Bảng không giả định mọi ion đều tồn tại tự do trong nước. Oxit theo nguyên tố và số oxi hóa có danh mục riêng. Dữ liệu tính chất cũ có thể là ước lượng; không phải mọi ô đều đã được xác minh thực nghiệm." data-en="The table does not assume every ion exists freely in water. Element/oxidation-state oxides have a separate catalogue. Legacy property records may be estimates; not every cell has experimental verification.">Bảng không giả định mọi ion đều tồn tại tự do trong nước. Oxit theo nguyên tố và số oxi hóa có danh mục riêng. Dữ liệu tính chất cũ có thể là ước lượng; không phải mọi ô đều đã được xác minh thực nghiệm.</p>
+      </article>
+    </section>
+
+    <footer>
+      <p data-vi="Mô phỏng giáo dục · Game Unity gốc · Trang này là tài liệu dữ liệu" data-en="Educational simulation · Native Unity game · This page documents the data">Mô phỏng giáo dục · Game Unity gốc · Trang này là tài liệu dữ liệu</p>
+      <a href="compound-generation-matrix.md" data-vi="Hợp đồng dữ liệu" data-en="Data contract">Hợp đồng dữ liệu</a>
+      <a href="compound-matrix-2d.json">JSON</a>
+      <a href="https://github.com/psy-zney/chemistryLAB">GitHub</a>
+      <p id="provenance"></p>
+    </footer>
   </main>
 </body>
 </html>
