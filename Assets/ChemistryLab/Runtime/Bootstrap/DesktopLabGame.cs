@@ -2,12 +2,18 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using UnityEngine;
 
 namespace ChemistryLab.Desktop
 {
     public sealed class DesktopLabGame : MonoBehaviour
     {
+        private static readonly string[] QuickChemicalIds = {
+            "water", "copper-sulfate", "sodium-hydroxide", "hydrochloric-acid",
+            "sulfuric-acid", "sodium-carbonate", "calcium-carbonate",
+            "silver-nitrate", "zinc"
+        };
         private const float BaselineTemperatureC = 24f;
         private const string MissionReactionId = "copper-hydroxide";
         private const string FullscreenPreferenceKey = "chemistryLab.desktop.fullscreen";
@@ -32,6 +38,8 @@ namespace ChemistryLab.Desktop
 
         private readonly Dictionary<string, Material> materials =
             new Dictionary<string, Material>(StringComparer.Ordinal);
+        private readonly Dictionary<string, Texture2D> particleTextures =
+            new Dictionary<string, Texture2D>(StringComparer.Ordinal);
 
         private Transform worldRoot;
         private Transform heldSampleRoot;
@@ -228,8 +236,14 @@ namespace ChemistryLab.Desktop
 
             if (HasCommandLineFlag("-captureTest"))
             {
+                int captureWidth;
+                int captureHeight;
+                if (!int.TryParse(GetCommandLineValue("-captureWidth"), out captureWidth)
+                    || captureWidth < 800) captureWidth = 1600;
+                if (!int.TryParse(GetCommandLineValue("-captureHeight"), out captureHeight)
+                    || captureHeight < 600) captureHeight = 900;
                 Screen.fullScreenMode = FullScreenMode.Windowed;
-                Screen.SetResolution(1600, 900, false);
+                Screen.SetResolution(captureWidth, captureHeight, false);
                 StartCoroutine(RunCaptureTest());
             }
             else if (HasCommandLineFlag("-smokeTest"))
@@ -240,6 +254,52 @@ namespace ChemistryLab.Desktop
             {
                 player.SetPausedFromUi(true);
                 hud.ShowMainMenu();
+            }
+        }
+
+        private void Update()
+        {
+            foreach (var visual in vesselVisuals.Values)
+            {
+                if (visual.LiquidMaterial == null)
+                {
+                    continue;
+                }
+
+                var blend = LabAccessibility.ReducedMotion
+                    ? 1f : 1f - Mathf.Exp(-4.5f * Time.deltaTime);
+                visual.LiquidMaterial.color = Color.Lerp(
+                    visual.LiquidMaterial.color, visual.TargetColour, blend);
+                if (visual.Sediment != null && visual.Sediment.activeSelf)
+                {
+                    var sedimentScale = visual.Sediment.transform.localScale;
+                    var sedimentBlend = LabAccessibility.ReducedMotion ? 1f : blend * 0.55f;
+                    sedimentScale.y = Mathf.Lerp(sedimentScale.y,
+                        visual.TargetSedimentHeight, sedimentBlend);
+                    visual.Sediment.transform.localScale = sedimentScale;
+                    visual.Sediment.transform.localPosition = new Vector3(
+                        0f, 0.023f + sedimentScale.y, 0f);
+                }
+
+                if (visual.EffectUntil > 0f && Time.time >= visual.EffectUntil)
+                {
+                    StopVesselParticles(visual, false);
+                    visual.EffectUntil = 0f;
+                }
+                else if (visual.EffectUntil > 0f
+                    && visual.ReducedMotionAtStart != LabAccessibility.ReducedMotion)
+                {
+                    visual.ReducedMotionAtStart = LabAccessibility.ReducedMotion;
+                    if (visual.Bubbles.isPlaying)
+                        SetVesselParticleRate(visual.Bubbles,
+                            LabAccessibility.ReducedMotion ? 7f : 54f);
+                    if (visual.Precipitate.isPlaying)
+                        SetVesselParticleRate(visual.Precipitate,
+                            LabAccessibility.ReducedMotion ? 4f : 34f);
+                    if (visual.Fumes.isPlaying)
+                        SetVesselParticleRate(visual.Fumes,
+                            LabAccessibility.ReducedMotion ? 4f : visual.FumeRate);
+                }
             }
         }
 
@@ -284,6 +344,34 @@ namespace ChemistryLab.Desktop
                     + next.Formula + " · " + next.Name);
                 audioSystem.PlaySamplePickup();
             }
+        }
+
+        public void SelectQuickChemical(int slot)
+        {
+            if (slot < 0 || slot >= QuickChemicalIds.Length) return;
+            SelectChemical(QuickChemicalIds[slot]);
+            if (selectedChemical != null && hud != null)
+            {
+                hud.SetQuickSelection(slot, selectedChemical.Formula);
+                ToggleInspector(false);
+                if (audioSystem != null)
+                {
+                    audioSystem.PlayUiClick();
+                }
+            }
+        }
+
+        public string QuickChemicalLegend()
+        {
+            var legend = new StringBuilder(128);
+            for (var slot = 0; slot < QuickChemicalIds.Length; slot++)
+            {
+                var chemical = RuntimeChemicalRegistry.GetChemical(QuickChemicalIds[slot]);
+                if (chemical == null) continue;
+                if (slot > 0) legend.Append(slot % 3 == 0 ? "\n" : "   ");
+                legend.Append(slot + 1).Append(' ').Append(chemical.Formula);
+            }
+            return legend.ToString();
         }
 
         public void ClearSelectedChemical()
@@ -555,12 +643,13 @@ namespace ChemistryLab.Desktop
             if (outcome.Effect == ReactionEffect.Gas
                 && (station != LabStation.FumeHood
                     || labSafety == null
-                    || !labSafety.GasTrapConnected))
+                    || !labSafety.GasTrapConnected
+                    || !labSafety.FumeHoodFanOn))
             {
                 hud.ShowTransient(
                     LabLocalization.Text(
-                        "Sản phẩm khí chỉ được thu trong tủ hút khi hệ rửa khí đã nối. Đến thiết bị và nhấn E.",
-                        "Gas products may only be collected in the fume hood with the gas trap connected. Go to the device and press E."),
+                        "Sản phẩm khí chỉ được thu trong tủ hút khi quạt bật và hệ rửa khí đã nối. Ngắm công tắc và nhấn F hoặc E.",
+                        "Gas collection requires the fume hood fan on and gas trap connected. Aim at each control and press F or E."),
                     true);
                 audioSystem.PlayHazardAlarm();
                 return;
@@ -978,6 +1067,19 @@ namespace ChemistryLab.Desktop
             hud.SetSafetySystem(labSafety);
             hud.ShowTransient(message);
             audioSystem.PlayUiClick();
+        }
+
+        public void ToggleFumeHoodFan()
+        {
+            if (labSafety == null) return;
+            var enabled = labSafety.ToggleFumeHoodFan();
+            hud.SetSafetySystem(labSafety);
+            hud.ShowTransient(enabled
+                ? LabLocalization.Text("Quạt tủ hút khí đã bật.", "Fume hood fan is on.")
+                : LabLocalization.Text("Quạt tủ hút khí đã tắt. Khí nguy hiểm sẽ không được hút.",
+                    "Fume hood fan is off. Hazardous gas will not be captured."), !enabled);
+            if (enabled) audioSystem.PlayUiClick();
+            else audioSystem.PlayHazardAlarm();
         }
 
         public void ToggleDiagnostics()
@@ -1403,6 +1505,13 @@ namespace ChemistryLab.Desktop
                 false);
             gasTrapStation = gasWashTrain.AddComponent<GasTrapInteractable>();
             gasTrapStation.Initialise(this, gasTrapFocus);
+            var fanSwitch = CreatePrimitive(PrimitiveType.Cube, "Fume Hood Fan Switch", hood,
+                new Vector3(1.76f, 1.50f, -3.76f), new Vector3(0.28f, 0.18f, 0.12f),
+                GetMaterial("HoodFanSwitch", LabTheme.GraphiteRaised, 0.18f, 0.48f), true);
+            var fanLight = CreatePrimitive(PrimitiveType.Cube, "Fan Switch Focus", fanSwitch.transform,
+                new Vector3(0f, 0.04f, -0.07f), new Vector3(0.16f, 0.025f, 0.02f),
+                GetMaterial("Focus", LabTheme.Focus, 0f, 0.66f), false);
+            fanSwitch.AddComponent<HoodVentilationInteractable>().Initialise(this, fanLight);
             proceduralReferencePropCount++;
             CreateWorldLabel(
                 "FUME HOOD · KHÍ / HƠI",
@@ -1907,6 +2016,9 @@ namespace ChemistryLab.Desktop
             var rack = new GameObject("Test Tube Rack").transform;
             rack.SetParent(parent, false);
             rack.localPosition = position;
+            var rackCollider = rack.gameObject.AddComponent<BoxCollider>();
+            rackCollider.center = new Vector3(0f, 0.10f, 0f);
+            rackCollider.size = new Vector3(0.58f, 0.22f, 0.19f);
             var frame = GetMaterial("Graphite", LabTheme.Graphite, 0.36f, 0.42f);
             CreatePrimitive(
                 PrimitiveType.Cube,
@@ -1963,6 +2075,7 @@ namespace ChemistryLab.Desktop
                         false);
                 }
             }
+            rack.gameObject.AddComponent<TestTubeRackInteractable>().Initialise(this);
         }
 
         private void BuildHotplate(Transform parent, Vector3 position)
@@ -2021,6 +2134,23 @@ namespace ChemistryLab.Desktop
                 new Vector3(0.052f, 0.028f, 0.052f),
                 GetMaterial("EmptyLiquid", LabTheme.WithAlpha(LabTheme.Glass, 0.16f), 0f, 0.74f, true),
                 false);
+            var liquidMaterial = CreateMaterial(
+                "Vessel Liquid " + station,
+                LabTheme.WithAlpha(LabTheme.Glass, 0.16f), 0f, 0.78f, true);
+            liquid.GetComponent<Renderer>().sharedMaterial = liquidMaterial;
+            liquid.SetActive(false);
+            var sediment = CreatePrimitive(
+                PrimitiveType.Cylinder,
+                "Settled Precipitate",
+                vessel.transform,
+                new Vector3(0f, 0.024f, 0f),
+                new Vector3(0.049f, 0.001f, 0.049f),
+                GetMaterial("SedimentBase", LabTheme.Glass, 0f, 0.28f),
+                false);
+            var sedimentMaterial = CreateMaterial(
+                "Vessel Sediment " + station, Color.white, 0f, 0.22f, false);
+            sediment.GetComponent<Renderer>().sharedMaterial = sedimentMaterial;
+            sediment.SetActive(false);
             var highlight = CreatePrimitive(
                 PrimitiveType.Cylinder,
                 "Vessel Focus",
@@ -2029,7 +2159,18 @@ namespace ChemistryLab.Desktop
                 new Vector3(0.17f, 0.005f, 0.17f),
                 GetMaterial("Focus", LabTheme.Focus, 0f, 0.66f),
                 false);
-            var particles = CreateReactionParticles(vessel.transform);
+            var bubbles = CreateVesselParticles(
+                vessel.transform, "Rising Gas Bubbles", new Vector3(0f, 0.034f, 0f),
+                0.042f, 0.009f, 0.018f, 0.14f, 0.14f, 0.2f, 0.4f, 120,
+                GetMaterial("BubbleParticle", new Color(0.25f, 0.72f, 0.88f, 0.82f), 0f, 0.85f, true));
+            var precipitate = CreateVesselParticles(
+                vessel.transform, "Suspended Precipitate", new Vector3(0f, 0.087f, 0f),
+                0.041f, 0.003f, 0.008f, 0.004f, 0.024f, 1.2f, 2.1f, 90,
+                GetMaterial("PrecipitateParticle", Color.white, 0f, 0.24f, true));
+            var fumes = CreateVesselParticles(
+                vessel.transform, "Thermal Haze And Fumes", new Vector3(0f, 0.19f, 0f),
+                0.019f, 0.023f, 0.052f, 0.04f, 0.09f, 0.85f, 1.45f, 55,
+                GetMaterial("FumeParticle", new Color(0.68f, 0.79f, 0.81f, 0.24f), 0f, 0.15f, true));
 
             var interactable = vessel.AddComponent<VesselInteractable>();
             interactable.Station = station;
@@ -2039,7 +2180,13 @@ namespace ChemistryLab.Desktop
             {
                 Root = vessel.transform,
                 LiquidRenderer = liquid.GetComponent<Renderer>(),
-                Particles = particles
+                LiquidMaterial = liquidMaterial,
+                Sediment = sediment,
+                SedimentMaterial = sedimentMaterial,
+                Bubbles = bubbles,
+                Precipitate = precipitate,
+                Fumes = fumes,
+                TargetColour = liquidMaterial.color
             };
         }
 
@@ -2153,33 +2300,89 @@ namespace ChemistryLab.Desktop
                 0.26f);
         }
 
-        private ParticleSystem CreateReactionParticles(Transform parent)
+        private ParticleSystem CreateVesselParticles(
+            Transform parent, string name, Vector3 position, float radius,
+            float minSize, float maxSize, float minSpeed, float maxSpeed,
+            float minLifetime, float maxLifetime, int maxParticles, Material material)
         {
-            var particleObject = new GameObject("Reaction Particles");
+            var particleObject = new GameObject(name);
             particleObject.transform.SetParent(parent, false);
-            particleObject.transform.localPosition = new Vector3(0f, 0.145f, 0f);
+            particleObject.transform.localPosition = position;
+            particleObject.transform.localRotation = Quaternion.Euler(-90f, 0f, 0f);
             var particles = particleObject.AddComponent<ParticleSystem>();
             particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
 
             var main = particles.main;
-            main.loop = false;
-            main.duration = 2.4f;
-            main.startLifetime = new ParticleSystem.MinMaxCurve(0.8f, 1.8f);
-            main.startSpeed = new ParticleSystem.MinMaxCurve(0.12f, 0.42f);
-            main.startSize = new ParticleSystem.MinMaxCurve(0.012f, 0.032f);
-            main.maxParticles = 80;
+            main.loop = true;
+            main.duration = 2f;
+            main.startLifetime = new ParticleSystem.MinMaxCurve(minLifetime, maxLifetime);
+            main.startSpeed = 0f;
+            main.startSize = new ParticleSystem.MinMaxCurve(minSize, maxSize);
+            main.maxParticles = maxParticles;
             main.simulationSpace = ParticleSystemSimulationSpace.Local;
+            main.playOnAwake = false;
 
             var emission = particles.emission;
-            emission.rateOverTime = 22f;
+            emission.rateOverTime = 0f;
 
             var shape = particles.shape;
             shape.shapeType = ParticleSystemShapeType.Circle;
-            shape.radius = 0.34f;
+            shape.radius = radius;
+
+            var velocity = particles.velocityOverLifetime;
+            velocity.enabled = true;
+            velocity.x = new ParticleSystem.MinMaxCurve(0f, 0f);
+            velocity.y = new ParticleSystem.MinMaxCurve(0f, 0f);
+            velocity.z = new ParticleSystem.MinMaxCurve(minSpeed, maxSpeed);
+
+            var sizeOverLifetime = particles.sizeOverLifetime;
+            sizeOverLifetime.enabled = true;
+            sizeOverLifetime.size = new ParticleSystem.MinMaxCurve(1f,
+                new AnimationCurve(
+                    new Keyframe(0f, 0.45f),
+                    new Keyframe(0.75f, 1f),
+                    new Keyframe(1f, 0f)));
 
             var particleRenderer = particleObject.GetComponent<ParticleSystemRenderer>();
-            particleRenderer.material = GetMaterial("Particle", LabTheme.Glass, 0f, 0.52f, true);
+            material.mainTexture = GetParticleTexture(name);
+            particleRenderer.sharedMaterial = material;
             return particles;
+        }
+
+        private Texture2D GetParticleTexture(string name)
+        {
+            Texture2D texture;
+            if (particleTextures.TryGetValue(name, out texture))
+            {
+                return texture;
+            }
+
+            const int size = 48;
+            texture = new Texture2D(size, size, TextureFormat.RGBA32, false, true);
+            texture.name = name + " Mask";
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            var bubble = name == "Rising Gas Bubbles";
+            var fume = name == "Thermal Haze And Fumes";
+            for (var y = 0; y < size; y++)
+            {
+                for (var x = 0; x < size; x++)
+                {
+                    var dx = (x + 0.5f) * 2f / size - 1f;
+                    var dy = (y + 0.5f) * 2f / size - 1f;
+                    var distance = Mathf.Sqrt(dx * dx + dy * dy);
+                    var edge = Mathf.Clamp01((1f - distance) * 8f);
+                    var alpha = bubble
+                        ? Mathf.Exp(-Mathf.Pow((distance - 0.67f) / 0.17f, 2f)) * edge
+                        : fume
+                            ? Mathf.Pow(Mathf.Clamp01(1f - distance), 1.8f)
+                            : Mathf.Pow(Mathf.Clamp01(1f - distance), 0.7f);
+                    texture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+            texture.Apply(false, true);
+            particleTextures[name] = texture;
+            return texture;
         }
 
         private void BuildPlayer()
@@ -2515,32 +2718,70 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
-            Color colour;
-            if (outcome != null && outcome.Status == ReactionStatus.Reaction)
+            var hasContents = additions != null && additions.Count > 0;
+            visual.LiquidRenderer.gameObject.SetActive(hasContents);
+            if (!hasContents)
             {
-                colour = outcome.DisplayColour;
+                visual.TargetColour = LabTheme.WithAlpha(LabTheme.Glass, 0.16f);
+                visual.Sediment.SetActive(false);
+                visual.TargetSedimentHeight = 0f;
+                visual.EffectUntil = 0f;
+                StopVesselParticles(visual);
+                visual.LiquidMaterial.color = visual.TargetColour;
+                visual.Sediment.transform.localScale = new Vector3(0.049f, 0.001f, 0.049f);
+                return;
             }
-            else if (additions != null && additions.Count > 0)
+
+            var colour = Color.clear;
+            var totalGrams = 0f;
+            for (var index = 0; index < additions.Count; index++)
             {
-                var last = RuntimeChemicalRegistry.GetChemical(additions[additions.Count - 1].ChemicalId);
-                colour = last == null ? LabTheme.Glass : last.ModelColour;
+                var chemical = RuntimeChemicalRegistry.GetChemical(additions[index].ChemicalId);
+                if (chemical == null)
+                {
+                    continue;
+                }
+                var grams = Mathf.Max(0f, (float)additions[index].Grams);
+                colour += chemical.ModelColour * grams;
+                totalGrams += grams;
+            }
+            colour = totalGrams > 0f ? colour / totalGrams : LabTheme.Glass;
+            var concentration = outcome == null ? 0f
+                : Mathf.Clamp01((float)outcome.TotalConcentrationMolar / 2f);
+            colour = Color.Lerp(new Color(0.75f, 0.88f, 0.91f), colour,
+                Mathf.Lerp(0.58f, 0.95f, concentration));
+            var reacted = outcome != null && outcome.Status == ReactionStatus.Reaction;
+            var precipitated = reacted && outcome.Effect == ReactionEffect.Precipitate;
+            if (reacted)
+            {
+                colour = Color.Lerp(colour, outcome.DisplayColour, 0.88f);
+            }
+            colour.a = precipitated ? 0.88f : Mathf.Lerp(0.46f, 0.73f, concentration);
+            visual.TargetColour = colour;
+            visual.LiquidMaterial.SetFloat("_Glossiness", precipitated ? 0.27f : 0.8f);
+            var liquidScale = visual.LiquidRenderer.transform.localScale;
+            var volume = outcome == null ? 0.100f : (float)outcome.VolumeLitres;
+            liquidScale.y = Mathf.Lerp(0.022f, 0.038f,
+                Mathf.InverseLerp(0.05f, 0.25f, volume));
+            visual.LiquidRenderer.transform.localScale = liquidScale;
+            visual.LiquidRenderer.transform.localPosition = new Vector3(
+                0f, 0.024f + liquidScale.y, 0f);
+            var bubbleMain = visual.Bubbles.main;
+            bubbleMain.startLifetime = Mathf.Clamp(
+                (0.024f + 2f * liquidScale.y - 0.034f) / 0.14f * 0.94f,
+                0.15f, 0.5f);
+
+            if (precipitated)
+            {
+                visual.SedimentMaterial.color = Color.Lerp(
+                    outcome.DisplayColour, Color.white, 0.12f);
+                visual.Sediment.SetActive(true);
+                visual.TargetSedimentHeight = 0.009f;
             }
             else
             {
-                colour = LabTheme.WithAlpha(LabTheme.Glass, 0.16f);
-            }
-
-            colour.a = outcome != null && outcome.Effect == ReactionEffect.Precipitate ? 0.92f : 0.74f;
-            visual.LiquidRenderer.material = GetMaterial(
-                "Vessel_" + station + "_" + colour,
-                colour,
-                0f,
-                outcome != null && outcome.Effect == ReactionEffect.Precipitate ? 0.28f : 0.76f,
-                colour.a < 0.99f);
-
-            if (visual.Particles != null)
-            {
-                visual.Particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+                visual.Sediment.SetActive(false);
+                visual.TargetSedimentHeight = 0f;
             }
         }
 
@@ -2560,24 +2801,62 @@ namespace ChemistryLab.Desktop
                     outcome.TemperatureC - BaselineTemperatureC);
             }
 
-            if (visual.Particles == null)
+            StopVesselParticles(visual);
+            var duration = Mathf.Clamp(outcome.EstimatedCompletionSeconds, 4f, 18f);
+            visual.EffectUntil = Time.time + duration;
+            visual.ReducedMotionAtStart = LabAccessibility.ReducedMotion;
+            var gas = outcome.Effect == ReactionEffect.Gas || outcome.ReleasedGasGrams > 0d;
+            var precipitate = outcome.Effect == ReactionEffect.Precipitate;
+            var harmfulFumes = outcome.Hazard != null
+                && (outcome.Hazard.Kind == AirborneHazardKind.Toxic
+                    || outcome.Hazard.Kind == AirborneHazardKind.CorrosiveToxic);
+            var thermalHaze = outcome.Effect == ReactionEffect.Heat
+                || outcome.TemperatureC >= 90f;
+            if (gas)
             {
-                return;
+                StartVesselParticles(visual.Bubbles,
+                    LabAccessibility.ReducedMotion ? 7f : 54f);
             }
+            if (precipitate)
+            {
+                var main = visual.Precipitate.main;
+                main.startColor = Color.Lerp(outcome.DisplayColour, Color.white, 0.2f);
+                main.gravityModifier = 0f;
+                main.startSpeed = 0f;
+                var velocity = visual.Precipitate.velocityOverLifetime;
+                velocity.enabled = true;
+                velocity.z = new ParticleSystem.MinMaxCurve(-0.035f, -0.035f);
+                StartVesselParticles(visual.Precipitate,
+                    LabAccessibility.ReducedMotion ? 4f : 34f);
+            }
+            if (harmfulFumes || thermalHaze)
+            {
+                visual.FumeRate = harmfulFumes ? 24f : 15f;
+                StartVesselParticles(visual.Fumes,
+                    LabAccessibility.ReducedMotion ? 4f : visual.FumeRate);
+            }
+        }
 
-            var particles = visual.Particles;
-            var main = particles.main;
-            main.startColor = outcome.DisplayColour;
-            main.gravityModifier = outcome.Effect == ReactionEffect.Precipitate ? 0.38f : -0.04f;
-            main.startSpeed = outcome.Effect == ReactionEffect.Precipitate
-                ? new ParticleSystem.MinMaxCurve(0.03f, 0.12f)
-                : new ParticleSystem.MinMaxCurve(0.16f, 0.52f);
-            main.startLifetime = outcome.Effect == ReactionEffect.Precipitate
-                ? new ParticleSystem.MinMaxCurve(1.4f, 2.2f)
-                : new ParticleSystem.MinMaxCurve(0.8f, 1.7f);
-            var emission = particles.emission;
-            emission.rateOverTime = LabAccessibility.ReducedMotion ? 9f : 24f;
+        private static void StartVesselParticles(ParticleSystem particles, float rate)
+        {
+            SetVesselParticleRate(particles, rate);
             particles.Play(true);
+        }
+
+        private static void SetVesselParticleRate(ParticleSystem particles, float rate)
+        {
+            var emission = particles.emission;
+            emission.rateOverTime = rate;
+        }
+
+        private static void StopVesselParticles(VesselVisual visual, bool clear = true)
+        {
+            var behavior = clear
+                ? ParticleSystemStopBehavior.StopEmittingAndClear
+                : ParticleSystemStopBehavior.StopEmitting;
+            visual.Bubbles.Stop(true, behavior);
+            visual.Precipitate.Stop(true, behavior);
+            visual.Fumes.Stop(true, behavior);
         }
 
         private void StartReactionPresentation(LabStation station, ReactionOutcome outcome)
@@ -2991,6 +3270,7 @@ namespace ChemistryLab.Desktop
         {
             var captureView = GetCommandLineValue("-captureView");
             var reactionCapture = false;
+            var hoverCapture = false;
             if (string.Equals(captureView, "periodic", StringComparison.OrdinalIgnoreCase))
             {
                 player.SetPausedFromUi(false);
@@ -3022,6 +3302,21 @@ namespace ChemistryLab.Desktop
                 ToggleSampleOnPreparationSurface(LabStation.Workbench);
                 AddSelectedToVessel(LabStation.Workbench);
             }
+            else if (string.Equals(captureView, "gas", StringComparison.OrdinalIgnoreCase)
+                || string.Equals(captureView, "fumes", StringComparison.OrdinalIgnoreCase))
+            {
+                reactionCapture = true;
+                player.SetPausedFromUi(false);
+                player.transform.position = new Vector3(0f, 0.02f, 2.1f);
+                player.transform.rotation = Quaternion.Euler(0f, 180f, 0f);
+                SelectChemical(string.Equals(captureView, "fumes", StringComparison.OrdinalIgnoreCase)
+                    ? "sodium-sulfide" : "calcium-carbonate");
+                ToggleSampleOnPreparationSurface(LabStation.Workbench);
+                AddSelectedToVessel(LabStation.Workbench);
+                SelectChemical("hydrochloric-acid");
+                ToggleSampleOnPreparationSurface(LabStation.Workbench);
+                AddSelectedToVessel(LabStation.Workbench);
+            }
             else if (string.Equals(captureView, "staged", StringComparison.OrdinalIgnoreCase))
             {
                 player.SetPausedFromUi(false);
@@ -3030,6 +3325,22 @@ namespace ChemistryLab.Desktop
                 SelectChemical("copper-sulfate");
                 ToggleSampleOnPreparationSurface(LabStation.Workbench);
                 ToggleInspector(false);
+            }
+            else if (string.Equals(captureView, "mission", StringComparison.OrdinalIgnoreCase))
+            {
+                player.SetPausedFromUi(false);
+                hud.ToggleMissionBoard();
+            }
+            else if (string.Equals(captureView, "hover", StringComparison.OrdinalIgnoreCase))
+            {
+                player.SetPausedFromUi(false);
+                VesselVisual visual;
+                if (vesselVisuals.TryGetValue(LabStation.Workbench, out visual))
+                {
+                    player.transform.position = new Vector3(visual.Root.position.x, 0.02f,
+                        visual.Root.position.z + 1.5f);
+                    hoverCapture = true;
+                }
             }
             else if (string.Equals(captureView, "pause", StringComparison.OrdinalIgnoreCase))
             {
@@ -3060,10 +3371,44 @@ namespace ChemistryLab.Desktop
             if (reactionCapture)
             {
                 yield return new WaitForSecondsRealtime(0.85f);
+                VesselVisual capturedVisual;
+                if (vesselVisuals.TryGetValue(LabStation.Workbench, out capturedVisual))
+                {
+                    // Hidden standalone windows may advance particle time only a few frames.
+                    // Simulate a representative moment for deterministic visual captures.
+                    if (capturedVisual.Bubbles.isPlaying)
+                        capturedVisual.Bubbles.Simulate(0.8f, true, false, true);
+                    if (capturedVisual.Precipitate.isPlaying)
+                        capturedVisual.Precipitate.Simulate(0.8f, true, false, true);
+                    if (capturedVisual.Fumes.isPlaying)
+                        capturedVisual.Fumes.Simulate(0.8f, true, false, true);
+                    Debug.Log("DESKTOP_LAB_VFX_CAPTURE effect="
+                        + (currentOutcome == null ? "none" : currentOutcome.Effect.ToString())
+                        + " timeScale=" + Time.timeScale
+                        + " time=" + Time.time.ToString("0.00")
+                        + " until=" + capturedVisual.EffectUntil.ToString("0.00")
+                        + " frame=" + Time.frameCount
+                        + " particleTime=" + capturedVisual.Bubbles.time.ToString("0.00")
+                        + " emission=" + capturedVisual.Bubbles.emission.rateOverTime.constant
+                        + " playing=" + capturedVisual.Bubbles.isPlaying
+                        + " bubbles=" + capturedVisual.Bubbles.particleCount
+                        + " sediment=" + capturedVisual.Precipitate.particleCount
+                        + " fumes=" + capturedVisual.Fumes.particleCount);
+                }
             }
             else
             {
                 yield return null;
+            }
+            if (hoverCapture)
+            {
+                VesselVisual visual;
+                if (vesselVisuals.TryGetValue(LabStation.Workbench, out visual))
+                {
+                    player.ViewCamera.transform.LookAt(visual.Root.position + Vector3.up * 0.12f);
+                    var target = visual.Root.GetComponent<VesselInteractable>();
+                    if (target != null) target.SetFocused(true);
+                }
             }
             yield return new WaitForEndOfFrame();
             var capturePath = GetCommandLineValue("-capturePath");
@@ -3074,14 +3419,7 @@ namespace ChemistryLab.Desktop
                     "chemistry-lab-visual-test.png");
             }
 
-            ScreenCapture.CaptureScreenshot(capturePath);
-            var timeout = Time.realtimeSinceStartup + 8f;
-            while (!File.Exists(capturePath) && Time.realtimeSinceStartup < timeout)
-            {
-                yield return new WaitForSecondsRealtime(0.2f);
-            }
-
-            if (!File.Exists(capturePath))
+            if (!CaptureOffscreen(capturePath))
             {
                 Debug.LogError("DESKTOP_LAB_CAPTURE_FAIL path=" + capturePath);
                 Application.Quit(3);
@@ -3090,6 +3428,68 @@ namespace ChemistryLab.Desktop
 
             Debug.Log("DESKTOP_LAB_CAPTURE_PASS path=" + capturePath);
             Application.Quit(0);
+        }
+
+        private bool CaptureOffscreen(string path)
+        {
+            if (player == null || player.ViewCamera == null || hud == null) return false;
+            int width;
+            int height;
+            if (!int.TryParse(GetCommandLineValue("-captureWidth"), out width) || width < 800)
+                width = Screen.width;
+            if (!int.TryParse(GetCommandLineValue("-captureHeight"), out height) || height < 600)
+                height = Screen.height;
+            var camera = player.ViewCamera;
+            var canvases = hud.GetComponentsInChildren<Canvas>(true);
+            var modes = new RenderMode[canvases.Length];
+            var cameras = new Camera[canvases.Length];
+            var originalTarget = camera.targetTexture;
+            var originalActive = RenderTexture.active;
+            var hands = camera.transform.Find("POV Chemist Arms");
+            var handsWereVisible = hands != null && hands.gameObject.activeSelf;
+            RenderTexture target = null;
+            Texture2D pixels = null;
+            try
+            {
+                if (handsWereVisible) hands.gameObject.SetActive(false);
+                target = new RenderTexture(width, height, 24);
+                camera.targetTexture = target;
+                for (var i = 0; i < canvases.Length; i++)
+                {
+                    modes[i] = canvases[i].renderMode;
+                    cameras[i] = canvases[i].worldCamera;
+                    if (modes[i] != RenderMode.ScreenSpaceOverlay) continue;
+                    canvases[i].renderMode = RenderMode.ScreenSpaceCamera;
+                    canvases[i].worldCamera = camera;
+                    canvases[i].planeDistance = Mathf.Max(camera.nearClipPlane + 0.02f, 0.1f);
+                }
+                Canvas.ForceUpdateCanvases();
+                camera.Render();
+                RenderTexture.active = target;
+                pixels = new Texture2D(width, height, TextureFormat.RGB24, false);
+                pixels.ReadPixels(new Rect(0, 0, width, height), 0, 0);
+                pixels.Apply();
+                File.WriteAllBytes(path, pixels.EncodeToPNG());
+                return File.Exists(path);
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception);
+                return false;
+            }
+            finally
+            {
+                camera.targetTexture = originalTarget;
+                RenderTexture.active = originalActive;
+                for (var i = 0; i < canvases.Length; i++)
+                {
+                    canvases[i].renderMode = modes[i];
+                    canvases[i].worldCamera = cameras[i];
+                }
+                if (handsWereVisible) hands.gameObject.SetActive(true);
+                if (pixels != null) Destroy(pixels);
+                if (target != null) { target.Release(); Destroy(target); }
+            }
         }
 
         private IEnumerator RunSmokeTest()
@@ -3508,7 +3908,17 @@ namespace ChemistryLab.Desktop
         {
             public Transform Root;
             public Renderer LiquidRenderer;
-            public ParticleSystem Particles;
+            public Material LiquidMaterial;
+            public Color TargetColour;
+            public GameObject Sediment;
+            public Material SedimentMaterial;
+            public float TargetSedimentHeight;
+            public ParticleSystem Bubbles;
+            public ParticleSystem Precipitate;
+            public ParticleSystem Fumes;
+            public float EffectUntil;
+            public float FumeRate;
+            public bool ReducedMotionAtStart;
         }
 
         private sealed class StagedSample

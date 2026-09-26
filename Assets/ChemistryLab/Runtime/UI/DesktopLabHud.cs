@@ -18,6 +18,8 @@ namespace ChemistryLab.Desktop
         private Text temperatureText;
         private Text safetyText;
         private Text missionText;
+        private Text missionBoardText;
+        private Text quickSelectionText;
         private Text promptText;
         private Text selectedFormulaText;
         private Text selectedNameText;
@@ -47,6 +49,11 @@ namespace ChemistryLab.Desktop
         private GameObject settingsOverlay;
         private GameObject reactionOverlay;
         private GameObject debugPanel;
+        private GameObject missionBoard;
+        private static Sprite roundedSprite;
+        private static Sprite roundedBorderSprite;
+        private string missionTitle = string.Empty;
+        private bool missionCompleted;
         private Button resumeButton;
         private Button mainMenuStartButton;
         private Button settingsBackButton;
@@ -185,6 +192,9 @@ namespace ChemistryLab.Desktop
                     && mainMenuStartButton != null
                     && settingsBackButton != null
                     && playerSafetyText != null
+                    && missionBoard != null
+                    && missionBoardText != null
+                    && quickSelectionText != null
                     && reactionOverlay != null
                     && LanguageUiReady
                     && PauseButtonCount == 3
@@ -326,11 +336,13 @@ namespace ChemistryLab.Desktop
                   + "     CREDITS  " + state.Credits + "\n"
                   + "RESPIRATOR  " + (state.RespiratorEquipped ? "WORN" : state.RespiratorOwned ? "REMOVED" : "NOT OWNED")
                   + "     GAS TRAP  " + (state.GasTrapConnected ? "CONNECTED" : "DISCONNECTED") + "\n"
+                  + "HOOD FAN  " + (state.FumeHoodFanOn ? "ON" : "OFF") + "\n"
                   + (incident == null ? "No incident recorded." : "Safety incident · review the warning and controls.")
                 : "SỨC KHỎE  " + state.Health.ToString("0.0") + " / 100"
                   + "     TÍN DỤNG  " + state.Credits + "\n"
                   + "MẶT NẠ  " + (state.RespiratorEquipped ? "ĐANG ĐEO" : state.RespiratorOwned ? "ĐÃ THÁO" : "CHƯA MUA")
                   + "     BÌNH CÁCH LY  " + (state.GasTrapConnected ? "ĐÃ NỐI" : "CHƯA NỐI") + "\n"
+                  + "QUẠT TỦ HÚT  " + (state.FumeHoodFanOn ? "BẬT" : "TẮT") + "\n"
                   + (incident == null ? "Chưa ghi nhận sự cố." : incident.Title + " · " + incident.Message);
             playerSafetyText.color = warning ? LabTheme.UiHazard : LabTheme.UiTextDim;
 
@@ -361,6 +373,8 @@ namespace ChemistryLab.Desktop
 
         public void SetMission(string title, bool completed)
         {
+            missionTitle = title;
+            missionCompleted = completed;
             if (missionText == null)
             {
                 return;
@@ -370,6 +384,46 @@ namespace ChemistryLab.Desktop
                 ? LabLocalization.Text("NHIỆM VỤ HOÀN THÀNH\n", "MISSION COMPLETE\n") + title
                 : LabLocalization.Text("NHIỆM VỤ ĐANG GHIM\n", "PINNED MISSION\n") + title;
             missionText.color = completed ? LabTheme.UiSuccess : LabTheme.UiText;
+            RefreshMissionBoard();
+        }
+
+        public void ToggleMissionBoard()
+        {
+            if (missionBoard != null)
+            {
+                missionBoard.SetActive(!missionBoard.activeSelf);
+                if (game != null && game.AudioSystem != null)
+                {
+                    game.AudioSystem.PlayUiClick();
+                }
+            }
+        }
+
+        public void SetQuickSelection(int slot, string formula)
+        {
+            if (quickSelectionText != null)
+                quickSelectionText.text = (slot + 1) + "  " + formula;
+        }
+
+        private void RefreshMissionBoard()
+        {
+            if (missionBoardText == null) return;
+            missionBoardText.text = LabLocalization.Text("NHIỆM VỤ HIỆN TẠI", "CURRENT MISSION")
+                + "\n\n" + missionTitle + "\n\n"
+                + (missionCompleted
+                    ? LabLocalization.Text("Đã hoàn thành. Có thể thu sản phẩm và rửa bình.",
+                        "Complete. Collect the product and clean the vessel.")
+                    : LabLocalization.Text("1  Chọn hoặc lấy CuSO₄·5H₂O và NaOH\n"
+                        + "2  Đặt từng mẫu lên khay bằng E\n"
+                        + "3  Ngắm bình, nhấn F hoặc E để nạp\n"
+                        + "4  Gia nhiệt bằng R nếu điều kiện yêu cầu",
+                        "1  Select or pick up CuSO₄·5H₂O and NaOH\n"
+                        + "2  Stage each sample on the tray with E\n"
+                        + "3  Aim at the vessel; press F or E to load\n"
+                        + "4  Heat with R if conditions require"))
+                + "\n\n" + LabLocalization.Text("MẪU NHANH", "QUICK SAMPLES")
+                + "\n" + (game == null ? string.Empty : game.QuickChemicalLegend())
+                + "\n\n" + LabLocalization.Text("Tab / Q  Đóng bảng", "Tab / Q  Close board");
         }
 
         public void SetInteractionPrompt(string prompt)
@@ -378,7 +432,6 @@ namespace ChemistryLab.Desktop
             {
                 return;
             }
-
             promptText.text = prompt;
             promptText.transform.parent.gameObject.SetActive(!string.IsNullOrWhiteSpace(prompt));
         }
@@ -435,6 +488,10 @@ namespace ChemistryLab.Desktop
             SynthesizedBatch batch = null,
             int inventoryCount = 0)
         {
+            if (quickSelectionText != null)
+                quickSelectionText.text = chemical == null
+                    ? LabLocalization.Text("1–9  CHỌN MẪU", "1–9  SELECT SAMPLE")
+                    : chemical.Formula;
             if (selectedFormulaText == null)
             {
                 return;
@@ -784,7 +841,7 @@ namespace ChemistryLab.Desktop
                 + "Phản ứng không xảy ra khi hóa chất còn trên tay.\n\n"
                 + "ĐIỀU KHIỂN\n"
                 + "Chuột — nhìn    WASD — đi    Shift — chạy    E — tương tác\n"
-                + "[ / ] — định lượng    F — dữ liệu    C — thu sản phẩm\n"
+                + "1–9 — chọn mẫu    V — dữ liệu    F — nạp / quạt    R — gia nhiệt\n"
                 + "Page Up / Down — nhiệt độ    F8 — pha loãng    SPACE — bỏ qua góc cận",
                 "CURRENT OBJECTIVE\n"
                 + "Create blue Cu(OH)₂ precipitate from CuSO₄·5H₂O and NaOH at the central bench.\n\n"
@@ -793,7 +850,7 @@ namespace ChemistryLab.Desktop
                 + "No reaction occurs while a chemical is still in your hand.\n\n"
                 + "CONTROLS\n"
                 + "Mouse — look    WASD — move    Shift — run    E — interact\n"
-                + "[ / ] — amount    F — data    C — collect product\n"
+                + "1–9 — samples    V — data    F — load / fan    R — heat\n"
                 + "Page Up / Down — temperature    F8 — dilute    SPACE — skip close-up");
             SetNamedText("Main Menu Eyebrow", "MÔ PHỎNG HÓA HỌC · PHÒNG THÍ NGHIỆM 3D", "CHEMISTRY SIMULATION · 3D LABORATORY");
             SetNamedText(
@@ -811,8 +868,15 @@ namespace ChemistryLab.Desktop
                 "Changes are saved automatically for the next session.");
             SetNamedText(
                 "Movement Controls",
-                "WASD  DI CHUYỂN   E  LẤY / ĐẶT / NẠP   PG↑/↓  NHIỆT   C  THU   I  KHO   ESC  DỪNG",
-                "WASD  MOVE   E  TAKE / PLACE / LOAD   PG↑/↓  HEAT   C  COLLECT   I  INVENTORY   ESC  PAUSE");
+                "WASD DI CHUYỂN   1–9 CHỌN MẪU   E LẤY/ĐẶT   F NẠP/KHÍ   R GIA NHIỆT   TAB/Q NHIỆM VỤ   Z/CUỘN ZOOM",
+                "WASD MOVE   1–9 SAMPLE   E TAKE/STAGE   F LOAD/TRAP   R HEAT   TAB/Q MISSIONS   Z/SCROLL ZOOM");
+            SetNamedText("Secondary Controls",
+                "V PHÂN TÍCH   BACKSPACE CẤT MẪU   PG↑/↓ NHIỆT   C THU   ESC DỪNG",
+                "V INSPECT   BACKSPACE PUT AWAY   PG↑/↓ HEAT   C COLLECT   ESC PAUSE");
+            if (quickSelectionText != null && (quickSelectionText.text.Contains("CHỌN MẪU")
+                || quickSelectionText.text.Contains("SELECT SAMPLE")))
+                quickSelectionText.text = LabLocalization.Text("1–9  CHỌN MẪU", "1–9  SELECT SAMPLE");
+            RefreshMissionBoard();
             SetButtonLabel("Help Button", "HƯỚNG DẪN · ESC", "GUIDE · ESC");
             SetButtonLabel("Resume Button", "BẮT ĐẦU / TIẾP TỤC THỰC HÀNH", "START / RESUME PRACTICAL");
             SetButtonLabel("Settings Button", "CÀI ĐẶT", "SETTINGS");
@@ -823,8 +887,9 @@ namespace ChemistryLab.Desktop
             SetButtonLabel("Settings Back Button", "QUAY LẠI", "BACK");
             SetButtonLabel("Reaction Skip Button", "BỎ QUA", "SKIP");
             SetButtonLabel("Touch Interact Button", "E · TƯƠNG TÁC", "E · INTERACT");
-            SetButtonLabel("Touch Inspect Button", "F · PHÂN TÍCH", "F · INSPECT");
-            SetButtonLabel("Touch Put Away Button", "Q · CẤT MẪU", "Q · PUT AWAY");
+            SetButtonLabel("Touch Inspect Button", "V · PHÂN TÍCH", "V · INSPECT");
+            SetButtonLabel("Touch Put Away Button", "BS · CẤT MẪU", "BS · PUT AWAY");
+            SetNamedText("Inspector Title", "BẢNG PHÂN TÍCH · V ĐỂ ĐÓNG", "ANALYSIS · V TO CLOSE");
             SetButtonLabel("Touch Pause Button", "ESC · DỪNG", "ESC · PAUSE");
             SetButtonLabel("Touch Amount Minus Button", "[ -1g", "[ -1g");
             SetButtonLabel("Touch Amount Plus Button", "] +1g", "] +1g");
@@ -833,7 +898,7 @@ namespace ChemistryLab.Desktop
             SetButtonLabel("Touch Dilute Button", "F8 · LOÃNG", "F8 · DILUTE");
             SetButtonLabel("Touch Collect Button", "C · THU HỒI", "C · COLLECT");
             SetButtonLabel("Touch Inventory Button", "I · KHO", "I · INVENTORY");
-            SetButtonLabel("Inspector Close Button", "ĐÓNG · F", "CLOSE · F");
+            SetButtonLabel("Inspector Close Button", "ĐÓNG · V", "CLOSE · V");
             SetButtonLabel("Inspector Heat Button", "+25°C", "+25°C");
             SetButtonLabel("Inspector Cool Button", "-25°C", "-25°C");
             SetButtonLabel("Inspector Dilute Button", "LOÃNG", "DILUTE");
@@ -972,9 +1037,10 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 1f),
                 Vector2.one,
                 new Vector2(0f, 1f),
-                new Vector2(0f, -60f),
-                Vector2.zero,
-                LabTheme.WithAlpha(LabTheme.UiBackground, 0.94f));
+                new Vector2(16f, -70f),
+                new Vector2(-16f, -14f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.80f));
+            AddOutline(topBar, LabTheme.WithAlpha(LabTheme.UiBorderGlow, 0.36f), new Vector2(1f, -1f));
             CreatePanel(
                 "Edge HUD Bottom Rule",
                 topBar.transform,
@@ -1055,10 +1121,10 @@ namespace ChemistryLab.Desktop
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
                 new Vector2(0f, 1f),
-                new Vector2(20f, -156f),
-                new Vector2(390f, -82f),
-                LabTheme.WithAlpha(LabTheme.UiCard, 0.92f));
-            AddOutline(missionPanel, LabTheme.WithAlpha(Color.white, 0.08f), new Vector2(1f, -1f));
+                new Vector2(20f, -166f),
+                new Vector2(410f, -90f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.82f));
+            AddOutline(missionPanel, LabTheme.WithAlpha(LabTheme.UiBorderGlow, 0.30f), new Vector2(1f, -1f));
 
             missionText = CreateText(
                 "Mission Text",
@@ -1075,6 +1141,7 @@ namespace ChemistryLab.Desktop
                 new Vector2(-12f, -8f));
 
             CreateSafetyPanel(canvasObject.transform);
+            CreateMissionBoard(canvasObject.transform);
 
             var promptPanel = CreatePanel(
                 "Interaction Prompt Surface",
@@ -1082,10 +1149,10 @@ namespace ChemistryLab.Desktop
                 new Vector2(0.25f, 0f),
                 new Vector2(0.75f, 0f),
                 new Vector2(0.5f, 0f),
-                new Vector2(0f, 78f),
-                new Vector2(0f, 132f),
-                LabTheme.WithAlpha(LabTheme.UiCard, 0.92f));
-            AddOutline(promptPanel, LabTheme.WithAlpha(Color.white, 0.10f), new Vector2(1f, -1f));
+                new Vector2(0f, 102f),
+                new Vector2(0f, 156f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.84f));
+            AddOutline(promptPanel, LabTheme.WithAlpha(LabTheme.UiBorderGlow, 0.42f), new Vector2(1f, -1f));
 
             promptText = CreateText(
                 "Interaction Prompt",
@@ -1100,6 +1167,7 @@ namespace ChemistryLab.Desktop
                 Vector2.one,
                 new Vector2(12f, 0f),
                 new Vector2(-12f, 0f));
+            promptPanel.SetActive(false);
 
             var transientPanel = CreatePanel(
                 "Transient Surface",
@@ -1107,9 +1175,9 @@ namespace ChemistryLab.Desktop
                 Vector2.zero,
                 new Vector2(0.48f, 0f),
                 Vector2.zero,
-                new Vector2(22f, 62f),
-                new Vector2(-16f, 116f),
-                LabTheme.WithAlpha(LabTheme.UiCard, 0.94f));
+                new Vector2(22f, 170f),
+                new Vector2(-16f, 228f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.86f));
             AddOutline(transientPanel, LabTheme.WithAlpha(Color.white, 0.08f), new Vector2(1f, -1f));
 
             transientText = CreateText(
@@ -1212,9 +1280,10 @@ namespace ChemistryLab.Desktop
                 Vector2.zero,
                 new Vector2(1f, 0f),
                 Vector2.zero,
-                Vector2.zero,
-                new Vector2(0f, 54f),
-                LabTheme.WithAlpha(LabTheme.UiBackground, 0.94f));
+                new Vector2(16f, 14f),
+                new Vector2(-16f, 94f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.80f));
+            AddOutline(footer, LabTheme.WithAlpha(LabTheme.UiBorderGlow, 0.28f), new Vector2(1f, -1f));
             CreatePanel(
                 "Footer Top Rule",
                 footer.transform,
@@ -1228,16 +1297,22 @@ namespace ChemistryLab.Desktop
             CreateText(
                 "Movement Controls",
                 footer.transform,
-                "WASD  DI CHUYỂN   E  LẤY / ĐẶT / NẠP   PG↑/↓  NHIỆT   C  THU   I  KHO   ESC  DỪNG",
+                "WASD DI CHUYỂN   1–9 CHỌN MẪU   E LẤY/ĐẶT   F NẠP/KHÍ   R GIA NHIỆT   TAB/Q NHIỆM VỤ   Z/CUỘN ZOOM",
                 bodyFont,
-                13,
+                15,
                 FontStyle.Bold,
-                LabTheme.UiTextDim,
-                TextAnchor.MiddleCenter,
-                Vector2.zero,
-                new Vector2(0.69f, 1f),
-                new Vector2(12f, 0f),
+                LabTheme.UiText,
+                TextAnchor.MiddleLeft,
+                new Vector2(0f, 0.48f),
+                new Vector2(0.87f, 1f),
+                new Vector2(20f, 0f),
                 Vector2.zero);
+
+            quickSelectionText = CreateText("Quick Selection", footer.transform,
+                LabLocalization.Text("1–9  CHỌN MẪU", "1–9  SELECT SAMPLE"),
+                monoFont, 13, FontStyle.Bold, LabTheme.UiEquation, TextAnchor.MiddleRight,
+                new Vector2(0.87f, 0.48f), Vector2.one,
+                Vector2.zero, new Vector2(-20f, 0f));
 
             CreateText(
                 "Diagnostics Control",
@@ -1248,8 +1323,8 @@ namespace ChemistryLab.Desktop
                 FontStyle.Bold,
                 LabTheme.UiAccent,
                 TextAnchor.MiddleCenter,
-                new Vector2(0.69f, 0f),
-                new Vector2(0.79f, 1f),
+                new Vector2(0.0f, 0f),
+                new Vector2(0.14f, 0.46f),
                 Vector2.zero,
                 Vector2.zero);
 
@@ -1262,8 +1337,8 @@ namespace ChemistryLab.Desktop
                 FontStyle.Bold,
                 LabTheme.UiAccent,
                 TextAnchor.MiddleCenter,
-                new Vector2(0.79f, 0f),
-                new Vector2(0.89f, 1f),
+                new Vector2(0.14f, 0f),
+                new Vector2(0.31f, 0.46f),
                 Vector2.zero,
                 Vector2.zero);
 
@@ -1272,14 +1347,35 @@ namespace ChemistryLab.Desktop
                 footer.transform,
                 "F10 · MOTION ĐẦY",
                 bodyFont,
-                12,
+                14,
                 FontStyle.Normal,
-                LabTheme.UiTextMuted,
+                LabTheme.UiTextDim,
                 TextAnchor.MiddleRight,
-                new Vector2(0.89f, 0f),
-                Vector2.one,
+                new Vector2(0.31f, 0f),
+                new Vector2(0.58f, 0.46f),
                 Vector2.zero,
-                new Vector2(-18f, 0f));
+                Vector2.zero);
+
+            CreateText("Secondary Controls", footer.transform,
+                LabLocalization.Text("V PHÂN TÍCH   BACKSPACE CẤT MẪU   PG↑/↓ NHIỆT   C THU   ESC DỪNG",
+                    "V INSPECT   BACKSPACE PUT AWAY   PG↑/↓ HEAT   C COLLECT   ESC PAUSE"),
+                bodyFont, 14, FontStyle.Normal, LabTheme.UiText, TextAnchor.MiddleRight,
+                new Vector2(0.58f, 0f), new Vector2(1f, 0.46f),
+                Vector2.zero, new Vector2(-20f, 0f));
+        }
+
+        private void CreateMissionBoard(Transform parent)
+        {
+            missionBoard = CreatePanel("Mission Board", parent,
+                new Vector2(0f, 1f), new Vector2(0f, 1f), new Vector2(0f, 1f),
+                new Vector2(20f, -752f), new Vector2(450f, -350f),
+                LabTheme.WithAlpha(LabTheme.UiCard, 0.91f));
+            AddOutline(missionBoard, LabTheme.WithAlpha(LabTheme.UiBorderGlow, 0.5f), new Vector2(2f, -2f));
+            missionBoardText = CreateText("Mission Board Text", missionBoard.transform,
+                string.Empty, bodyFont, 16, FontStyle.Normal, LabTheme.UiText,
+                TextAnchor.UpperLeft, Vector2.zero, Vector2.one,
+                new Vector2(24f, 20f), new Vector2(-24f, -20f));
+            missionBoard.SetActive(false);
         }
 
         private void CreateDebugPanel(Transform parent)
@@ -1343,7 +1439,7 @@ namespace ChemistryLab.Desktop
                 "SỨC KHỎE  100 / 100     TÍN DỤNG  1200\n"
                 + "MẶT NẠ  CHƯA MUA     BÌNH CÁCH LY  CHƯA NỐI\nChưa ghi nhận sự cố.",
                 bodyFont,
-                12,
+                13,
                 FontStyle.Bold,
                 LabTheme.UiTextDim,
                 TextAnchor.UpperLeft,
@@ -1496,7 +1592,7 @@ namespace ChemistryLab.Desktop
             touchInspectButton = CreateButton(
                 "Touch Inspect Button",
                 rightActions.transform,
-                "F · PHÂN TÍCH",
+                "V · PHÂN TÍCH",
                 new Vector2(0f, 62f),
                 new Vector2(180f, 116f),
                 () => { if (game != null && game.Player != null) game.Player.DispatchInspect(); });
@@ -1504,7 +1600,7 @@ namespace ChemistryLab.Desktop
             touchPutAwayButton = CreateButton(
                 "Touch Put Away Button",
                 rightActions.transform,
-                "Q · CẤT MẪU",
+                "BS · CẤT MẪU",
                 new Vector2(0f, 124f),
                 new Vector2(180f, 178f),
                 () => { if (game != null && game.Player != null) game.Player.DispatchPutAway(); });
@@ -1655,7 +1751,7 @@ namespace ChemistryLab.Desktop
             CreateText(
                 "Inspector Title",
                 rule.transform,
-                "BẢNG PHÂN TÍCH · F ĐỂ ĐÓNG",
+                "BẢNG PHÂN TÍCH · V ĐỂ ĐÓNG",
                 bodyFont,
                 13,
                 FontStyle.Bold,
@@ -1887,7 +1983,7 @@ namespace ChemistryLab.Desktop
                 + "Phản ứng không xảy ra khi hóa chất còn trên tay.\n\n"
                 + "ĐIỀU KHIỂN\n"
                 + "Chuột — nhìn    WASD — đi    Shift — chạy    E — tương tác\n"
-                + "[ / ] — định lượng    F — dữ liệu    C — thu sản phẩm\n"
+                + "1–9 — chọn mẫu    V — dữ liệu    F — nạp / quạt    R — gia nhiệt\n"
                 + "Page Up / Down — nhiệt độ    F8 — pha loãng    SPACE — bỏ qua góc cận",
                 bodyFont,
                 16,
@@ -2387,8 +2483,75 @@ namespace ChemistryLab.Desktop
             rect.offsetMax = offsetMax;
             var image = panel.GetComponent<Image>();
             image.color = colour;
+            if (colour.a > 0.001f && name.IndexOf("Rule", System.StringComparison.Ordinal) < 0)
+            {
+                image.sprite = GetRoundedSprite();
+                image.type = Image.Type.Sliced;
+            }
             image.raycastTarget = false;
             return panel;
+        }
+
+        private static Sprite GetRoundedSprite()
+        {
+            if (roundedSprite != null) return roundedSprite;
+            const int size = 64;
+            const float radius = 15f;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.name = "Lab Rounded Surface";
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color[size * size];
+            for (var y = 0; y < size; y++)
+            for (var x = 0; x < size; x++)
+            {
+                var nearestX = Mathf.Clamp(x + 0.5f, radius, size - radius);
+                var nearestY = Mathf.Clamp(y + 0.5f, radius, size - radius);
+                var distance = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f),
+                    new Vector2(nearestX, nearestY));
+                pixels[y * size + x] = new Color(1f, 1f, 1f,
+                    Mathf.Clamp01(radius - distance + 0.5f));
+            }
+            texture.SetPixels(pixels);
+            texture.Apply(false, true);
+            roundedSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size),
+                new Vector2(0.5f, 0.5f), 100f, 0u, SpriteMeshType.FullRect,
+                new Vector4(16f, 16f, 16f, 16f));
+            roundedSprite.name = "Lab Rounded Surface";
+            return roundedSprite;
+        }
+
+        private static Sprite GetRoundedBorderSprite()
+        {
+            if (roundedBorderSprite != null) return roundedBorderSprite;
+            const int size = 64;
+            var texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
+            texture.name = "Lab Rounded Border";
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color[size * size];
+            for (var y = 0; y < size; y++)
+            for (var x = 0; x < size; x++)
+            {
+                var outer = RoundedCoverage(x + 0.5f, y + 0.5f, size, 0f, 15f);
+                var inner = RoundedCoverage(x + 0.5f, y + 0.5f, size, 2.5f, 12.5f);
+                pixels[y * size + x] = new Color(1f, 1f, 1f, Mathf.Max(0f, outer - inner));
+            }
+            texture.SetPixels(pixels);
+            texture.Apply(false, true);
+            roundedBorderSprite = Sprite.Create(texture, new Rect(0f, 0f, size, size),
+                new Vector2(0.5f, 0.5f), 100f, 0u, SpriteMeshType.FullRect,
+                new Vector4(16f, 16f, 16f, 16f));
+            roundedBorderSprite.name = "Lab Rounded Border";
+            return roundedBorderSprite;
+        }
+
+        private static float RoundedCoverage(float x, float y, float size, float inset, float radius)
+        {
+            var nearestX = Mathf.Clamp(x, inset + radius, size - inset - radius);
+            var nearestY = Mathf.Clamp(y, inset + radius, size - inset - radius);
+            var distance = Vector2.Distance(new Vector2(x, y), new Vector2(nearestX, nearestY));
+            return Mathf.Clamp01(radius - distance + 0.5f);
         }
 
         private static Text CreateText(
@@ -2422,6 +2585,9 @@ namespace ChemistryLab.Desktop
             text.alignment = alignment;
             text.horizontalOverflow = HorizontalWrapMode.Wrap;
             text.verticalOverflow = VerticalWrapMode.Truncate;
+            text.resizeTextForBestFit = true;
+            text.resizeTextMinSize = Mathf.Max(10, fontSize - 3);
+            text.resizeTextMaxSize = fontSize;
             text.supportRichText = true;
             text.raycastTarget = false;
             text.lineSpacing = 1.08f;
@@ -2430,11 +2596,19 @@ namespace ChemistryLab.Desktop
 
         private static void AddOutline(GameObject target, Color color, Vector2 distance)
         {
-            var outline = target.GetComponent<Outline>() ?? target.AddComponent<Outline>();
-            outline.effectColor = color;
-            outline.effectDistance = distance;
-            outline.useGraphicAlpha = false;
-            outline.enabled = true;
+            var border = new GameObject("Glow Border", typeof(RectTransform), typeof(Image));
+            border.transform.SetParent(target.transform, false);
+            var rect = border.GetComponent<RectTransform>();
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            var padding = new Vector2(Mathf.Abs(distance.x), Mathf.Abs(distance.y));
+            rect.offsetMin = -padding;
+            rect.offsetMax = padding;
+            var image = border.GetComponent<Image>();
+            image.sprite = GetRoundedBorderSprite();
+            image.type = Image.Type.Sliced;
+            image.color = color;
+            image.raycastTarget = false;
         }
 
         private Button CreateButton(
@@ -2465,6 +2639,8 @@ namespace ChemistryLab.Desktop
 
             var image = buttonObject.GetComponent<Image>();
             image.color = normalBg;
+            image.sprite = GetRoundedSprite();
+            image.type = Image.Type.Sliced;
             image.raycastTarget = true;
 
             var focusOutline = buttonObject.GetComponent<Outline>();

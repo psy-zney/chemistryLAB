@@ -44,9 +44,9 @@
     },
     {
       "id": "load",
-      "key": "E",
-      "vi": "Khi tay trống, nạp mẫu từ khay vào bình.",
-      "en": "With empty hands, load the staged sample into the vessel."
+      "key": "E/F",
+      "vi": "Khi tay trống, ngắm bình và nạp mẫu từ khay.",
+      "en": "With empty hands, aim at the vessel and load the staged sample from its tray."
     },
     {
       "id": "observe",
@@ -72,6 +72,7 @@
     "remoteVesselOperationAllowed": false,
     "gasCollectionRequiresFumeHood": true,
     "gasCollectionRequiresConnectedTrap": true,
+    "gasCollectionRequiresHoodFan": true,
     "productsAreReusable": true,
     "reactionsPerVesselBetweenCleanups": 1,
     "collectionOnce": true,
@@ -90,6 +91,16 @@
       "en": "Look"
     },
     {
+      "key": "Mouse wheel",
+      "vi": "Phóng to/thu nhỏ góc nhìn; không tăng tầm thao tác",
+      "en": "Zoom in/out without extending interaction range"
+    },
+    {
+      "key": "Right mouse / Z",
+      "vi": "Giữ để phóng to cận cảnh",
+      "en": "Hold for close zoom"
+    },
+    {
       "key": "Shift",
       "vi": "Chạy",
       "en": "Sprint"
@@ -98,6 +109,36 @@
       "key": "E",
       "vi": "Tương tác vật lý",
       "en": "Physical interaction"
+    },
+    {
+      "key": "1-9",
+      "vi": "Chọn nhanh hóa chất thường dùng; vẫn phải đặt trên khay",
+      "en": "Select common chemicals; samples still require staging"
+    },
+    {
+      "key": "F",
+      "vi": "Nạp mẫu đã đặt khi ngắm bình; bật/tắt quạt hoặc hệ rửa khí khi ngắm thiết bị",
+      "en": "Load a staged sample at the aimed vessel; toggle the aimed hood fan or gas trap"
+    },
+    {
+      "key": "R",
+      "vi": "Gia nhiệt bình hoặc bếp đang ngắm thêm 25 °C",
+      "en": "Heat the aimed vessel or hotplate by 25 °C"
+    },
+    {
+      "key": "V",
+      "vi": "Mở/đóng bảng phân tích",
+      "en": "Open/close inspector"
+    },
+    {
+      "key": "Tab/Q",
+      "vi": "Mở/đóng bảng nhiệm vụ",
+      "en": "Open/close mission board"
+    },
+    {
+      "key": "Backspace",
+      "vi": "Cất mẫu đang cầm",
+      "en": "Put away held sample"
     },
     {
       "key": "[ / ]",

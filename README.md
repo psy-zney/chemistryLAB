@@ -23,6 +23,7 @@ The game is built as an educational simulation, not as real laboratory operating
 - Persistent synthesized-product inventory. Every collected batch records mass, purity, phase, color, hazards, and source equation in JSON; reused material is mass-accounted and generated ionic products re-enter the dynamic reaction engine.
 - Safety system for toxic, corrosive, flammable, oxidising, and asphyxiant gas outcomes. Unsafe reactions are allowed to happen, but the player pays health and credit consequences if they do not use the fume hood, respirator, or gas trap correctly.
 - Runtime HUD with chemical inspector, vessel inspector, mission state, temperature, safety state, main menu, ESC pause menu, diagnostics, and persistent language, audio, reduced-motion, and window-mode settings.
+- Vessel visuals blend solution colour and opacity with concentration, show gas bubbles rising to the surface, let precipitate settle into a bottom layer, and add restrained thermal or hazardous fumes. Reduced motion lowers emissions and removes colour easing.
 - Physical sample staging: a held chemical must be placed on the preparation
   tray beside a vessel before it can be loaded; the staged bottle remains
   visible and remote loading is rejected.
@@ -184,11 +185,17 @@ and its machine-readable
 ```text
 WASD          Move
 Mouse         Look around
+Wheel         Zoom in/out (camera only; interaction range is unchanged)
+Right mouse/Z  Hold for close zoom
 Shift         Sprint
 E             Pick up, place on preparation tray, load vessel, or interact
-F             Open or close the inspector
+1-9           Select common chemicals (still stage each sample on a tray)
+F             Load a staged sample at the aimed vessel, or toggle the aimed hood fan/gas trap
+R             Heat the aimed vessel or hotplate by 25 °C
+V             Open or close the inspector
 [ / ]         Decrease or increase selected sample mass
-Q             Put away the selected sample
+Tab/Q         Open or close the mission board
+Backspace     Put away the selected sample
 Space / E     Skip an active reaction close view
 Page Up/Down  Heat or cool the active vessel by 25 °C
 F8            Add 50 mL solvent / dilute the active vessel

@@ -250,6 +250,7 @@ namespace ChemistryLab.Desktop
         public bool RespiratorOwned { get; private set; }
         public bool RespiratorEquipped { get; private set; }
         public bool GasTrapConnected { get; private set; }
+        public bool FumeHoodFanOn { get; private set; } = true;
         public int IncidentCount { get; private set; }
         public float TotalExposure { get; private set; }
         public SafetyIncident LastIncident { get; private set; }
@@ -283,6 +284,12 @@ namespace ChemistryLab.Desktop
                 : "Đã tháo bình cách ly khí.";
         }
 
+        public bool ToggleFumeHoodFan()
+        {
+            FumeHoodFanOn = !FumeHoodFanOn;
+            return FumeHoodFanOn;
+        }
+
         public SafetyIncident Apply(ReactionOutcome outcome, LabStation station)
         {
             if (outcome == null || outcome.Hazard == null || !outcome.Hazard.IsHazardous)
@@ -297,8 +304,8 @@ namespace ChemistryLab.Desktop
                 return LastIncident;
             }
 
-            var hoodCapture = station == LabStation.FumeHood ? .90f : 0f;
-            if (station == LabStation.FumeHood && GasTrapConnected)
+            var hoodCapture = station == LabStation.FumeHood && FumeHoodFanOn ? .90f : 0f;
+            if (station == LabStation.FumeHood && FumeHoodFanOn && GasTrapConnected)
             {
                 hoodCapture = .995f;
             }
@@ -344,6 +351,7 @@ namespace ChemistryLab.Desktop
                 Message = BuildIncidentMessage(
                     outcome,
                     station,
+                    FumeHoodFanOn,
                     exposure,
                     healthLost,
                     creditsLost,
@@ -369,7 +377,10 @@ namespace ChemistryLab.Desktop
 
             var unsafeSystem = new LabSafetySystem();
             var protectedSystem = new LabSafetySystem();
+            var fanOffSystem = new LabSafetySystem();
             protectedSystem.ToggleGasTrap();
+            fanOffSystem.ToggleGasTrap();
+            fanOffSystem.ToggleFumeHoodFan();
             var outcome = new ReactionOutcome
             {
                 Status = ReactionStatus.Reaction,
@@ -378,10 +389,13 @@ namespace ChemistryLab.Desktop
             };
             var unsafeIncident = unsafeSystem.Apply(outcome, LabStation.Workbench);
             var protectedIncident = protectedSystem.Apply(outcome, LabStation.FumeHood);
+            var fanOffIncident = fanOffSystem.Apply(outcome, LabStation.FumeHood);
             if (unsafeIncident.HealthLost <= 20f
                 || unsafeIncident.CreditsLost <= 0
                 || protectedIncident.HealthLost >= unsafeIncident.HealthLost * .02f
-                || !protectedIncident.Controlled)
+                || !protectedIncident.Controlled
+                || fanOffIncident.HealthLost < unsafeIncident.HealthLost * .95f
+                || fanOffIncident.Controlled)
             {
                 throw new InvalidOperationException("Lab safety consequence validation failed.");
             }
@@ -390,6 +404,7 @@ namespace ChemistryLab.Desktop
         private static string BuildIncidentMessage(
             ReactionOutcome outcome,
             LabStation station,
+            bool fanOn,
             float exposure,
             float healthLost,
             int creditsLost,
@@ -402,9 +417,11 @@ namespace ChemistryLab.Desktop
                     + (exposure * 100f).ToString("0.0") + "%.";
             }
 
-            var controlNote = station == LabStation.FumeHood
-                ? "Tủ hút đã giảm phát tán nhưng cấu hình bảo vệ chưa đủ."
-                : "Phản ứng diễn ra ngoài tủ hút.";
+            var controlNote = station != LabStation.FumeHood
+                ? "Phản ứng diễn ra ngoài tủ hút."
+                : fanOn
+                    ? "Tủ hút đã giảm phát tán nhưng cấu hình bảo vệ chưa đủ."
+                    : "Quạt tủ hút đang tắt nên không có khả năng hút khí.";
             return controlNote + " " + outcome.Hazard.Warning
                 + " Nhân vật mất " + healthLost.ToString("0.0") + " sức khỏe"
                 + " và trả " + creditsLost + " tín dụng"

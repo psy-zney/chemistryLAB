@@ -20,6 +20,14 @@ a sample staged at one station cannot be loaded remotely into the other.
 When the newly loaded ingredient resolves to a reaction:
 
 - the normal reaction audio, liquid colour, and particle effect begin;
+- solution colour blends from the measured ingredients toward the resolved
+  product colour; concentration changes opacity, while a precipitate makes the
+  liquid visibly cloudy;
+- gas outcomes show small bubbles rising inside the liquid and disappearing at
+  its surface; precipitate outcomes show suspended particles settling into a
+  coloured layer at the bottom of the vessel;
+- strong heat and toxic or corrosive gas outcomes show faint haze or fumes at
+  the vessel mouth for the bounded reaction duration;
 - the first-person arms are hidden temporarily;
 - the camera eases to a 42-degree close view of the physical vessel;
 - a central card shows the balanced `ReactionOutcome.Equation`;
@@ -29,6 +37,10 @@ When the newly loaded ingredient resolves to a reaction:
   original local camera transform and field of view.
 
 Reduced-motion mode keeps the equation card but does not move the camera.
+It also changes liquid colour immediately and lowers VFX emission while keeping
+gas, precipitate, and fume states visible. Cleaning the vessel clears all
+particles and sediment. These visuals read the committed `ReactionOutcome` and
+do not change reaction or safety calculations.
 
 ## Runtime invariants
 

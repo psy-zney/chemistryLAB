@@ -55,7 +55,7 @@ Nhấn `Space` hoặc `E` để bỏ qua góc cận / Press `Space` or `E` to sk
 | `Page Down` | Giảm nhiệt độ bình hiện tại 25 °C | Lower current vessel temperature by 25 °C |
 | `F8` | Thêm 50 mL dung môi để pha loãng | Add 50 mL solvent to dilute |
 | `[` / `]` | Giảm / tăng khối lượng mẫu đang chọn | Decrease / increase selected sample mass |
-| `F` | Mở / đóng dữ liệu hóa chất và bình | Open / close chemical and vessel data |
+| `V` | Mở / đóng dữ liệu hóa chất và bình | Open / close chemical and vessel data |
 
 Engine đánh giá nhiệt độ, nồng độ, pH, xúc tác, nhánh oxi hóa–khử, chất giới hạn, sản lượng và độ tinh khiết. Nếu điều kiện chưa đạt, thẻ trạng thái cho biết phản ứng đang chờ hoặc bị chặn.
 
@@ -66,6 +66,10 @@ The engine evaluates temperature, concentration, pH, catalyst, redox branch, lim
 **VI:** Hóa chất hoặc sản phẩm độc kích hoạt cảnh báo. Mua/đeo mặt nạ tại tủ PPE (`E` hoặc `F6`). Nối bình cách ly vào hệ rửa khí (`E` tại thiết bị hoặc `F7`). Sản phẩm khí chỉ được thu trong tủ hút khi hệ rửa khí đã nối. Bỏ qua kiểm soát có thể làm mất sức khỏe và tín dụng.
 
 **EN:** Toxic chemicals or products trigger a warning. Buy/wear the respirator at the PPE cabinet (`E` or `F6`). Connect the isolation trap to the gas scrubber (`E` at the device or `F7`). Gas products can only be collected in the fume hood with the gas trap connected. Ignoring controls may reduce health and credits.
+
+**VI:** Công tắc quạt nằm trên tủ hút. Ngắm công tắc và nhấn `F` hoặc `E` để bật/tắt. Quạt tắt thì tủ không hút khí độc; thu sản phẩm khí đòi hỏi quạt bật và hệ rửa khí đã nối.
+
+**EN:** Aim at the hood fan switch and press `F` or `E` to toggle it. With the fan off, the hood does not capture hazardous gas. Gas collection requires both the fan and connected gas trap.
 
 ## 6. Thu và tái sử dụng sản phẩm / Collect and reuse products
 
@@ -79,9 +83,16 @@ The engine evaluates temperature, concentration, pH, catalyst, redox branch, lim
 |---|---|---|
 | `WASD` | Di chuyển | Move |
 | `Chuột / Mouse` | Nhìn xung quanh | Look around |
+| `Cuộn chuột / Mouse wheel` | Phóng to / thu nhỏ góc nhìn; không tăng tầm thao tác | Zoom in / out; interaction range stays the same |
+| `Chuột phải / Right mouse` hoặc `Z` | Giữ để phóng to cận cảnh | Hold for close zoom |
 | `Shift` | Chạy | Sprint |
+| `1–9` | Chọn nhanh hóa chất thường dùng; vẫn phải đặt mẫu trên khay | Select common chemicals; samples still require staging |
 | `E` | Lấy, đặt, nạp, thu hoặc tương tác | Pick up, place, load, collect or interact |
-| `Q` | Cất mẫu đang cầm | Put away held sample |
+| `F` | Nạp mẫu đã đặt khi ngắm bình; bật/tắt quạt tủ hút hoặc hệ rửa khí khi ngắm công tắc tương ứng | Load a staged sample at the aimed vessel; toggle the aimed hood fan or gas trap |
+| `R` | Gia nhiệt bình hoặc bếp đang ngắm thêm 25 °C; phản ứng được xét theo điều kiện hiện tại | Heat the aimed vessel or hotplate by 25 °C; reaction follows current conditions |
+| `V` | Mở / đóng bảng phân tích | Open / close inspector |
+| `Tab` / `Q` | Mở / đóng bảng nhiệm vụ | Open / close mission board |
+| `Backspace` | Cất mẫu đang cầm | Put away held sample |
 | `C` | Thu sản phẩm | Collect product |
 | `I` | Chuyển lô trong kho điều chế | Cycle synthesized inventory |
 | `F3` | Bật/tắt chẩn đoán runtime | Toggle runtime diagnostics |
@@ -97,8 +108,8 @@ The engine evaluates temperature, concentration, pH, catalyst, redox branch, lim
   **EN:** If `E` does not work, move closer and aim directly at the tray, vessel or device.
 - **VI:** Nếu bình từ chối mẫu, hãy chắc chắn hóa chất đã được đặt trên đúng khay và tay đang trống.
   **EN:** If the vessel rejects a sample, confirm it is on the correct tray and your hands are empty.
-- **VI:** Nếu phản ứng chưa xảy ra, mở dữ liệu bằng `F`, kiểm tra điều kiện rồi điều chỉnh nhiệt độ hoặc pha loãng.
-  **EN:** If no reaction occurs, open data with `F`, inspect the conditions, then adjust temperature or dilution.
+- **VI:** Nếu phản ứng chưa xảy ra, mở dữ liệu bằng `V`, kiểm tra điều kiện rồi điều chỉnh nhiệt độ hoặc pha loãng.
+  **EN:** If no reaction occurs, open data with `V`, inspect the conditions, then adjust temperature or dilution.
 - **VI:** Nếu menu không nhận chuột, nhấn `ESC` một lần để mở đúng trạng thái pause rồi thử lại.
   **EN:** If the menu does not receive the mouse, press `ESC` once to enter the correct pause state and try again.
 

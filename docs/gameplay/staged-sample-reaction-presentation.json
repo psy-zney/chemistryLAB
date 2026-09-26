@@ -37,6 +37,17 @@
     "reducedMotionMovesCamera": false,
     "restoresOriginalCameraTransform": true
   },
+  "vesselVisuals": {
+    "colourSource": "measured-input-colours-then-committed-outcome-display-colour",
+    "concentrationAffectsOpacity": true,
+    "precipitateCloudsLiquidAndSettles": true,
+    "gasBubblesRiseAndDisappearAtSurface": true,
+    "toxicCorrosiveOrStrongHeatAddsFumes": true,
+    "effectsStopAfterBoundedReactionDuration": true,
+    "cleanupClearsParticlesAndSediment": true,
+    "reducedMotionUsesImmediateColourAndLowerEmission": true,
+    "visualsChangeChemistryOrSafety": false
+  },
   "runtimeAssertions": [
     "handOnlyReactionBlocked",
     "remoteVesselOperationBlocked",

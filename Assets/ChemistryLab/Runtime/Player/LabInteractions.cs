@@ -6,6 +6,8 @@ namespace ChemistryLab.Desktop
     {
         protected DesktopLabGame Game { get; private set; }
         private GameObject highlight;
+        private GameObject focusOutline;
+        private static Material outlineMaterial;
 
         public abstract string Prompt { get; }
 
@@ -21,6 +23,66 @@ namespace ChemistryLab.Desktop
             if (highlight != null)
             {
                 highlight.SetActive(focused);
+            }
+            if (focused && focusOutline == null)
+            {
+                CreateFocusOutline();
+            }
+            if (focusOutline != null)
+            {
+                focusOutline.SetActive(focused);
+            }
+        }
+
+        private void CreateFocusOutline()
+        {
+            var renderers = GetComponentsInChildren<Renderer>(false);
+            var found = false;
+            var bounds = new Bounds();
+            for (var i = 0; i < renderers.Length; i++)
+            {
+                if (renderers[i] is ParticleSystemRenderer || (highlight != null
+                    && renderers[i].transform.IsChildOf(highlight.transform))) continue;
+                if (!found) { bounds = renderers[i].bounds; found = true; }
+                else bounds.Encapsulate(renderers[i].bounds);
+            }
+            if (!found) return;
+
+            if (outlineMaterial == null)
+            {
+                var shader = Shader.Find("Standard");
+                if (shader == null) return;
+                outlineMaterial = new Material(shader) { name = "Lab Interaction Outline" };
+                outlineMaterial.color = LabTheme.UiEquation;
+                outlineMaterial.EnableKeyword("_EMISSION");
+                outlineMaterial.SetColor("_EmissionColor", LabTheme.UiEquation);
+            }
+            focusOutline = new GameObject("Hover Outline");
+            focusOutline.transform.SetParent(transform, false);
+            bounds.Expand(0.08f);
+            var min = bounds.min;
+            var max = bounds.max;
+            var corners = new[] {
+                new Vector3(min.x, min.y, min.z), new Vector3(max.x, min.y, min.z),
+                new Vector3(max.x, min.y, max.z), new Vector3(min.x, min.y, max.z),
+                new Vector3(min.x, max.y, min.z), new Vector3(max.x, max.y, min.z),
+                new Vector3(max.x, max.y, max.z), new Vector3(min.x, max.y, max.z)
+            };
+            var edges = new[] { 0,1, 1,2, 2,3, 3,0, 4,5, 5,6, 6,7, 7,4, 0,4, 1,5, 2,6, 3,7 };
+            for (var i = 0; i < edges.Length; i += 2)
+            {
+                var start = corners[edges[i]];
+                var end = corners[edges[i + 1]];
+                var segment = GameObject.CreatePrimitive(PrimitiveType.Cube);
+                segment.name = "Outline Edge";
+                segment.transform.SetParent(focusOutline.transform, true);
+                segment.transform.position = (start + end) * 0.5f;
+                segment.transform.rotation = Quaternion.FromToRotation(Vector3.up, end - start);
+                segment.transform.localScale = new Vector3(0.018f, (end - start).magnitude, 0.018f);
+                var collider = segment.GetComponent<Collider>();
+                collider.enabled = false;
+                Destroy(collider);
+                segment.GetComponent<Renderer>().sharedMaterial = outlineMaterial;
             }
         }
 
@@ -72,8 +134,8 @@ namespace ChemistryLab.Desktop
                     if (Game.HasStagedSample(Station))
                     {
                         return LabLocalization.Text(
-                            "Q · Cất mẫu đang cầm trước khi nạp ",
-                            "Q · Put away held sample before loading ")
+                            "Backspace · Cất mẫu đang cầm trước khi nạp ",
+                            "Backspace · Put away held sample before loading ")
                             + Game.GetStagedSampleLabel(Station);
                     }
 
@@ -86,7 +148,7 @@ namespace ChemistryLab.Desktop
 
                 if (Game.HasStagedSample(Station))
                 {
-                    return LabLocalization.Text("E · Nạp ", "E · Load ")
+                    return LabLocalization.Text("F / E · Nạp ", "F / E · Load ")
                         + Game.GetStagedSampleLabel(Station)
                         + LabLocalization.Text(" từ khay đặt mẫu", " from preparation tray");
                 }
@@ -151,8 +213,8 @@ namespace ChemistryLab.Desktop
                         return LabLocalization.Text("Khay đã có ", "Tray contains ")
                             + Game.GetStagedSampleLabel(Station)
                             + LabLocalization.Text(
-                                " · Q để cất mẫu đang cầm",
-                                " · Q to put away held sample");
+                                " · Backspace để cất mẫu đang cầm",
+                                " · Backspace to put away held sample");
                     }
 
                     return LabLocalization.Text("E · Đặt ", "E · Place ")
@@ -189,8 +251,8 @@ namespace ChemistryLab.Desktop
             get
             {
                 return LabLocalization.Text(
-                    "E · Gia nhiệt bình thêm 25 °C",
-                    "E · Heat vessel by 25 °C");
+                    "R / E · Gia nhiệt bình thêm 25 °C",
+                    "R / E · Heat vessel by 25 °C");
             }
         }
 
@@ -323,11 +385,11 @@ namespace ChemistryLab.Desktop
                 var safety = Game == null ? null : Game.SafetySystem;
                 return safety != null && safety.GasTrapConnected
                     ? LabLocalization.Text(
-                        "E · Tháo bình cách ly khỏi hệ rửa khí",
-                        "E · Disconnect isolation trap")
+                        "F / E · Tháo bình cách ly khỏi hệ rửa khí",
+                        "F / E · Disconnect isolation trap")
                     : LabLocalization.Text(
-                        "E · Nối bình cách ly vào hệ rửa khí",
-                        "E · Connect isolation trap");
+                        "F / E · Nối bình cách ly vào hệ rửa khí",
+                        "F / E · Connect isolation trap");
             }
         }
 
@@ -340,6 +402,41 @@ namespace ChemistryLab.Desktop
         }
     }
 
+    public sealed class HoodVentilationInteractable : LabInteractable
+    {
+        public override string Prompt
+        {
+            get
+            {
+                var safety = Game == null ? null : Game.SafetySystem;
+                return safety != null && safety.FumeHoodFanOn
+                    ? LabLocalization.Text("F / E · Tắt quạt tủ hút", "F / E · Turn off hood fan")
+                    : LabLocalization.Text("F / E · Bật quạt tủ hút", "F / E · Turn on hood fan");
+            }
+        }
+
+        public override void Interact()
+        {
+            if (Game != null) Game.ToggleFumeHoodFan();
+        }
+    }
+
+    public sealed class TestTubeRackInteractable : LabInteractable
+    {
+        public override string Prompt
+        {
+            get { return LabLocalization.Text("E · Kiểm tra giá ống nghiệm", "E · Inspect test tube rack"); }
+        }
+
+        public override void Interact()
+        {
+            if (Game != null && Game.Hud != null)
+                Game.Hud.ShowTransient(LabLocalization.Text(
+                    "Ống nghiệm dùng để quan sát. Đặt mẫu trên khay trước khi nạp bình.",
+                    "Test tubes are for observation. Stage samples on the tray before loading a vessel."));
+        }
+    }
+
     [RequireComponent(typeof(CharacterController))]
     public sealed class FirstPersonChemistController : MonoBehaviour
     {
@@ -348,6 +445,8 @@ namespace ChemistryLab.Desktop
         private const float Gravity = -22f;
         private const float LookSensitivity = 2.1f;
         private const float InteractionDistance = 3.4f;
+        private const float NormalFieldOfView = 66f;
+        private const float MinimumFieldOfView = 34f;
 
         private CharacterController controller;
         private Camera viewCamera;
@@ -367,6 +466,7 @@ namespace ChemistryLab.Desktop
         private bool moving;
         private bool running;
         private bool sprintRequested;
+        private float zoomFieldOfView = NormalFieldOfView;
 
         public bool IsPaused
         {
@@ -502,6 +602,39 @@ namespace ChemistryLab.Desktop
             {
                 game.ToggleGasTrap();
             }
+        }
+
+        private void DispatchContextAction()
+        {
+            if (!CanUseGameplayActions || viewCamera == null) return;
+            RaycastHit hit;
+            if (!Physics.Raycast(viewCamera.transform.position, viewCamera.transform.forward,
+                out hit, InteractionDistance, Physics.DefaultRaycastLayers,
+                QueryTriggerInteraction.Ignore)) return;
+            var target = hit.collider.GetComponentInParent<LabInteractable>();
+            if (target is VesselInteractable || target is GasTrapInteractable
+                || target is HoodVentilationInteractable) target.Interact();
+        }
+
+        private void DispatchHeatAction()
+        {
+            if (!CanUseGameplayActions || viewCamera == null) return;
+            RaycastHit hit;
+            if (!Physics.Raycast(viewCamera.transform.position, viewCamera.transform.forward,
+                out hit, InteractionDistance, Physics.DefaultRaycastLayers,
+                QueryTriggerInteraction.Ignore)) return;
+            var target = hit.collider.GetComponentInParent<LabInteractable>();
+            var vessel = target as VesselInteractable;
+            if (vessel != null)
+            {
+                game.AdjustVesselTemperature(vessel.Station, 25f);
+                if (game != null && game.AudioSystem != null)
+                {
+                    game.AudioSystem.PlayUiClick();
+                }
+            }
+            var heater = target as ThermalControlInteractable;
+            if (heater != null) heater.Interact();
         }
 
         public void DispatchPause()
@@ -643,7 +776,21 @@ namespace ChemistryLab.Desktop
             // Active gameplay hotkeys - using shared dispatch
             if (Input.GetKeyDown(KeyCode.F))
             {
-                DispatchInspect();
+                DispatchContextAction();
+            }
+
+            if (Input.GetKeyDown(KeyCode.V)) DispatchInspect();
+            if (Input.GetKeyDown(KeyCode.R)) DispatchHeatAction();
+            if (Input.GetKeyDown(KeyCode.Tab) || Input.GetKeyDown(KeyCode.Q))
+                game.Hud.ToggleMissionBoard();
+            if (Input.GetKeyDown(KeyCode.Backspace)) DispatchPutAway();
+            for (var slot = 0; slot < 9; slot++)
+            {
+                if (Input.GetKeyDown((KeyCode)((int)KeyCode.Alpha1 + slot)))
+                {
+                    game.SelectQuickChemical(slot);
+                    break;
+                }
             }
 
             if (Input.GetKeyDown(KeyCode.F10))
@@ -682,11 +829,6 @@ namespace ChemistryLab.Desktop
                 DispatchAmount(1f);
             }
 
-            if (Input.GetKeyDown(KeyCode.Q))
-            {
-                DispatchPutAway();
-            }
-
             if (Input.GetKeyDown(KeyCode.PageUp))
             {
                 DispatchTemperature(25f);
@@ -715,6 +857,7 @@ namespace ChemistryLab.Desktop
             UpdateLook();
             UpdateMovement();
             UpdateInteraction();
+            UpdateZoom();
             UpdateCameraMotion();
             game.UpdatePlayerZone(transform.position);
         }
@@ -812,6 +955,17 @@ namespace ChemistryLab.Desktop
             }
         }
 
+        private void UpdateZoom()
+        {
+            if (!game.Hud.TouchControlsEnabled && Cursor.lockState == CursorLockMode.Locked)
+            {
+                var scroll = Input.GetAxis("Mouse ScrollWheel");
+                if (Mathf.Abs(scroll) > 0.001f)
+                    zoomFieldOfView = Mathf.Clamp(zoomFieldOfView - Mathf.Sign(scroll) * 4f,
+                        MinimumFieldOfView, NormalFieldOfView);
+            }
+        }
+
         private void AnimateHands(float mouseX, float mouseY)
         {
             if (handsRoot == null)
@@ -850,16 +1004,14 @@ namespace ChemistryLab.Desktop
                 return;
             }
 
+            var holdingZoom = !paused && !game.Hud.TouchControlsEnabled
+                && ((Cursor.lockState == CursorLockMode.Locked && Input.GetMouseButton(1))
+                    || Input.GetKey(KeyCode.Z));
+            var targetFov = holdingZoom ? Mathf.Min(zoomFieldOfView, 40f) : zoomFieldOfView;
             if (paused || LabAccessibility.ReducedMotion)
             {
-                viewCamera.transform.localPosition = Vector3.Lerp(
-                    viewCamera.transform.localPosition,
-                    cameraBasePosition,
-                    14f * Time.unscaledDeltaTime);
-                viewCamera.fieldOfView = Mathf.Lerp(
-                    viewCamera.fieldOfView,
-                    66f,
-                    10f * Time.unscaledDeltaTime);
+                viewCamera.transform.localPosition = cameraBasePosition;
+                viewCamera.fieldOfView = paused ? NormalFieldOfView : targetFov;
                 return;
             }
 
@@ -883,8 +1035,8 @@ namespace ChemistryLab.Desktop
                 14f * Time.deltaTime);
             viewCamera.fieldOfView = Mathf.Lerp(
                 viewCamera.fieldOfView,
-                running ? 70f : 66f,
-                7f * Time.deltaTime);
+                holdingZoom || zoomFieldOfView < NormalFieldOfView ? targetFov : running ? 70f : NormalFieldOfView,
+                1f - Mathf.Exp(-10f * Time.deltaTime));
         }
 
         public void SetPausedFromUi(bool value)
@@ -895,6 +1047,13 @@ namespace ChemistryLab.Desktop
         private void SetPaused(bool value)
         {
             paused = value;
+            if (value && focusedInteractable != null)
+            {
+                focusedInteractable.SetFocused(false);
+                focusedInteractable = null;
+                if (game != null && game.Hud != null)
+                    game.Hud.SetInteractionPrompt(string.Empty);
+            }
             if (moveTouchZone != null) moveTouchZone.ResetPointer();
             if (lookTouchZone != null) lookTouchZone.ResetPointer();
             var touch = game != null && game.Hud != null && game.Hud.TouchControlsEnabled;
