@@ -26,10 +26,13 @@ When the newly loaded ingredient resolves to a reaction:
 - gas outcomes show small bubbles rising inside the liquid and disappearing at
   its surface; precipitate outcomes show suspended particles settling into a
   coloured layer at the bottom of the vessel;
-- strong heat and toxic or corrosive gas outcomes show faint haze or fumes at
-  the vessel mouth for the bounded reaction duration;
+- hot aqueous contents (at least 90 °C, without a gas outcome) can show faint
+  white thermal haze at the vessel mouth for the reaction duration;
+- hazard severity alone does not make gas visible: the current outcomes do
+  not carry reviewed gas colours, so colourless hazardous gas uses bubbles
+  and the existing safety HUD instead of invented coloured smoke;
 - the first-person arms are hidden temporarily;
-- the camera eases to a 42-degree close view of the physical vessel;
+- the camera eases to a 42-degree close view about 0.51 m from the physical vessel;
 - a central card shows the balanced `ReactionOutcome.Equation`;
 - the same card shows temperature, concentration, pH, rate, catalyst, and
   observed phenomenon from the outcome that drove the simulation;
@@ -41,6 +44,24 @@ It also changes liquid colour immediately and lowers VFX emission while keeping
 gas, precipitate, and fume states visible. Cleaning the vessel clears all
 particles and sediment. These visuals read the committed `ReactionOutcome` and
 do not change reaction or safety calculations.
+
+The solution mesh follows the inner envelope of the approved flask rather
+than a cylinder. Fill height is computed by integrating that shape against
+the existing outcome volume; a narrow static meniscus makes the surface
+readable. Colour development uses the committed completion-time estimate
+(minimum visual duration 0.75 seconds), and the final hue is the outcome hue.
+Emission ramps up and tapers off. Bubbles vary from 1.5–4 mm and are removed at
+the liquid surface; suspended particles stay in the solution and settle to a
+persistent bottom layer whose hue comes from the same outcome. Each vessel
+owns its mesh, material, effect timer and particle buffer. Cleanup destroys no
+gameplay anchor and clears both vessels' visible state.
+
+Pause freezes particle simulation, colour development, sediment growth and
+camera easing through scaled time. Reduced motion lowers emission and travel
+speed, shows the final colour/sediment immediately and has no flash or shake.
+Enabling reduced motion during a close view restores the original camera
+state. No fire/explosion is added: the current outcome enum does not authorize
+such an effect.
 
 ## Runtime invariants
 

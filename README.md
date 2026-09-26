@@ -32,6 +32,10 @@ The game is built as an educational simulation, not as real laboratory operating
 - First-run onboarding with a visible help button and a four-bottle starter tray containing water, copper sulfate, sodium hydroxide, and hydrochloric acid.
 - Reviewed real-scale glassware assets: a 0.18 m Erlenmeyer reaction flask and 0.15 m test tubes, baked to lightweight native Unity meshes with simple physics colliders and recorded third-party provenance.
 - Four original procedural reference props: hotplate/stirrer, PPE suit display, reagent-bottle rack, and fume-hood gas-wash train. No unverified downloaded geometry is shipped.
+- Original Blender environment kit: detailed workbench/hood, shelves, recessed sink,
+  framed architecture, preparation trays, shared reagent bottles and bench tools,
+  integrated beneath runtime gameplay anchors. Matte resin/paint, steel and teal
+  materials use 1K textures; readable glass uses bounded reflection and edge opacity.
 - Procedural background audio, UI sounds, footsteps, pour/wash sounds, reaction sounds, and hazard alarm.
 - JSON build, validation, and smoke-test reports under `BuildReports/`.
 

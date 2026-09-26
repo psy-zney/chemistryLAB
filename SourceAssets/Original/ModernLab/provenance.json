@@ -1,0 +1,325 @@
+{
+  "version": "5.2.1 LTS",
+  "scene": "ChemistryLab_ModernLab_Metres",
+  "units": "metres",
+  "unityUnitMetres": 1,
+  "author": "Chemistry Lab project original procedural artwork",
+  "license": "Project-owned original work; no third-party geometry or textures",
+  "modules": [
+    "Workbench",
+    "Hood",
+    "StorageLeft",
+    "StorageRight",
+    "Sink",
+    "RoomDetail",
+    "PreparationTray",
+    "BenchTools",
+    "ReagentBottle"
+  ],
+  "meshAudit": [
+    {
+      "module": "Workbench",
+      "material": "Worktop",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "Workbench",
+      "material": "DarkSteel",
+      "vertices": 1288,
+      "polygons": 1242,
+      "uvSets": 2
+    },
+    {
+      "module": "Workbench",
+      "material": "Rubber",
+      "vertices": 672,
+      "polygons": 560,
+      "uvSets": 2
+    },
+    {
+      "module": "Workbench",
+      "material": "Steel",
+      "vertices": 496,
+      "polygons": 324,
+      "uvSets": 2
+    },
+    {
+      "module": "Workbench",
+      "material": "Ivory",
+      "vertices": 1232,
+      "polygons": 1188,
+      "uvSets": 2
+    },
+    {
+      "module": "Workbench",
+      "material": "Teal",
+      "vertices": 112,
+      "polygons": 108,
+      "uvSets": 2
+    },
+    {
+      "module": "Hood",
+      "material": "Worktop",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "Hood",
+      "material": "Ivory",
+      "vertices": 840,
+      "polygons": 810,
+      "uvSets": 2
+    },
+    {
+      "module": "Hood",
+      "material": "DarkSteel",
+      "vertices": 1344,
+      "polygons": 1296,
+      "uvSets": 2
+    },
+    {
+      "module": "Hood",
+      "material": "Steel",
+      "vertices": 656,
+      "polygons": 504,
+      "uvSets": 2
+    },
+    {
+      "module": "Hood",
+      "material": "Ceramic",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "Hood",
+      "material": "Teal",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "Hood",
+      "material": "Glass",
+      "vertices": 8,
+      "polygons": 6,
+      "uvSets": 2
+    },
+    {
+      "module": "Hood",
+      "material": "Diffuser",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "StorageLeft",
+      "material": "Ivory",
+      "vertices": 168,
+      "polygons": 162,
+      "uvSets": 2
+    },
+    {
+      "module": "StorageLeft",
+      "material": "Steel",
+      "vertices": 1736,
+      "polygons": 1674,
+      "uvSets": 2
+    },
+    {
+      "module": "StorageLeft",
+      "material": "Teal",
+      "vertices": 224,
+      "polygons": 216,
+      "uvSets": 2
+    },
+    {
+      "module": "StorageRight",
+      "material": "Ivory",
+      "vertices": 168,
+      "polygons": 162,
+      "uvSets": 2
+    },
+    {
+      "module": "StorageRight",
+      "material": "Steel",
+      "vertices": 1736,
+      "polygons": 1674,
+      "uvSets": 2
+    },
+    {
+      "module": "StorageRight",
+      "material": "Teal",
+      "vertices": 224,
+      "polygons": 216,
+      "uvSets": 2
+    },
+    {
+      "module": "Sink",
+      "material": "Ivory",
+      "vertices": 448,
+      "polygons": 432,
+      "uvSets": 2
+    },
+    {
+      "module": "Sink",
+      "material": "DarkSteel",
+      "vertices": 624,
+      "polygons": 572,
+      "uvSets": 2
+    },
+    {
+      "module": "Sink",
+      "material": "Steel",
+      "vertices": 824,
+      "polygons": 666,
+      "uvSets": 2
+    },
+    {
+      "module": "Sink",
+      "material": "Worktop",
+      "vertices": 224,
+      "polygons": 216,
+      "uvSets": 2
+    },
+    {
+      "module": "Sink",
+      "material": "Ceramic",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "RoomDetail",
+      "material": "Steel",
+      "vertices": 2432,
+      "polygons": 2310,
+      "uvSets": 2
+    },
+    {
+      "module": "RoomDetail",
+      "material": "Ivory",
+      "vertices": 392,
+      "polygons": 378,
+      "uvSets": 2
+    },
+    {
+      "module": "RoomDetail",
+      "material": "Window",
+      "vertices": 64,
+      "polygons": 48,
+      "uvSets": 2
+    },
+    {
+      "module": "RoomDetail",
+      "material": "Ceramic",
+      "vertices": 280,
+      "polygons": 270,
+      "uvSets": 2
+    },
+    {
+      "module": "RoomDetail",
+      "material": "Teal",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "RoomDetail",
+      "material": "DarkSteel",
+      "vertices": 1008,
+      "polygons": 972,
+      "uvSets": 2
+    },
+    {
+      "module": "PreparationTray",
+      "material": "Teal",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "PreparationTray",
+      "material": "Steel",
+      "vertices": 224,
+      "polygons": 216,
+      "uvSets": 2
+    },
+    {
+      "module": "PreparationTray",
+      "material": "Rubber",
+      "vertices": 168,
+      "polygons": 162,
+      "uvSets": 2
+    },
+    {
+      "module": "BenchTools",
+      "material": "Glass",
+      "vertices": 776,
+      "polygons": 684,
+      "uvSets": 2
+    },
+    {
+      "module": "BenchTools",
+      "material": "Label",
+      "vertices": 96,
+      "polygons": 72,
+      "uvSets": 2
+    },
+    {
+      "module": "BenchTools",
+      "material": "DarkSteel",
+      "vertices": 56,
+      "polygons": 54,
+      "uvSets": 2
+    },
+    {
+      "module": "BenchTools",
+      "material": "Steel",
+      "vertices": 64,
+      "polygons": 36,
+      "uvSets": 2
+    },
+    {
+      "module": "BenchTools",
+      "material": "Rubber",
+      "vertices": 144,
+      "polygons": 122,
+      "uvSets": 2
+    },
+    {
+      "module": "BenchTools",
+      "material": "Teal",
+      "vertices": 704,
+      "polygons": 666,
+      "uvSets": 2
+    },
+    {
+      "module": "ReagentBottle",
+      "material": "Glass",
+      "vertices": 576,
+      "polygons": 528,
+      "uvSets": 2
+    },
+    {
+      "module": "ReagentBottle",
+      "material": "Rubber",
+      "vertices": 192,
+      "polygons": 162,
+      "uvSets": 2
+    },
+    {
+      "module": "ReagentBottle",
+      "material": "DarkSteel",
+      "vertices": 1472,
+      "polygons": 1392,
+      "uvSets": 2
+    }
+  ],
+  "rendererCount": 43,
+  "blenderFile": "SourceAssets/Original/ModernLab/ModernLab.blend",
+  "runtimeFbx": "Assets/ChemistryLab/Art/ModernLab/ModernLabKit.fbx"
+}

@@ -153,3 +153,35 @@ license. `CC0` is best. `CC-BY` is acceptable only if attribution is recorded.
 8. Bake lighting and keep realtime lights limited.
 9. Run validation, smoke test, Windows x64 build, package validation, and SHA256.
 
+## Integrated modern lab artwork
+
+The current room is still assembled by `DesktopLabGame` at runtime. Authored
+Blender visuals replace the workbench, hood, shelves, sink, preparation trays
+and reagent bottles, and add window/door frames, ceiling joints, ventilation
+details and bench glassware. `ModernLabArt.Install` attaches resource prefabs
+beneath existing gameplay anchors. Replaced primitive renderers are hidden;
+their navigation/interaction colliders remain. Imported decorative meshes
+have no colliders. The reviewed 0.18 m flask and 0.15 m tubes retain their
+original geometry and scale.
+
+The Built-in Render Pipeline remains in use. Materials distinguish matte
+ivory paint, dark resin, steel, muted teal, clear/amber glass and plastic.
+Original 1K albedo/normal textures use mipmaps. Glass uses a single pass with
+edge opacity and probe reflection; there is no refraction, bloom, fog or DOF.
+Solution, particles and glass have explicit render queues (3000/3020/3100).
+
+Lighting uses a broad directional key, inexpensive ceiling fill and two task
+spots. The key represents window/fixture illumination, so the shell and
+ceiling panels do not cast shadows into the room; furniture/props do. One
+128px reflection probe captures the assembled environment once. Static
+geometry has lightmap UVs, but no lighting bake is claimed for objects that
+only exist after startup. Runtime props receive direct/ambient light and the
+reflection probe; baked light probes are not fabricated.
+
+Blender source and provenance live in `SourceAssets/Original/ModernLab`.
+`ModernLabArtIntegration` regenerates resource materials/prefabs before scene
+creation and Windows builds, and validates identity roots, bottle scale,
+materials and absence of decorative colliders. `LabVisualReview.Capture`
+checks the actual room in Play Mode and writes reproducible captures under
+ignored `output/visual-upgrade`. That folder is local evidence, not a shipped
+asset or a Blender render.

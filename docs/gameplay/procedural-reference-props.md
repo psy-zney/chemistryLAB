@@ -27,7 +27,7 @@ The same revision corrects the largest placeholder scale problems:
 - room ceiling: 3.6 m;
 - workbench surface: approximately 1.01 m;
 - fume-hood work surface: approximately 1.01 m;
-- interactive reagent bottle: approximately 0.34 m including cap;
+- interactive reagent bottle: approximately 0.313 m including cap;
 - Erlenmeyer reaction vessel: 0.18 m;
 - test tube: 0.15 m.
 
@@ -49,3 +49,11 @@ The same revision corrects the largest placeholder scale problems:
 The desktop smoke report records `originalReferenceProps: 4`, verifies both
 physical safety stations and their colliders, and continues to verify
 `handOnlyReactionBlocked` and `remoteVesselOperationBlocked`.
+
+The four functional reference props are retained. The original Blender kit in
+`SourceAssets/Original/ModernLab` adds authored visual children for furniture,
+architecture, preparation trays, reagent bottles and bench tools. It does not
+replace the safety/hotplate gameplay anchors or copy unverified source meshes.
+Held, staged and shelf bottles share the metre-scale bottle mesh; dynamic
+chemical contents and formula labels are attached beneath an identity Unity
+root, outside the FBX axis-conversion child. Decorative meshes have no colliders.

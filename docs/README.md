@@ -26,6 +26,9 @@ The repository root is the canonical Unity project. Start with the main
 
 ## Gameplay
 
+- [`gameplay/modern-lab-visual-upgrade.md`](gameplay/modern-lab-visual-upgrade.md):
+  Blender source, runtime art/VFX integration, actual Unity captures and validation limits.
+
 - [`gameplay/player-guide-vi-en.md`](gameplay/player-guide-vi-en.md):
   bilingual player workflow and complete controls.
 - [`gameplay/lab-scene-production-plan.md`](gameplay/lab-scene-production-plan.md):

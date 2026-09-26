@@ -12,7 +12,11 @@
     {
       "id": "original-hotplate-stirrer",
       "referenceCategory": "bench hotplate",
-      "dimensionsMetres": [0.44, 0.16, 0.36],
+      "dimensionsMetres": [
+        0.44,
+        0.16,
+        0.36
+      ],
       "collider": "single root box",
       "interaction": "ThermalControlInteractable",
       "placement": "central workbench"
@@ -20,7 +24,11 @@
     {
       "id": "original-ppe-suit-display",
       "referenceCategory": "hazmat suit",
-      "dimensionsMetres": [1.2, 2.2, 0.38],
+      "dimensionsMetres": [
+        1.2,
+        2.2,
+        0.38
+      ],
       "collider": "single cabinet box",
       "interaction": "RespiratorStationInteractable: aim and press E to buy, wear, or remove",
       "placement": "safety station"
@@ -28,7 +36,11 @@
     {
       "id": "original-reagent-bottle-rack",
       "referenceCategory": "chemistry bottle collection",
-      "dimensionsMetres": [0.82, 0.3, 0.3],
+      "dimensionsMetres": [
+        0.82,
+        0.3,
+        0.3
+      ],
       "collider": "none",
       "interaction": "decorative analysis context",
       "placement": "analysis bench"
@@ -36,7 +48,11 @@
     {
       "id": "original-gas-wash-train",
       "referenceCategory": "laboratory gas apparatus",
-      "dimensionsMetres": [0.92, 0.6, 0.28],
+      "dimensionsMetres": [
+        0.92,
+        0.6,
+        0.28
+      ],
       "collider": "single root box",
       "interaction": "GasTrapInteractable: aim and press E to connect or disconnect",
       "placement": "fume hood"
@@ -46,7 +62,7 @@
     "ceilingHeight": 3.6,
     "workbenchSurfaceHeight": 1.01,
     "fumeHoodSurfaceHeight": 1.01,
-    "interactiveBottleHeight": 0.34,
+    "interactiveBottleHeight": 0.313,
     "erlenmeyerHeight": 0.18,
     "testTubeHeight": 0.15
   },
@@ -56,5 +72,12 @@
     "physicalSafetyInteractionRequired": true,
     "reactionInHandAllowed": false,
     "remoteVesselOperationAllowed": false
+  },
+  "authoredVisualChildren": {
+    "source": "SourceAssets/Original/ModernLab",
+    "replacesFunctionalReferenceProps": false,
+    "decorativeColliders": false,
+    "shelfHeldAndStagedShareBottleMesh": true,
+    "fbxAxisConversionOnVisualChild": true
   }
 }

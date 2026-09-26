@@ -1,5 +1,5 @@
 {
-  "schemaVersion": "2.0",
+  "schemaVersion": "2.1",
   "feature": "staged-sample-reaction-presentation",
   "stations": [
     "workbench",
@@ -35,18 +35,42 @@
       "Escape"
     ],
     "reducedMotionMovesCamera": false,
-    "restoresOriginalCameraTransform": true
+    "restoresOriginalCameraTransform": true,
+    "closeViewOffsetFromTargetMetres": [
+      0.24,
+      0.21,
+      0.4
+    ],
+    "targetHeightAboveVesselRootMetres": 0.09,
+    "pauseFreezesCameraEasing": true,
+    "midViewReducedMotionRestoresCamera": true
   },
   "vesselVisuals": {
     "colourSource": "measured-input-colours-then-committed-outcome-display-colour",
     "concentrationAffectsOpacity": true,
     "precipitateCloudsLiquidAndSettles": true,
     "gasBubblesRiseAndDisappearAtSurface": true,
-    "toxicCorrosiveOrStrongHeatAddsFumes": true,
     "effectsStopAfterBoundedReactionDuration": true,
     "cleanupClearsParticlesAndSediment": true,
     "reducedMotionUsesImmediateColourAndLowerEmission": true,
-    "visualsChangeChemistryOrSafety": false
+    "visualsChangeChemistryOrSafety": false,
+    "hazardAloneEmitsFumes": false,
+    "gasColourRequiresReviewedOutcomeData": true,
+    "colourlessGasUsesBubblesAndSafetyHud": true,
+    "thermalHazeMinimumTemperatureC": 90,
+    "thermalHazeDuringGasOutcome": false,
+    "meshShape": "inner-envelope-of-approved-0.18m-flask-with-static-meniscus",
+    "fillSource": "outcome-volume-integrated-against-inner-profile",
+    "colourDurationSource": "estimated-completion-seconds-minimum-0.75",
+    "bubbleDiameterMetres": [
+      0.0015,
+      0.004
+    ],
+    "particleContainment": "liquid-surface-bottom-and-vessel-radius",
+    "sedimentPersistsAfterCollection": true,
+    "independentMeshesMaterialsTimersAndBuffers": true,
+    "pauseUsesScaledTime": true,
+    "fireOrExplosionAuthorizedByCurrentOutcomes": false
   },
   "runtimeAssertions": [
     "handOnlyReactionBlocked",

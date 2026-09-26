@@ -28,7 +28,10 @@ namespace ChemistryLab.Desktop.Editor
 
         private static void CreateSceneAssets()
         {
+            PlayerSettings.enableFrameTimingStats = true;
             Directory.CreateDirectory(Path.Combine(Application.dataPath, "ChemistryLab", "Scenes"));
+            ModernLabArtIntegration.Integrate();
+            ModernLabArtIntegration.ValidateAssetsOrThrow();
             ApprovedModelIntegration.Integrate();
             EnsureRuntimeMaterial();
 
@@ -44,6 +47,7 @@ namespace ChemistryLab.Desktop.Editor
         [MenuItem("Chemistry Lab/Desktop/Validate 3D Lab")]
         public static void ValidateOnly()
         {
+            ModernLabArtIntegration.ValidateAssetsOrThrow();
             var validation = ValidateData();
             WriteStructuredReport(
                 ValidationReportFile,

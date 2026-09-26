@@ -98,6 +98,8 @@ namespace ChemistryLab.Desktop.Editor
 
         private static Material CreateOrUpdateGlassMaterial()
         {
+            var authored = AssetDatabase.LoadAssetAtPath<Material>("Assets/ChemistryLab/Resources/Art/Glass.mat");
+            if (authored != null) return authored;
             var material = AssetDatabase.LoadAssetAtPath<Material>(GlassMaterialPath);
             var shader = Shader.Find("Standard");
             if (shader == null)

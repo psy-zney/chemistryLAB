@@ -1,0 +1,62 @@
+{
+  "schemaVersion": "1.0",
+  "feature": "modern-lab-visual-upgrade",
+  "renderPipeline": "Built-in",
+  "source": "SourceAssets/Original/ModernLab/ModernLab.blend",
+  "export": "Assets/ChemistryLab/Art/ModernLab/ModernLabKit.fbx",
+  "runtimePrefabs": "Assets/ChemistryLab/Resources/Art",
+  "modules": ["Workbench", "Hood", "StorageLeft", "StorageRight", "Sink", "RoomDetail", "PreparationTray", "BenchTools", "ReagentBottle"],
+  "sourceMeshCount": 43,
+  "sourceVertices": 22120,
+  "units": "metres",
+  "originalTextureResolution": 1024,
+  "integration": {
+    "editor": "ModernLabArtIntegration.Integrate",
+    "runtime": "ModernLabArt.Install",
+    "prefabRootTransform": "identity",
+    "fbxAxisConversion": "visual child",
+    "replacedPrimitiveRenderers": "disabled",
+    "existingGameplayCollidersAndAnchors": "retained",
+    "decorativeMeshColliders": false,
+    "approvedFlaskAndTubeGeometry": "retained"
+  },
+  "lighting": {
+    "bakedRuntimeGeometry": false,
+    "reflectionProbe": "one bounded runtime capture, 128 pixels per face",
+    "workbenchAndHoodTaskLights": "unshadowed spot lights",
+    "directionalShadows": "soft",
+    "msaaSamples": 4,
+    "refraction": false,
+    "addedPostProcessing": false
+  },
+  "presentation": {
+    "chemistryAuthority": "existing committed ReactionOutcome",
+    "innerFlaskEnvelope": "integrated frustum volume",
+    "meniscus": "static narrow rim",
+    "bubbleDiameterMetres": [0.0015, 0.004],
+    "precipitateDiameterMetres": [0.001, 0.0028],
+    "particlesConstrainedToLiquid": true,
+    "independentStatePerVessel": true,
+    "finiteEmissionEnvelope": "ramp, development, taper",
+    "persistentSediment": "retained after collection, cleared on cleaning",
+    "thermalHaze": "sparse white haze for nongas outcomes at or above 90 C",
+    "hazardAloneCreatesSmoke": false,
+    "fireOrExplosionAdded": false,
+    "reducedMotion": "immediate colour/sediment, reduced emission/travel, stationary camera",
+    "pause": "scaled visual timers and particle simulation freeze",
+    "closeView": "skippable; exact camera restoration",
+    "appliesGameplayConsequences": false
+  },
+  "review": {
+    "method": "actual Unity Play Mode camera captures and Windows player smoke test",
+    "before": "output/visual-upgrade/before",
+    "after": "output/visual-upgrade/after",
+    "video": "output/visual-upgrade/unity-reaction-review.mp4",
+    "videoFrames": 90,
+    "videoFps": 12,
+    "hudLanguages": ["Vietnamese", "English"],
+    "hudResolutions": [[1920,1080], [1920,1200], [2560,1080]],
+    "evidence": "BuildReports/modern-lab-visual-review.json",
+    "gpuAndPresentedFrameCertification": "outstanding"
+  }
+}

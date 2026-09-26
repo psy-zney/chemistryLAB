@@ -1,0 +1,108 @@
+{
+  "schemaVersion": "1.0",
+  "generatedAtUtc": "2026-09-26T15:33:34Z",
+  "result": "implementation-and-functional-validation-succeeded-with-measurement-limits",
+  "canonicalProject": "C:/Users/admin/MyProject/chemistryLAB",
+  "initialGitStatus": "clean",
+  "codegraphDirectoryPresent": false,
+  "tools": {
+    "blender": {"version": "5.2.1 LTS", "execution": "local background Python scripts", "initialScene": "Scene", "initialObjects": ["Cube", "Light", "Camera"], "savedScene": "ChemistryLab_ModernLab_Metres"},
+    "unity": {"version": "6000.5.3f1", "execution": "local batch editor with graphics and Windows player", "activeScene": "Assets/ChemistryLab/Scenes/DesktopChemistryLab.unity", "renderPipeline": "Built-in", "compilingAtCaptureEntry": false, "playModeAtCaptureEntry": false, "playModeDuringCapture": true},
+    "missingConnectors": ["Blender MCP/editor connector", "Unity MCP/editor connector"],
+    "editorWorkExecuted": "Blender asset generation/export; Unity import/material/prefab generation, Play Mode review, validation and Windows build were executed through the local executables"
+  },
+  "assets": {
+    "source": "SourceAssets/Original/ModernLab/ModernLab.blend",
+    "provenance": "SourceAssets/Original/ModernLab/provenance.json",
+    "runtimeExport": "Assets/ChemistryLab/Art/ModernLab/ModernLabKit.fbx",
+    "runtimePrefabs": "Assets/ChemistryLab/Resources/Art",
+    "modules": 9,
+    "meshes": 43,
+    "sourceVertices": 22120,
+    "textures": "six original 1024x1024 albedo/normal PNGs; compressed HQ, mipmapped, anisotropy 4",
+    "licensing": "original project artwork; existing approved third-party flask/tube attribution retained",
+    "runtimeAssembly": "authored visual children attached after procedural room construction; simple gameplay colliders retained; no decorative colliders",
+    "lightmaps": "secondary UVs imported; environment has not been baked because it spawns at runtime"
+  },
+  "baselineFindings": [
+    "Main furniture used primitive slabs and legs without drawer reveals, handles, feet or visible service details.",
+    "High ambient/ceiling illumination flattened depth; primitive materials lacked original surface variation.",
+    "Existing room labels and preparation/vessel anchors were already functional and were retained.",
+    "Contents and sediment used cylinders rather than the approved flask envelope; gas particles were large relative to the 0.18 m vessel.",
+    "Hazard classification previously triggered visible fume particles without reviewed gas colour data.",
+    "The runtime rebuild requires integrating prefabs in BuildWorld rather than decorating only the editor scene."
+  ],
+  "playMode": {
+    "result": "passed",
+    "assertionsPassed": 20,
+    "checks": [
+      "tray raycast clear", "vessel raycast clear", "pause freezes particles and colour",
+      "independent sediment states", "independent liquid materials", "cleanup clears both vessel effects",
+      "held sample cannot load", "remote load preserves staged sample", "in-range staged sample loads",
+      "reduced motion camera stationary", "skip ends close view", "exact camera restoration",
+      "collection once only and sediment retained", "hazard retains hood controls",
+      "colourless hazardous gas has no coloured smoke", "uncontrolled gas retains health consequences",
+      "existing colour reaction resolves", "colour develops over time", "final outcome hue retained",
+      "data-supported hot nongas mixture has restrained white haze"
+    ],
+    "fixtures": ["CuSO4 + NaOH", "CaCO3 + HCl", "FeS + HCl", "Fe + CuSO4", "heated NaOH + HCl"],
+    "hudCaptures": {"languages": ["Vietnamese", "English"], "resolutions": [[1920,1080], [1920,1200], [2560,1080]], "review": "panels and controls stay within the image without overlap at the tested ratios"},
+    "savedState": "review restores prior language, reduced-motion preference and synthesized inventory file",
+    "log": "Logs/visual-after.log"
+  },
+  "evidence": {
+    "before": "output/visual-upgrade/before",
+    "after": "output/visual-upgrade/after",
+    "matchingViews": ["room", "workbench", "hood", "shelves", "sink", "held sample", "staged sample", "precipitate", "gas"],
+    "comparisonConditions": "same camera poses, FOVs and 1920x1080 capture size; new lighting/materials intentionally differ; dynamic particle layouts may differ",
+    "additionalImages": ["reduced motion", "colour outcome", "hot mixture", "six HUD language/aspect captures"],
+    "video": "output/visual-upgrade/unity-reaction-review.mp4",
+    "videoSource": "90 actual Unity Play Mode PNG frames at 1280x720, 12 fps, 7.5 seconds; Blender VSE only encodes images",
+    "localArtifactsIgnored": true
+  },
+  "performance": {
+    "hardware": {"cpu": "12th Gen Intel(R) Core(TM) i5-12450HX", "gpu": "NVIDIA GeForce RTX 3050 6GB Laptop GPU", "driver": "32.0.15.9579"},
+    "graphicsApi": "Direct3D12",
+    "resolution": [1920,1080],
+    "msaa": 4,
+    "scenario": "room overview with gas at bench and precipitate in hood progressing independently",
+    "method": "Windows player, hidden window, forced Camera.Render to 1080p texture each frame; uncapped; 90 warmup and 300 measured frames; excludes backbuffer presentation",
+    "samples": 300,
+    "cpuFrameTimeMeanMs": 1.336667333333334,
+    "offscreenLoopMeanMs": 1.3273583227396025,
+    "offscreenLoopP95Ms": 2.0569019317626955,
+    "trianglesMean": 93030,
+    "setPassCallsMean": 104,
+    "gpuFrameTimeMs": null,
+    "gpuTimingAvailable": false,
+    "drawCalls": null,
+    "batches": null,
+    "drawCallCounterAvailable": false,
+    "counterLimits": "GPU timestamps and draw/batch counters returned zero and are treated as unavailable; triangle/pass counters were populated. Earlier D3D11 measurement also lacked GPU timestamps.",
+    "target60FpsCertified": false,
+    "rawReport": "output/visual-upgrade/performance.json",
+    "transparentCoverage": {"view": "main workbench", "resolution": [1920,1080], "method": "Unity additive replacement shader, opaque depth, alpha mask > 0.025, HUD excluded; fragment coverage proxy, not GPU timing", "maximumLayers": 4, "wholeScreenMeanLayers": 0.08163435757160187, "coveredFraction": 0.07160252332687378}
+  },
+  "validation": {
+    "staticChecks": {"result": "passed", "command": "SourceAssets/Original/ModernLab/check_project.py", "jsonFilesParsed": 19, "assetsAndMetaPairsChecked": 142, "uniqueGuidsChecked": true, "packageDependenciesChecked": 36, "markdownLinksChecked": 37, "gitDiffCheck": "passed"},
+    "validateOnly": "passed: ChemistryLab.Desktop.Editor.DesktopLabBuild.ValidateOnly",
+    "assetValidation": "passed: 9 identity/metre prefab roots, materials, no decorative colliders, bottle bounds approximately 0.09 x 0.30 x 0.09 m",
+    "windowsBuild": "succeeded, Windows x64, 0 errors and 0 warnings",
+    "windowsPackage": "passed: ChemistryLab.Desktop.Editor.DesktopLabBuild.ValidateWindowsPackage",
+    "playerSmoke": "passed: actual Windows player; staged interactions, physical safety, bilingual menus, pointer resume, chemistry lifecycle and collection",
+    "dataReport": "BuildReports/desktop-validation-report.json",
+    "buildReport": "BuildReports/desktop-build-report.json",
+    "smokeReport": "BuildReports/desktop-smoke-report.json",
+    "package": "Builds/ChemistryLab3D/Packages/ChemistryLab3D-Windows-x64-v1.0.zip",
+    "packageSha256": "f1cf39d639de04e6d407d60306ce0ee55789b3a50862f8c60b1a621dc6c90790"
+  },
+  "limits": [
+    "No baked lightmaps or baked light probes for the runtime-generated room; ambient/key/task lights and a single runtime reflection capture are used.",
+    "No refraction or added post processing; the glass shader prioritizes silhouette and visible contents.",
+    "Outcomes provide one display hue, without separate solution/coating hues or reviewed gas colours; visual code does not introduce another chemistry authority.",
+    "No fire/explosion effect was introduced because the current reaction effect enum does not authorize it.",
+    "No new quality-menu tiers, LOD or pooling framework without a measured need; current Unity quality assets remain.",
+    "Full windowed GPU/frame-presentation profiling and draw-call measurement remain outstanding; this report does not certify 60 FPS.",
+    "UnityEditor.Search.SearchDatabase logged an index ArgumentOutOfRangeException during startup; project compilation, Play Mode review, validation and build still completed. This is not reported as a C# compile failure."
+  ]
+}
